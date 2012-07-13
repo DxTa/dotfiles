@@ -1,0 +1,14 @@
+#!/bin/bash
+
+time=10
+pretime=$(date +%s)
+while [ true ] ; do
+  sleep 5
+  currtime=$(date +%s)
+  counttime=$(($currtime-$pretime))
+  if [ $counttime -gt $time ]; then
+    # echo hello
+    pretime=$currtime
+    /home/dxta/.config/nitrogen/nextw
+  fi
+done

@@ -42,6 +42,8 @@ altkey     = "Mod1"
 editor_cmd = terminal .. " -e " .. editor
 nextw = "/home/dxta/.config/nitrogen/nextw"
 prew = "/home/dxta/.config/nitrogen/prew"
+autow = "/home/dxta/.config/nitrogen/autow"
+stopw = "/home/dxta/.config/nitrogen/stopw"
 synapse = "synapse"
 
 
@@ -58,13 +60,14 @@ layouts = {
 -- Tags
 local tags = {}
 tags = {
-  names = { "home", "code", "www", "comm", "media", "misc" }
+  names = { "1°°°", "2 ±|", "3 ±||", "4@", "5@", "6»", "7···" }
 }
 
 for s = 1, screen.count() do
   tags[s] = awful.tag(tags.names, s, {
     layouts[3], -- home
-    layouts[6], -- code
+    layouts[6], -- work |
+    layouts[6], -- work ||
     layouts[2], -- www
     layouts[5], -- comm
     layouts[2], -- media
@@ -112,7 +115,7 @@ volbar:set_vertical(false)
 volbar:set_background_color("#434343")
 volbar:set_border_color(nil)
 volbar:set_gradient_colors({ beautiful.fg_normal, beautiful.fg_normal, beautiful.fg_normal, beautiful.bar })
-awful.widget.layout.margins[volbar.widget] = { top = 5 }
+awful.widget.layout.margins[volbar.widget] = { top = 6 }
 vicious.register(volbar, vicious.widgets.volume,  "$1",  1, "Master")
 
 -- Vol widget (daes)
@@ -209,7 +212,7 @@ membar:set_vertical(false)
 membar:set_background_color("#434343")
 membar:set_border_color(nil)
 membar:set_gradient_colors({ beautiful.fg_normal, beautiful.fg_normal, beautiful.fg_normal, beautiful.bar })
-awful.widget.layout.margins[membar.widget] = { top = 5 }
+awful.widget.layout.margins[membar.widget] = { top = 6 }
 vicious.register(membar, vicious.widgets.mem, "$1", 13)
 
 separator = widget({ type = "textbox" })
@@ -313,6 +316,7 @@ for s = 1, screen.count() do
       memicon, membar.widget, memwidget, separator,
       batwidget, baticon, tempicon, tempwidget, separator,
       volicon, volbar, separator,
+      mpdicon, mpdwidget, separator,
       layout = awful.widget.layout.horizontal.leftright
     },
     datewidget,
@@ -323,9 +327,6 @@ for s = 1, screen.count() do
     -- separator,
     -- batwidget,
     -- baticon,
-    -- separator,
-    -- mpdwidget,
-    -- mpdicon,
     separator,
     tsystray,
     layout = awful.widget.layout.horizontal.rightleft
@@ -346,14 +347,21 @@ awful.button({ modkey }, 3, awful.mouse.client.resize))
 -- Key Binding
 tkeys = awful.util.table.join(
 -- Standard
+
+awful.key({ "Mod1" }, "`", function ()
+  -- If you want to always position the menu on the same place set coordinates
+  awful.menu.menu_keys.down = { "Down", "Alt_L" }
+  local cmenu = awful.menu.clients({width=245}, { keygrabber=true, coords={x=0, y=0} })
+end),
+
 awful.key({modkey}, "`", revelation),
 awful.key({ modkey, }, "Left",   awful.tag.viewprev       ),
 awful.key({ modkey, }, "Right",  awful.tag.viewnext       ),
 awful.key({ modkey, }, "Escape", awful.tag.history.restore),
 awful.key({ modkey,           }, "j",
 function ()
-    awful.client.focus.byidx( 1)
-    if client.focus then client.focus:raise() end
+  awful.client.focus.byidx( 1)
+  if client.focus then client.focus:raise() end
 end),
 
 awful.key({ modkey, }, "j", function ()
@@ -431,6 +439,13 @@ end),
 awful.key({ modkey,}, "Prior", function ()
   ror.run_or_raise(prew, { class = "Nitrogen" })
 end),
+awful.key({ modkey,}, "F9", function ()
+  ror.run_or_raise(autow, { class = "Nitrogen" })
+end),
+awful.key({ modkey,}, "F10", function ()
+  ror.run_or_raise(stopw, { class = "Nitrogen" })
+end),
+
 -- synapse
 awful.key({ altkey,}, "F1", function ()
   ror.run_or_raise(synapse, { class = "Synapse" })
@@ -500,7 +515,7 @@ awful.rules.rules = {
   },
   {
     rule = { class = "Skype" },
-    properties = { tag = tags[1][4] }
+    properties = { tag = tags[1][5] }
   },
   {
     rule = { class = "Firefox", name = "Downloads" },
@@ -631,12 +646,12 @@ run_once("gnome-keyring-daemon --start --components=pkcs11")
 run_once("nm-applet")
 run_once("nitrogen --restore")
 run_once("synapse --startup")
-run_once("indicator-cpufreq")
+run_once("jupiter")
+run_once("xmodmap $HOME/.xmodmap")
+-- run_once("indicator-cpufreq")
 -- run_once("dropbox start")
--- run_once("jupiter")
--- run_once("mpd")
+run_once("mpc update && sleep 2 && mpd")
 -- run_once("zsh -c $HOME/.config/Pow/Current/bin/pow.sh")
 -- run_once("$HOME/.config/Pow/Current/bin/pow.sh")
-run_once("xmodmap $HOME/.xmodmap")
 -- run_once("$HOME/cli/bin/screens.sh")
 
