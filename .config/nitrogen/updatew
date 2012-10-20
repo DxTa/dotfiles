@@ -1,0 +1,6 @@
+#!/bin/bash
+LIB=$HOME/.config/nitrogen
+ALIST=( `find $1 -type f -name "*.*"` )
+RANGE=${#ALIST[@]}
+find $1 -type f -name "*.*" >> $LIB/lib.txt
+sed -i 's/\\ /\ /g' $LIB/lib.txt

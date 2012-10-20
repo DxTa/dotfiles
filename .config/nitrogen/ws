@@ -1,0 +1,17 @@
+#!/bin/bash
+CONFIG=$HOME/.config/nitrogen
+count=0
+args=("$@")
+QUERY=""
+while [ $count -lt $# ]; do
+  if [ $count -eq 0 ]; then
+    QUERY="`echo $1 | sed -e s/\ /./g`"
+    echo $QUERY
+    cat $CONFIG/lib.txt | grep "$QUERY\|*" > $CONFIG/customlib.txt
+  else
+    QUERY="`echo ${args[count]} | sed -e s/\ /./g`"
+    echo $QUERY
+    cat $CONFIG/lib.txt | grep "$QUERY\|*" >> $CONFIG/customlib.txt
+  fi
+  ((count++))
+done

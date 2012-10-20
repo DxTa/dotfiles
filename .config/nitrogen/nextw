@@ -1,20 +1,23 @@
 #! /bin/bash
-WALLPAPERS="/media/Data/SkyDrive/Pictures/Desktop-Background"
-ALIST=( `ls -w1 $WALLPAPERS` )
-RANGE=${#ALIST[@]}
-HISTORY=$HOME/.config/nitrogen
+CONFIG=$HOME/.config/nitrogen
+RANGE=( `wc -l $CONFIG/customlib.txt | cut -f 1 -d " "` )
 let "number = $RANDOM"
-let LASTNUM="`cat $HISTORY/.last` + $number"
+let LASTNUM="`cat $CONFIG/.last` + $number"
 let "number = $LASTNUM % $RANGE"
-echo $number > $HISTORY/.last
-nitrogen --set-zoom --save $WALLPAPERS/${ALIST[$number]}
-# gsettings set org.gnome.desktop.background picture-uri $WALLPAPERS/${ALIST[$number]}
-# gsettings set com.canonical.unity-greeter background $WALLPAPERs/${ALIST[$number]}
-let "curr_no=`grep -c "." $HISTORY/history.txt`"
-if [ $curr_no -ge 5 ]; then
-  sed '1d' < $HISTORY/history.txt > $HISTORY/temp.txt; mv $HISTORY/temp.txt $HISTORY/history.txt
-  echo $WALLPAPERS/${ALIST[$number]} >> $HISTORY/history.txt
+echo $number > $CONFIG/.last
+argtmp="$number"
+argtmp+="p"
+echo $argtmp
+PIC="`sed -n "$argtmp" $CONFIG/customlib.txt`"
+echo $PIC
+nitrogen --set-zoom --save ""$PIC""
+gsettings set org.gnome.desktop.background picture-uri "file://$PIC"
+gsettings set com.canonical.unity-greeter background "file://$PIC"
+let "curr_no=`grep -c "." $CONFIG/history.txt`"
+if [ $curr_no -ge 10 ]; then
+  sed '1d' < $CONFIG/history.txt > $CONFIG/temp.txt; mv $CONFIG/temp.txt $CONFIG/history.txt
+  echo $PIC >> $CONFIG/history.txt
 else
-  echo $WALLPAPERS/${ALIST[$number]} >> $HISTORY/history.txt
+  echo $PIC >> $CONFIG/history.txt
 fi
 

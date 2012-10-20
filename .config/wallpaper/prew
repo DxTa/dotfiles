@@ -1,9 +1,0 @@
-#! /bin/bash
-HISTORY=$HOME/.config/nitrogen
-
-previous=(`sed '$!d' $HISTORY/history.txt`)
-sed '$d' < $HISTORY/history.txt > $HISTORY/temp.txt; mv $HISTORY/temp.txt $HISTORY/history.txt
-previous=(`sed '$!d' $HISTORY/history.txt`)
-nitrogen --set-zoom --save $previous
-gsettings set org.gnome.desktop.background picture-uri $previous
-gsettings set com.canonical.unity-greeter background $previous

@@ -5,7 +5,7 @@ require("beautiful")
 require("naughty")
 require("vicious")
 require("ror")
-require("revelation")
+-- require("revelation")
 
 beautiful.init(awful.util.getdir("config") .. "/themes/miko/theme.lua")
 
@@ -40,10 +40,6 @@ fileman    = "nautilus --no-desktop"
 modkey     = "Mod4"
 altkey     = "Mod1"
 editor_cmd = terminal .. " -e " .. editor
-nextw = "/home/dxta/.config/nitrogen/nextw"
-prew = "/home/dxta/.config/nitrogen/prew"
-autow = "/home/dxta/.config/nitrogen/autow"
-stopw = "/home/dxta/.config/nitrogen/stopw"
 synapse = "synapse"
 
 
@@ -433,17 +429,20 @@ awful.key({ modkey, "Shift" }, "t", function ()
   ror.run_or_raise(terminal, { class = "Xfce4-terminal" })
 end),
 -- Wallpaper
-awful.key({ modkey,}, "Next", function ()
-  ror.run_or_raise(nextw, { class = "Nitrogen" })
+awful.key({ modkey,}, "F12", function ()
+  ror.run_or_raise("nextw", { class = "Nitrogen" })
 end),
-awful.key({ modkey,}, "Prior", function ()
-  ror.run_or_raise(prew, { class = "Nitrogen" })
+awful.key({ modkey,}, "F11", function ()
+  ror.run_or_raise("prew", { class = "Nitrogen" })
+end),
+awful.key({ modkey,}, "Pause", function ()
+  ror.run_or_raise("delw", { class = "Nitrogen" })
 end),
 awful.key({ modkey,}, "F9", function ()
-  ror.run_or_raise(autow, { class = "Nitrogen" })
+  ror.run_or_raise("autow", { class = "Nitrogen" })
 end),
 awful.key({ modkey,}, "F10", function ()
-  ror.run_or_raise(stopw, { class = "Nitrogen" })
+  ror.run_or_raise("stopw", { class = "Nitrogen" })
 end),
 
 -- synapse
@@ -648,9 +647,10 @@ run_once("nitrogen --restore")
 run_once("synapse --startup")
 run_once("jupiter")
 run_once("xmodmap $HOME/.xmodmap")
--- run_once("indicator-cpufreq")
--- run_once("dropbox start")
-run_once("mpc update && sleep 2 && mpd")
+run_once("indicator-cpufreq")
+run_once("dropbox")
+run_once("autow")
+-- run_once("mpc update && sleep 2 && mpd")
 -- run_once("zsh -c $HOME/.config/Pow/Current/bin/pow.sh")
 -- run_once("$HOME/.config/Pow/Current/bin/pow.sh")
 -- run_once("$HOME/cli/bin/screens.sh")
