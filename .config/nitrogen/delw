@@ -1,5 +1,5 @@
 #!/bin/bash
-HISTORY=$HOME/.config/nitrogen
+HISTORY=$HOME/git/dotfiles/.config/nitrogen
 item="`sed '$!d' $HISTORY/history.txt`"
 rm -f $item
 previous="`sed '$!d' $HISTORY/history.txt`"

@@ -9,6 +9,6 @@ while [ true ] ; do
   if [ $counttime -gt $time ]; then
     # echo hello
     pretime=$currtime
-    /home/dxta/.config/nitrogen/nextw
+    nextw
   fi
 done

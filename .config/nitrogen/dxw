@@ -1,0 +1,116 @@
+#!/usr/bin/env ruby
+require 'RMagick'
+HOME = `echo $HOME`.chomp
+CONFIG = HOME + "/.config/nitrogen"
+
+def watermark(file)
+  image = Magick::Image.read(file).first
+  border = image.rows*128/80 - image.columns
+  image.border!(border/2, 0, '#000')
+  name = file.split('/').last
+  mark = Magick::Image.new(name.length*12, 22*image.rows/800) do
+    self.background_color = 'black'
+  end
+  mark.opacity = Magick::MaxRGB*30/100
+  gc = Magick::Draw.new
+  # mark = mark.shade(true, 310, 30)
+
+  gc.annotate(mark, 0, 0, 2*image.columns/128, 0, name) {
+    self.gravity = Magick::WestGravity
+    self.pointsize = 2*image.rows/120
+    self.stroke = 'transparent'
+    self.fill = 'white'
+  }
+
+  image.composite!(mark, 0, 749*image.rows/800, Magick::HardLightCompositeOp)
+
+  out = "#{CONFIG}/curr"
+  image.write(out)
+  return out
+end
+
+args = []
+ARGV.each do|a|
+  args.push a
+end
+if !args.empty?
+  case args[0]
+  when "--del"
+    item = `sed '$!d' #{CONFIG}/history.txt`.chomp
+    console = `rm -f #{item}`
+    previous= `sed '$!d' #{CONFIG}/history.txt`.chomp
+    console = `sed '$d' < #{CONFIG}/history.txt > #{CONFIG}/temp.txt; mv #{CONFIG}/temp.txt #{CONFIG}/history.txt`
+    previous = `sed '$!d' #{CONFIG}/history.txt`
+    console = `dxw --next`
+  when "--dir"
+    list = `find #{args[1]} -type f -name "*.*"`
+    console = `find #{args[1]} -type f -name "*.*" > #{CONFIG}/lib.txt`
+  when "--filter"
+    count = 0
+    query = ""
+    i = 1
+    arr = args[1].gsub(" ",".").split(/\|/)
+    console = `rm -f #{CONFIG}/customlib.txt`
+    arr.each do |name|
+      console = `cat #{CONFIG}/lib.txt | grep -i "#{name}\|*" >> #{CONFIG}/customlib.txt`
+    end
+  when "--next"
+    # puts "next wallpaper"
+    RANGE = `wc -l #{CONFIG}/customlib.txt | cut -f 1 -d " "`.to_i
+    LASTNUM = `cat #{CONFIG}/.last`.to_i
+    num = LASTNUM
+    while LASTNUM == num
+      num = rand(RANGE-1) + 1
+    end
+    # puts num
+    console = `echo #{num} > #{CONFIG}/.last`
+    pic = `sed -n "#{num}p" #{CONFIG}/customlib.txt`.chomp
+    wpic = watermark(pic)
+    setw = `nitrogen --set-zoom --save "#{wpic}"`
+    # setw = `gsettings set org.gnome.desktop.background picture-uri "file://#{pic}"`
+    # setw = `gsettings set com.canonical.unity-greeter background "file://#{pic}"`
+    curr_no = `grep -c "." #{CONFIG}/history.txt`.to_i
+    if curr_no >= 10
+      console = `sed '1d' < #{CONFIG}/history.txt > #{CONFIG}/temp.txt; mv #{CONFIG}/temp.txt #{CONFIG}/history.txt`
+      console = `echo "#{pic}" >> #{CONFIG}/history.txt`
+    else
+      console = `echo "#{pic}" >> #{CONFIG}/history.txt`
+    end
+  when "--previous"
+    # puts "previous wallpaper"
+    previous = `sed '$!d' #{CONFIG}/history.txt`
+    console = `sed '$d' < #{CONFIG}/history.txt > #{CONFIG}/temp.txt; mv #{CONFIG}/temp.txt #{CONFIG}/history.txt`
+    previous = `sed '$!d' #{CONFIG}/history.txt`.chomp
+    previous = watermark(previous)
+    # puts previous
+    setw = `nitrogen --set-zoom --save "#{previous}"`
+    # setw = `gsettings set org.gnome.desktop.background picture-uri "file://#{previous}"`
+    # setw = `gsettings set com.canonical.unity-greeter background "file://#{previous}"`
+  when "--auto"
+    interval = 10
+    i = 1
+    while args[i]
+      case args[i]
+      when /--interval=(\d+)/i
+        interval = $1.to_i
+      end
+      i += 1
+    end
+    pretime = `echo $(date +%s)`.chomp.to_i
+    while true
+      console = `sleep #{interval}`
+      currtime = `echo $(date +%s)`.chomp.to_i
+      if currtime - pretime > interval
+        pretime = currtime
+        console = `dxw --next`
+      end
+    end
+  when "--stop"
+    process = `which dxw`.chomp
+    console = `pkill -e -f #{process}`
+  else
+    puts "invalid argument"
+  end
+end
+
+

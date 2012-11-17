@@ -1,5 +1,5 @@
 #!/bin/bash
-CONFIG=$HOME/.config/nitrogen
+CONFIG=$HOME/git/dotfiles/.config/nitrogen
 count=0
 args=("$@")
 QUERY=""

@@ -1,0 +1,14 @@
+(sleep 3 && /usr/bin/nm-applet --sm-disable) &
+tint2 &
+conky -q &
+volumeicon -b &
+nitrogen --restore &
+for i in {1..3}; do openbox-menu; done &
+xcompmgr -CfF &
+#xbacklight -set 100 &
+#/usr/bin/synclient TouchpadOff=1 &
+#batti &
+#fbxkb &
+setxkbmap -option caps:escape
+mpd &
+dxw --dir /media/Data/SkyDrive/Pictures/Desktop-Background/ &

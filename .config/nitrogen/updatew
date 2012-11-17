@@ -1,5 +1,6 @@
 #!/bin/bash
-LIB=$HOME/.config/nitrogen
+LIB=$HOME/git/dotfiles/.config/nitrogen
+echo $1
 ALIST=( `find $1 -type f -name "*.*"` )
 RANGE=${#ALIST[@]}
 find $1 -type f -name "*.*" >> $LIB/lib.txt

@@ -1,5 +1,5 @@
 #! /bin/bash
-CONFIG=$HOME/.config/nitrogen
+CONFIG=$HOME/git/dotfiles/.config/nitrogen
 RANGE=( `wc -l $CONFIG/customlib.txt | cut -f 1 -d " "` )
 let "number = $RANDOM"
 let LASTNUM="`cat $CONFIG/.last` + $number"
@@ -10,7 +10,7 @@ argtmp+="p"
 echo $argtmp
 PIC="`sed -n "$argtmp" $CONFIG/customlib.txt`"
 echo $PIC
-nitrogen --set-zoom --save ""$PIC""
+#nitrogen --set-zoom --save ""$PIC""
 gsettings set org.gnome.desktop.background picture-uri "file://$PIC"
 gsettings set com.canonical.unity-greeter background "file://$PIC"
 let "curr_no=`grep -c "." $CONFIG/history.txt`"

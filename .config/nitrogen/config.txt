@@ -1,1 +1,1 @@
-collins
+/home/dxta/git/dotfiles/.config/nitrogen/
