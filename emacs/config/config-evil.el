@@ -1,11 +1,13 @@
 
 (evil-mode t)
-(surround-mode t)
 
 (eval-after-load 'evil
   '(progn
      (require 'sackspace)
      (sack/install-in-evil)
+
+     (add-hook 'tung/programming-environment-hook
+               (lambda () (surround-mode t)))
 
      (setq evil-move-cursor-back nil
            evil-mode-line-format nil

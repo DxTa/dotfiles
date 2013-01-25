@@ -10,18 +10,18 @@
 (defvar tung/packages
   '(melpa rainbow-mode rainbow-delimiters diminish smex ido-ubiquitous
 
-    evil evil-leader autopair sackspace
+    evil evil-leader autopair sackspace surround multiple-cursors simpleclip
 
     auto-complete yasnippet magit zencoding-mode flycheck
 
-    solarized-theme underwater-theme
-    twilight-theme twilight-bright-theme twilight-anti-bright-theme
+    color-theme-approximate
+    twilight-bright-theme twilight-anti-bright-theme
 
     apache-mode clojure-mode clojurescript-mode coffee-mode
     markdown-mode php-mode ruby-mode scss-mode lua-mode ;;js2-mode
     yaml-mode haskell-mode web-mode
 
-    nrepl ac-nrepl slime
+    nrepl ac-nrepl slime restclient
     eproject))
 
 (defun tung/install-packages ()
