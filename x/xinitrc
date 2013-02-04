@@ -3,7 +3,7 @@
 source /etc/X11/xinit/xinitrc.d/30-dbus
 
 xrdb -merge $HOME/.xresources
-xrandr --output LVDS --set BACKLIGHT 6
+xrandr --output LVDS --set BACKLIGHT 7
 
 xfsettingsd
 xfce4-power-manager
@@ -19,10 +19,10 @@ export GNOME_KEYRING_PID
 
 systemd --user &
 
-kupfer &
+# kupfer &
 dropboxd &
-emacs --daemon &
 thunar --daemon &
+$HOME/cli/bin/emacsd &
 $HOME/local/bin/rescuetime &
 # compton -e 1 &
 

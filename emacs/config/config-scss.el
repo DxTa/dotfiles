@@ -2,7 +2,7 @@
 (defun tung/setup-scss-mode ()
   (interactive)
   (tung/setup-css-mode)
-  (setq scss-compile-at-save nil))
+  (setq scss-sass-options '("-r compass")))
 
 (add-hook 'scss-mode-hook #'tung/setup-scss-mode)
 

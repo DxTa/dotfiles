@@ -79,6 +79,8 @@
         (set-visited-file-name new-name)
         (set-buffer-modified-p nil)))))
 
+(defalias 'rem 'rename-this-file-and-buffer)
+
 
 (defun delete-this-file ()
   (interactive)
@@ -88,6 +90,8 @@
                              (file-name-nondirectory buffer-file-name)))
     (delete-file (buffer-file-name))
     (kill-this-buffer)))
+
+(defalias 'del 'delete-this-file)
 
 
 (defun sudo-edit (&optional arg)

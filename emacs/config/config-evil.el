@@ -81,6 +81,11 @@
 
      (evil-add-hjkl-bindings ibuffer-mode-map)
 
+     ;; gdefaults
+     (defadvice evil-ex-pattern-whole-line
+       (after evil-global-defaults activate)
+       (setq ad-return-value "g"))
+
      ;; Fix for input-method in insert state
      (add-hook 'evil-insert-state-exit-hook
                (lambda () (setq evil-input-method nil)))
@@ -104,19 +109,25 @@
      ;;   - 4: underline
      ;;   - 6: line
      ;;   - 2: block
-     ;; Some others require hack
-     (add-hook 'evil-insert-state-entry-hook
-               (lambda ()
-                 (unless (window-system)
-                   (send-string-to-terminal "\033]12;#00afff\007"))))
-     (add-hook 'evil-normal-state-entry-hook
-               (lambda ()
-                 (unless (window-system)
-                   (send-string-to-terminal "\033]12;gray\007"))))
-     (add-hook 'evil-emacs-state-entry-hook
-               (lambda ()
-                 (unless (window-system)
-                   (send-string-to-terminal "\033]12;orange\007"))))
+     ;; Others requires hack
+     (defvar evil-terminal-cursor
+       '((normal . "gray")
+         (insert . "#00afff")
+         (emacs . "orange")))
+
+     (defun evil-update-terminal-cursor ()
+       (let* ((color (cdr (assoc evil-state evil-terminal-cursor)))
+              (terminal-string-format
+               (if (getenv "TMUX" (selected-frame))
+                   "\033Ptmux;\033\033]12;%s\007\033\\" "\033]12;%s\007"))
+              (terminal-string (format terminal-string-format color)))
+         (when (and color (not (window-system)))
+           (send-string-to-terminal terminal-string))))
+
+     (add-hook 'evil-insert-state-entry-hook #'evil-update-terminal-cursor)
+     (add-hook 'evil-normal-state-entry-hook #'evil-update-terminal-cursor)
+     (add-hook 'evil-emacs-state-entry-hook #'evil-update-terminal-cursor)
+
      ))
 
 

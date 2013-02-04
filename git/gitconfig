@@ -67,6 +67,8 @@
   insteadOf = wgh:
 [url "git@bitbucket.org:"]
   insteadOf = bb:
+[url "git@code.tungdao.com:/tungd/"]
+  insteadOf = tungd:
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 	path =

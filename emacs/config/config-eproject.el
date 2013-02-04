@@ -3,12 +3,19 @@
 
 (eval-after-load 'eproject
   '(progn
+
+     (require 'eproject-tags)
+     (require 'eproject-tasks)
+
      (setq eproject-completing-read-function
            'eproject--ido-completing-read)
 
+     (define-key eproject-mode-map (kbd "C-c b") nil)
+
      (define-project-type generic-scm (generic-git generic-hg)
-       (or (look-for ".git") (look-for ".hg"))
-       :irrelevant-files (".DS_Store" "tmp/" "log/" "logs/" "vendor/" "public/" "elpa/"))
+       (or (look-for ".git") (look-for ".hg")
+           (look-for "config.ru") (look-for "index.html"))
+       :irrelevant-files (".DS_Store" "TAGS" "tmp/" "log/" "logs/" "vendor/" "public/" "elpa/"))
 
      (define-project-type php (generic-scm)
        (or (look-for "composer") (look-for "composer.phar")
@@ -16,8 +23,7 @@
 
      (define-project-type ruby (generic-scm)
        (or (look-for "Gemfile")
-           (look-for "Rakefile")
-           (look-for "config.ru"))
+           (look-for ".rbenv-version"))
        :irrelevant-files '("coverage/" "doc/" "docs/" ".rbenv-version"))
 
      (define-project-type node-js (generic-scm)
@@ -58,14 +64,7 @@
                        "h" (ffa-finder "app/helpers/" "Helper: ")
                        "j" (ffa-finder "app/assets/javascripts/" "JS: ")
                        "s" (ffa-finder "app/assets/stylesheets/" "CSS: "))
-     (global-set-key (kbd "C-c p") 'tung/project-map)
+     (global-set-key (kbd "C-c p") 'tung/project-map)))
 
-     ;; (defadvice ido-find-file
-     ;;   (around tung/eproject-find-file activate)
-     ;;   (if (eproject-root)
-     ;;       (eproject-find-file)
-     ;;     ad-do-it))
-
-     ))
 
 (provide 'config-eproject)

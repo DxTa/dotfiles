@@ -48,8 +48,10 @@
 (add-hook 'ibuffer-mode-hook
           '(lambda ()
              (ibuffer-auto-mode 1)
-             (ibuffer-switch-to-saved-filter-groups "home")))
+             (ibuffer-switch-to-saved-filter-groups "home")
+             (ibuffer-vc-set-filter-groups-by-vc-root)
+             (unless (eq ibuffer-sorting-mode 'alphabetic)
+               (ibuffer-do-sort-by-alphabetic))))
 
 
 (provide 'config-ibuffer)
-

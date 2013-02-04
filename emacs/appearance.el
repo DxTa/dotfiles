@@ -49,7 +49,7 @@
 
 (setq default-frame-alist
       '((width . 100) (height . 36)
-        (left-fringe . 30) (right-fringe . 0))
+        (left-fringe . 0) (right-fringe . 0))
       cursor-type 'bar)
 
 ;; Color Theme don't accumulate

@@ -4,17 +4,7 @@
 
 (defun tung/setup-markdown-mode ()
   (interactive)
-  (tung/setup-programming-environment)
-  (setq imenu-generic-expression
-        '(("title"  "^\\(.*\\)[\n]=+$" 1)
-          ("h2-"    "^\\(.*\\)[\n]-+$" 1)
-          ("h1"   "^# \\(.*\\)$" 1)
-          ("h2"   "^## \\(.*\\)$" 1)
-          ("h3"   "^### \\(.*\\)$" 1)
-          ("h4"   "^#### \\(.*\\)$" 1)
-          ("h5"   "^##### \\(.*\\)$" 1)
-          ("h6"   "^###### \\(.*\\)$" 1)
-          ("fn"   "^\\[\\^\\(.*\\)\\]" 1))))
+  (tung/setup-programming-environment))
 
 (add-hook 'markdown-mode-hook #'tung/setup-markdown-mode)
 

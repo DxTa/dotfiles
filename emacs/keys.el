@@ -18,6 +18,7 @@
                   "C-c b" 'ido-switch-buffer
                   "C-c o" 'ido-goto-symbol
                   "C-c r" 'recentf-ido-find-file
+                  "C-c t" 'find-tag
 
                   "C-c Q" 'delete-window
                   "C-c q" 'delete-frame

@@ -28,7 +28,9 @@
                    (tung/fill-keymap ido-common-completion-map
                                      "C-n" 'ido-next-match
                                      "C-p" 'ido-prev-match
-                                     "C-h" 'delete-backward-char))))
+                                     "C-h" 'delete-backward-char
+                                     "~" (icalled (if (looking-back "/") (insert "~/")
+                                                    (call-interactively 'self-insert-command)))))))
      (ido-ubiquitous-mode t)))
 
 

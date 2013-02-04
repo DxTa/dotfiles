@@ -16,14 +16,11 @@
 Gemfile.lock
 .rspec
 *tags*
-!.gitkeep
+TAGS
 tmp
 *.orig
-
-# Project specific
-# Procfile
 Procfile.local
-# Watchr
+Watchfile
 .sass-cache
 .env
 repl-port

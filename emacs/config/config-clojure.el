@@ -8,6 +8,11 @@
 ;; nrepl
 (eval-after-load 'nrepl
   '(progn
+     (add-hook 'nrepl-mode-hook
+               (lambda ()
+                 (nrepl-eval "(set! *print-length* 30)")
+                 (nrepl-eval "(set! *print-level* 5)")))
+
      (add-hook 'nrepl-mode-hook 'ac-nrepl-setup)
      (add-hook 'nrepl-interaction-mode-hook 'ac-nrepl-setup)))
 
