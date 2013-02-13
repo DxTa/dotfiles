@@ -1,15 +1,13 @@
 
+(setq yas-snippet-dirs '("~/.emacs.d/snippets"))
 (yas-global-mode t)
 
 (eval-after-load 'yasnippet
   '(progn
-     (setq yas-snippet-dirs "~/.emacs.d/snippets"
-           yas-trigger-key "C-]"
+     (setq yas-trigger-key "C-]"
            yas-prompt-functions '(yas-popup-isearch-prompt
                                   yas-ido-prompt
                                   yas-completing-prompt))
-
-     ;; (yas-load-directory yas-snippet-dirs)
 
      (tung/fill-keymap yas-keymap
                        "C-e" #'yas-goto-end-of-active-field

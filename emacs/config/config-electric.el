@@ -13,12 +13,16 @@
 
      (defun tung/electric-parenthesis ()
        (when (and (eq last-command-event ?\s)
-                  (or (looking-at ")")
-                      (looking-at "}")
-                      (looking-at "]")))
+                  (or (and (looking-back "( " (- (point) 2))
+                           (looking-at ")"))
+                      (and (looking-back "{ " (- (point) 2))
+                           (looking-at "}"))
+                      (and (looking-back "\\[ " (- (point) 2))
+                           (looking-at "\\]"))))
          (insert " ")
          (backward-char 1)))
      (add-hook 'post-self-insert-hook #'tung/electric-parenthesis t)
      ))
+
 
 (provide 'config-electric)

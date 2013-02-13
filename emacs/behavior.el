@@ -47,13 +47,13 @@
       kept-new-versions 6
       kept-old-versions 2
       version-control t
-      backup-directory-alist `(("." . "~/.emacs.d/data/backups/")
+      backup-directory-alist `((".*" . "~/.emacs.d/data/backups/")
                                (,tramp-file-name-regexp . nil)))
 
 
 ;; Auto save
 (setq auto-save-default nil
-      auto-save-file-name-transforms `(("." "~/.emacs.d/data/auto-saves/")
+      auto-save-file-name-transforms `((".*" "~/.emacs.d/data/auto-saves/")
                                        (,tramp-file-name-regexp nil)))
 
 

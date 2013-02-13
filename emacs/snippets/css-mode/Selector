@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: Selector
-# key: sel
-# --
-${1:selector} {
-  $0
-}
