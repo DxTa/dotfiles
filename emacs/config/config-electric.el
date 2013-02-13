@@ -1,16 +1,24 @@
 
-;; (electric-layout-mode t)
 (electric-pair-mode t)
-(electric-indent-mode t)
+;; (electric-indent-mode t)
+;; (electric-layout-mode t)
 
-(eval-after-load 'evil
+(eval-after-load 'electric
   '(progn
-     (defun tung/electric-layout ()
-       (when (and (looking-at "}") t)
+     (defun tung/electric-brace ()
+       (when (and (eq last-command-event ?\n)
+                  (looking-at "}"))
          (evil-open-above 0)))
-     (defadvice evil-ret (after tung/electric-layout activate)
-       (tung/electric-layout))
-     (defadvice js2-enter-key (after tung/electric-layout activate)
-       (tung/electric-layout))))
+     (add-hook 'post-self-insert-hook #'tung/electric-brace t)
+
+     (defun tung/electric-parenthesis ()
+       (when (and (eq last-command-event ?\s)
+                  (or (looking-at ")")
+                      (looking-at "}")
+                      (looking-at "]")))
+         (insert " ")
+         (backward-char 1)))
+     (add-hook 'post-self-insert-hook #'tung/electric-parenthesis t)
+     ))
 
 (provide 'config-electric)

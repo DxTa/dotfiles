@@ -28,13 +28,15 @@
 (require 'config-auto-complete)
 (require 'config-yasnippet)
 (require 'config-eproject)
+
 (require 'config-occur)
-;; (require 'config-autopair)
 (require 'config-electric)
 (require 'config-multiple-cursors)
 (require 'config-magit)
 (require 'config-simpleclip)
 (require 'config-git-gutter )
+
+;; (require 'config-autopair)
 ;; (require 'config-hippie-expand)
 ;; (require 'config-popwin)
 ;; (require 'config-typewriter)

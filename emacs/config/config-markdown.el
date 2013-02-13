@@ -16,7 +16,10 @@
          markdown-header-face-1 '(:inherit markdown-header-face :height 2.0)
          markdown-header-face-2 '(:inherit markdown-header-face :height 1.6)
          markdown-header-face-3 '(:inherit markdown-header-face :height 1.4)
-         markdown-header-face-4 '(:inherit markdown-header-face :height 1.2))))
+         markdown-header-face-4 '(:inherit markdown-header-face :height 1.2))
+
+     (define-key markdown-mode-map (kbd "M-p") nil)
+     ))
 
 (eval-after-load 'auto-complete
   '(add-to-list 'ac-modes 'markdown-mode))

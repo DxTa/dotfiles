@@ -1,6 +1,4 @@
 
-(global-git-gutter-mode t)
-
 (add-hook 'after-save-hook
           (lambda () (when eproject-root (git-gutter))))
 
