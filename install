@@ -27,7 +27,6 @@ else
   link $CLI/vim $HOME/.vim
   # link $CLI/vim/gvimrc $HOME/.gvimrc
   echo "set t_vb=" >> ~/.gvimrc
-  link $CLI/linux/xmodmap $HOME/.xmodmap
 
   # tmux
   link $CLI/linux/tmux.conf $HOME/.tmux.conf
@@ -41,11 +40,15 @@ else
   link $CLI/ruby/irbrc $HOME/.irbrc
   link $CLI/ruby/pryrc $HOME/.pryrc
 
+  # emacs
+  link $CLI/emacs $HOME/.emacs.d
+
   if [ "$OS" = "darwin" ]; then
     cat $CLI/Custom.css > "$HOME/Library/Application Support/Google/Chrome/Default/User StyleSheets/Custom.css"
   fi
 
   if [ "$OS" = "linux" ]; then
+    link $CLI/linux/xmodmap $HOME/.xmodmap
     link $CLI/awesome $HOME/.config/awesome
     link $CLI/x/xinitrc $HOME/.xinitrc
     link $CLI/x/xresources $HOME/.xresources
@@ -54,4 +57,3 @@ else
     cat $CLI/Custom.css > "$HOME/.config/chromium/Default/User StyleSheets/Custom.css"
   fi
 fi
-

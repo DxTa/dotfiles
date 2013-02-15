@@ -1,12 +1,12 @@
 
 # Platform specifics
-# if [ "$OS" = "linux" ]; then
+if [ "$OS" = "linux" ]; then
   alias open='xdg-open'
   alias pbp='xclip -selection clipboard -o'
   alias pbc='xclip -selection clipboard'
   alias mvim='vim'
   alias install='sudo pacman -S'
-# fi
+fi
 
 if [ "$OS" = "darwin" ]; then
   alias updatedb=/usr/libexec/locate.updatedb
@@ -56,10 +56,10 @@ alias bi='bundle install'
 alias grep="grep --color"
 
 # Emacs
-alias e="emacsclient -c -t -a vim"
+alias e="emacsclient -c -a vim"
 alias ec="emacsclient -c -a vim"
 es() {
-  emacsclient -c -t -a vim "/sudo::$*"
+  emacsclient -c -a vim "/sudo::$*"
 }
 
 # e() {

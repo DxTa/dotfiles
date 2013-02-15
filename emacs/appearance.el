@@ -48,7 +48,7 @@
 ;; (setq jit-lock-defer-time 0.05)
 
 (setq default-frame-alist
-      '((width . 100) (height . 36)
+      '((width . 100) (height . 39)
         (left-fringe . 0) (right-fringe . 0))
       cursor-type 'bar)
 

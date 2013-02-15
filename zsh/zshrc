@@ -100,4 +100,3 @@ compdef '_git' g
 alias reloadrc="source $HOME/.zshrc"
 
 source $HOME/cli/zsh/prompt.zsh
-
