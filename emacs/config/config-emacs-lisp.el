@@ -4,7 +4,8 @@
   (tung/setup-programming-environment)
   (rainbow-delimiters-mode)
   (setq eldoc-idle-delay 0)
-  (eldoc-mode t))
+  ;; (eldoc-mode t)
+  )
 
 (add-hook 'emacs-lisp-mode-hook #'tung/setup-emacs-lisp-mode)
 

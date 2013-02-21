@@ -21,7 +21,7 @@ let g:ctrlp_user_command = {
 nnoremap <leader>t :CtrlPBufTagAll<cr>
 nnoremap <leader>b :CtrlPBuffer<cr>
 " nnoremap <leader>e :CtrlP<cr>
-nnoremap <leader>q :CtrlPQuickfix<cr>
+nnoremap <leader>fq :CtrlPQuickfix<cr>
 nnoremap <leader>r :CtrlPMRU<cr>
 
 nnoremap <leader>fn :CtrlP $HOME/Dropbox/Notes/<cr>
@@ -147,5 +147,5 @@ let g:user_zen_settings = {
       \ }
 
 imap <c-]> <c-y>,
-nmap <m-n> <c-y>n
+map <m-]> <c-y>n
 

@@ -30,13 +30,6 @@ fi
 [[ -s "$HOME/.nvm/nvm.sh" ]] && . "$HOME/.nvm/nvm.sh"
 export NODE_PATH=$LOCAL/lib/node_modules:$NODE_PATH
 
-# Cappuccinno
-if [ -d $LOCAL/narwhal/bin ]; then
-  export NARWHAL_ENGINE=jsc
-  export PATH=$LOCAL/narwhal/bin:$PATH
-  export CAPP_BUILD=$HOME/build
-fi
-
 # Clojure
 if [ "$OS" = "linux" ]; then
   export JAVA_HOME='/usr/lib/jvm/java-6-sun'
@@ -57,23 +50,15 @@ if [ -d "/usr/local/heroku" ]; then
   export PATH="/usr/local/heroku/bin:$PATH"
 fi
 
-# Tmux
-[[ -s $HOME/.tmuxinator/scripts/tmuxinator ]] && source $HOME/.tmuxinator/scripts/tmuxinator
-
 # MAMP & Emacs
 if [[ "$OS" = "darwin" ]]; then
   # export PATH=/Applications/MAMP/bin/php/php5.3.6/bin:$PATH
+  export PATH=$HOME/Applications/Emacs.app/Contents/MacOS:$PATH
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS/bin:$PATH
 fi
 
-# Geeknote
-if [ -d $LOCAL/geeknote ]; then
-  alias gn="python $LOCAL/geeknote/geeknote.py"
-  alias gnf="gn find --search"
-fi
-
 # Shortcut
-export DEV=$HOME/dev
+export DEV=$HOME/Projects
 function c() {
   cd $DEV/$1;
 }
@@ -85,6 +70,12 @@ if [ "$OS" = "linux" ]; then
   # Workaround for GVim iBus bug
   # gvim='gvim -f'
 else
-  export EDITOR=mvim
+  export EDITOR='mvim -v'
   export GIT_EDITOR='mvim -v'
 fi
+
+# Vault
+command -v vault >/dev/null 2>&1 && function pws() {
+  vault "$1" -p | pbc
+}
+

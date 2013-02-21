@@ -39,7 +39,6 @@ else
 fi
 
 precmd() {
-  _z --add "$(pwd -P)"
   vcs_info
   set_prompt
 }

@@ -4,15 +4,17 @@ if [ "$OS" = "linux" ]; then
   alias open='xdg-open'
   alias pbp='xclip -selection clipboard -o'
   alias pbc='xclip -selection clipboard'
-  alias mvim='vim'
-  alias install='sudo pacman -S'
+  alias mvim=vim
 fi
 
 if [ "$OS" = "darwin" ]; then
   alias updatedb=/usr/libexec/locate.updatedb
   alias pbp=pbpaste
   alias pbc=pbcopy
+  alias vim='mvim -v'
+  alias emacs='Emacs'
 fi
+
 
 # ls
 alias pu='pushd'
@@ -21,13 +23,9 @@ alias dir="ls --format=long"
 alias l="ls -hl"
 alias la="ls -hlA"
 
-
-# verbose
-alias cp="cp -pv"
-alias rm="rm -v"
-alias mv="mv -v"
-
 # safe
+alias cp="cp -pv"
+alias mv="mv -v"
 alias rm="rm -i"
 
 # cd
@@ -37,7 +35,6 @@ md() {
   mkdir -p "$1" && cd "$1";
 }
 
-
 # git
 alias g=git
 alias gst='git st'
@@ -45,15 +42,16 @@ alias gdf='git diff'
 alias gdc='git diff --cached'
 alias gci='git commit'
 
+# grep
+alias grep="grep --color"
 
-# rails
+# Rails
 alias r=rails
 alias be='bundle exec'
 alias bi='bundle install'
 
-
-# grep
-alias grep="grep --color"
+# Vim
+alias v=vim
 
 # Emacs
 alias e="emacsclient -c -a vim"
@@ -62,22 +60,11 @@ es() {
   emacsclient -c -a vim "/sudo::$*"
 }
 
-# e() {
-  # if ([ -e "$1" ] && ! [ -w "$1" ]) || ( ! [ -e "$1" ] && ! [ -w "dirname $1" ]); then
-    # emacsclient -a vim "/sudo::$*"
-  # else
-    # emacsclient -a vim $*
-  # fi
-# }
-alias vim=e
-
 # Mics.
 alias h=history
 alias tm="tmux -2"
 alias ducks="du -cksh * | sort -rn | head -11"
 alias t='grep -e "^-" $TODO | grep -ve "\(@someday\|@cancelled\|@done\)"'
-
-# From Paul Irish
 alias pp='pygmentize -O style=monokai -f console256 -g'
 alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
 alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
@@ -86,18 +73,6 @@ alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
 alias whois="whois -h whois-servers.net"
 alias sniff="sudo ngrep -d 'en1' -t '^(GET|POST) ' 'tcp and port 80'"
 alias httpdump="sudo tcpdump -i en1 -n -s 0 -w - | grep -a -o -E \"Host\: .*|GET \/.*\""
-
-pws() {
-  vault "$1" -p | pbc
-}
-
-v() {
-  if [ $# == 0 ]; then
-    mvim
-  else
-    mvim --servername $(basename $(pwd)) --remote "$@" 1>/dev/null 2>&1
-  fi
-}
 
 f() {
   find . -name "$1"
@@ -123,3 +98,4 @@ extract() {
     echo "'$1' is not a valid file"
   fi
 }
+

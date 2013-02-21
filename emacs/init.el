@@ -15,6 +15,10 @@
 (load "keys")
 (load "programming")
 (load "modes")
+(when (eq system-type 'darwin)
+  (load "osx" t))
+(when (eq system-type 'gnu/linux)
+  (load "linux" t))
 
 
 ;; Startup

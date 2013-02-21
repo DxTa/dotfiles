@@ -3,7 +3,7 @@
 if [ -z "$PS1" ]; then
   echo -e "\033[0;31mYou should source this, not run it, for example: source ./install\033[m"
 else
-  link (){
+  link () {
     if [ -e $1 ]; then
       if [ -e "$2" ]; then
         rm "$2"
@@ -13,23 +13,24 @@ else
     fi
   }
 
-  source $HOME/cli/shell/common.sh
+  source $HOME/cli/shell/init.sh
 
-  # bash
-  link $CLI/bash/bash_profile $HOME/.bash_profile
-  link $CLI/bash/bashrc $HOME/.bashrc
-
-  # zsh
-  link $CLI/zsh/zshrc $HOME/.zshrc
+  echo 'source $CLI/shell/init.sh' >> ~/.bashrc
+  echo 'source $CLI/shell/init.sh' >> ~/.zshrc
 
   # vim
   link $CLI/vim/vimrc $HOME/.vimrc
   link $CLI/vim $HOME/.vim
-  # link $CLI/vim/gvimrc $HOME/.gvimrc
   echo "set t_vb=" >> ~/.gvimrc
 
   # tmux
   link $CLI/linux/tmux.conf $HOME/.tmux.conf
+
+  # ctags
+  link $CLI/ctags $HOME/.ctags
+
+  # ack
+  link $CLI/ackrc $HOME/.ackrc
 
   # git
   link $CLI/git/gitconfig $HOME/.gitconfig
@@ -57,3 +58,4 @@ else
     cat $CLI/Custom.css > "$HOME/.config/chromium/Default/User StyleSheets/Custom.css"
   fi
 fi
+

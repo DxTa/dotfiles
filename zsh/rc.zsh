@@ -1,8 +1,4 @@
 
-# Includes
-for include in $HOME/cli/shell/*; do source $include; done
-
-
 autoload colors; colors;
 autoload -U url-quote-magic
 zle -N self-insert url-quote-magic
@@ -99,4 +95,3 @@ compdef '_git' g
 
 alias reloadrc="source $HOME/.zshrc"
 
-source $HOME/cli/zsh/prompt.zsh

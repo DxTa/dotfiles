@@ -11,18 +11,17 @@ export CLI=$HOME/cli
 export TODO="$HOME/Dropbox/GTD/@Projects.taskpaper"
 
 
-# Shell
+# Remote
 if [[ -z $SSH_CONNECTION ]]; then
   export IS_REMOTE=false
 else
   export IS_REMOTE=true
 fi
 
-# better shell on vim and emacs
-# if [[ $TERM == "dumb" ]]; then
-#   export CLICOLOR=0
-# else
-  # export TERM="xterm-256color"
+# Better shell on vim and emacs
+if [[ $TERM == "dumb" ]]; then
+  export CLICOLOR=0
+else
   export CLICOLOR=1
   if [ "$OS" = "linux" ]; then
     alias ls='ls --color=auto'
@@ -30,7 +29,7 @@ fi
   else
     alias ls='ls -G'
   fi
-# fi
+fi
 
 export GREP_OPTIONS='--color=auto' GREP_COLOR='1;32'
 
@@ -50,3 +49,14 @@ export WORDCHARS='*?[]~&;!$%^<>'
 if [[ -a ~/.localrc ]]; then
   source ~/.localrc
 fi
+
+# Utilities
+source $CLI/shell/alias.sh
+source $CLI/shell/tools.sh
+. $CLI/shell/n.sh
+. $CLI/shell/z.sh
+
+# Shell config and prompt
+[ -n "$ZSH_VERSION" ] && for file in $CLI/zsh/*.zsh; do source $file; done
+[ -n "$BASH_VERSION" ] && for file in $CLI/bash/*.bash; do source $file; done
+

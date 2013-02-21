@@ -1,4 +1,7 @@
 
+(when (not (window-system))
+  (menu-bar-mode -1))
+
 ;; Cleanup
 (setq inhibit-startup-message t)
 

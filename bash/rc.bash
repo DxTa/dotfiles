@@ -1,8 +1,4 @@
 
-# Includes
-for include in $HOME/cli/shell/*; do source $include; done
-
-
 # Colors
 export CLICOLOR=1
 export NC='\033[0m'
@@ -67,7 +63,4 @@ fi
 
 alias profileme="h | awk '{print \$2}' | awk 'BEGIN{FS=\"|\"}{print \$1}' | sort | uniq -c | sort -n | tail -n 20 | sort -nr"
 alias reloadrc="source $HOME/.bashrc"
-
-source $CLI/bash/prompt.bash
-
 

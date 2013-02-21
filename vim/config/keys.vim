@@ -23,8 +23,8 @@ nnoremap Q :bw<cr>
 
 nnoremap j gj
 nnoremap k gk
-nnoremap <c-n> 10gj
-nnoremap <c-p> 10gk
+nnoremap <c-j> 10gj
+nnoremap <c-k> 10gk
 
 inoremap <m-u> <esc>mzgUiw`za
 
@@ -56,6 +56,7 @@ cnoremap cdf cd %:p:h
 cnoremap %% <c-r>=expand('%:p:h').'/'<cr>
 
 " nmap <leader>e :edit %%
+nnoremap <leader>q :close<cr>
 
 nnoremap <silent> <leader>x :execute getline(".")<cr>
 vnoremap <silent> <leader>x y:execute @@<cr>
@@ -67,3 +68,4 @@ inoremap <m-v> :execute 'set keymap='.(&keymap == '' ? 'vietnamese-telex' : '')<
 
 nnoremap <leader>vv :vsplit $MYVIMRC<cr>
 nnoremap <leader>vs :source $MYVIMRC<cr>
+

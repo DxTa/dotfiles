@@ -15,7 +15,7 @@
 \#*\#
 Gemfile.lock
 .rspec
-*tags*
+tags
 TAGS
 tmp
 *.orig

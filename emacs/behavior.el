@@ -3,17 +3,6 @@
       delete-by-moving-to-trash t
       x-select-enable-clipboard nil)
 
-;; OS Specific
-(when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta
-        browse-url-browser-function 'browse-url-default-macosx-browser)
-  (set-face-attribute 'default nil :height 150 :family "Menlo"))
-
-(when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1)
-  (setq browse-url-browser-function 'browse-url-generic
-        browse-url-generic-program "xdg-open"))
-
 
 ;; Which function
 (which-function-mode t)

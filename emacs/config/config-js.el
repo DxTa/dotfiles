@@ -14,22 +14,10 @@
 (eval-after-load 'js
   '(progn
      (setq js-indent-level 2
-           js-expr-indent-offset 0
-           js-flat-functions t)))
-
-(defadvice js--proper-indentation (after js-npm-indentation activate)
-  (message "%s" parse-status)
-  (save-excursion
-    (back-to-indentation)
-    ;; (when (and (looking-at ",")
-    ;;            (nth 2 parse-status))
-    ;;   (setq ad-return-value (+ ad-return-value 2)))
-    ;; (when (looking-at ",")
-    ;;   (setq ad-return-value
-    ;;         (* js-indent-level (+ 1 (nth 0 parse-status)))))
-    ))
-
-(ad-deactivate 'js--proper-indentation)
+           js-curly-indent-offset 2
+           js-expr-indent-offset 2
+           js-flat-functions t
+           js-enabled-frameworks '(javascript dojo))))
 
 (eval-after-load 'js2-mode
   '(setq js2-idle-timer-delay 1
@@ -39,16 +27,14 @@
          js2-language-version 180
          js2-include-gears-externs nil
          js2-include-rhino-externs nil
-         js2-global-externs '("console" "$" "jQuery")
+         js2-include-node-externs t
+         js2-global-externs '("console" "$" "jQuery" "define" "require")
 
          js2-allow-keywords-as-property-names nil
          js2-allow-rhino-new-expr-initializer nil
          js2-missing-semi-one-line-override t
          js2-strict-missing-semi-warning nil))
 
-(add-hook 'auto-complete-mode-hook
-          (lambda ()
-            (setq completion-at-point-functions '(auto-complete))))
 
 ;; Slime
 ;; (add-hook 'js2-mode-hook (lambda () (slime-js-minor-mode t)))
@@ -125,4 +111,3 @@
 
 
 (provide 'config-js)
-

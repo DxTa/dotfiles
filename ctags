@@ -1,0 +1,40 @@
+--recurse
+--totals=yes
+--tag-relative=yes
+
+--extra=+qf
+--fields=+iKS
+
+--exclude=.svn
+--exclude=.git
+--exclude="*/_*cache/*"
+--exclude="*/_*logs{0,1}/*"
+--exclude="*/_*data/*"
+
+--regex-PHP=/abstract class ([^ ]*)/\1/c/
+--regex-PHP=/interface ([^ ]*)/\1/c/
+--regex-PHP=/trait ([^ ]*)/\1/c/
+--regex-PHP=/(public |static |abstract |protected |private )+ function +([^ \(]*)/\2/f/
+
+--regex-JavaScript=/([A-Za-z0-9._$]+)[ \t]*[:=][ \t]*\{/\1/,object/
+--regex-JavaScript=/([A-Za-z0-9._$()]+)[ \t]*[:=][ \t]*function[ \t]*\(/\1/,function/
+--regex-JavaScript=/function[ \t]+([A-Za-z0-9._$]+)[ \t]*([^)])/\1/,function/
+
+--langmap=Lisp:+.clj
+--langmap=Lisp:+.cljs
+--regex-Lisp=/\([ \t]*create-ns[ \t]+([-[:alnum:]*+!_:\/.?]+)/\1/n,namespace/
+--regex-Lisp=/\([ \t]*intern[ \t]+([-[:alnum:]*+!_:\/.?]+)/\1/v,intern/
+--regex-Lisp=/\([ \t]*ns[ \t]+([-[:alnum:]*+!_:\/.?]+)/\1/n,namespace/
+
+--langdef=Rust
+--langmap=Rust:.rs
+--regex-rust=/[ \t]*fn[ \t]+([a-zA-Z0-9_]+)/\1/f,function/
+--regex-rust=/[ \t]*type[ \t]+([a-zA-Z0-9_]+)/\1/T,types/
+--regex-rust=/[ \t]*enum[ \t]+([a-zA-Z0-9_]+)/\1/T,types/
+--regex-rust=/[ \t]*struct[ \t]+([a-zA-Z0-9_]+)/\1/m,types/
+--regex-rust=/[ \t]*class[ \t]+([a-zA-Z0-9_]+)/\1/m,types/
+--regex-rust=/[ \t]*mod[ \t]+([a-zA-Z0-9_]+)/\1/m,modules/
+--regex-rust=/[ \t]*const[ \t]+([a-zA-Z0-9_]+)/\1/m,consts/
+--regex-rust=/[ \t]*trait[ \t]+([a-zA-Z0-9_]+)/\1/m,traits/
+--regex-rust=/[ \t]*impl[ \t]+([a-zA-Z0-9_]+)/\1/m,impls/
+--regex-rust=/[ \t]*impl[ \t]+of[ \t]([a-zA-Z0-9_]+)/\1/m,impls/
