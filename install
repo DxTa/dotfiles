@@ -23,14 +23,8 @@ else
   link $CLI/vim $HOME/.vim
   echo "set t_vb=" >> ~/.gvimrc
 
-  # tmux
-  link $CLI/linux/tmux.conf $HOME/.tmux.conf
-
-  # ctags
-  link $CLI/ctags $HOME/.ctags
-
-  # ack
-  link $CLI/ackrc $HOME/.ackrc
+  # emacs
+  link $CLI/emacs $HOME/.emacs.d
 
   # git
   link $CLI/git/gitconfig $HOME/.gitconfig
@@ -41,8 +35,10 @@ else
   link $CLI/ruby/irbrc $HOME/.irbrc
   link $CLI/ruby/pryrc $HOME/.pryrc
 
-  # emacs
-  link $CLI/emacs $HOME/.emacs.d
+  # misc.
+  link $CLI/tmux.conf $HOME/.tmux.conf
+  link $CLI/ctags $HOME/.ctags
+  link $CLI/ackrc $HOME/.ackrc
 
   if [ "$OS" = "darwin" ]; then
     cat $CLI/Custom.css > "$HOME/Library/Application Support/Google/Chrome/Default/User StyleSheets/Custom.css"
