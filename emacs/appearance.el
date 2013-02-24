@@ -51,7 +51,7 @@
 ;; (setq jit-lock-defer-time 0.05)
 
 (setq default-frame-alist
-      '((width . 100) (height . 39)
+      '((width . 80) (height . 35)
         (left-fringe . 0) (right-fringe . 0))
       cursor-type 'bar)
 
@@ -63,6 +63,7 @@
 (setq custom-theme-directory "~/.emacs.d/themes/")
 (load-theme 'tung t)
 
+(set-face-attribute 'default nil :family "M+ 1m")
 (set-face-attribute 'mode-line nil :box nil)
 (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
 

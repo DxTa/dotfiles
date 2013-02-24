@@ -1,4 +1,6 @@
 
+(tung/add-auto-mode 'js2-mode '("\\.js$" "\\.json$"))
+
 (defun tung/setup-js-mode ()
   (interactive)
   (tung/setup-programming-environment))
@@ -33,7 +35,10 @@
          js2-allow-keywords-as-property-names nil
          js2-allow-rhino-new-expr-initializer nil
          js2-missing-semi-one-line-override t
-         js2-strict-missing-semi-warning nil))
+         js2-strict-missing-semi-warning nil
+
+         (define-key js2-mode-map (kbd "M-j") nil)
+         ))
 
 
 ;; Slime

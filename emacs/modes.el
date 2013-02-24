@@ -45,3 +45,6 @@
 ;; Things that are not autoloaded
 (require 'dired)
 (require 'uniquify)
+
+;; (setq nurumacs-map nil)
+;; (require 'nurumacs)
