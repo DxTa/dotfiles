@@ -10,7 +10,8 @@
            ("rainbow-mode" 'rainbow-mode)
            ("isearch-mode" 'isearch-mode)
            ("abbrev" 'abbrev-mode)
-           ("autopair" 'autopair-mode "P"))
+           ("autopair" 'autopair-mode "P")
+           ("git-gutter" 'git-gutter-mode))
       do
       (eval-after-load file
         `(diminish ,mode ,(when lighter (concat " " lighter)))))

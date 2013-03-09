@@ -8,16 +8,15 @@
 (defvar tung/packages
   '(melpa
 
-    evil surround sackspace multiple-cursors simpleclip
-    auto-complete yasnippet magit zencoding-mode flycheck
+    evil surround sackspace multiple-cursors simpleclip auto-complete yasnippet
+    magit zencoding-mode flycheck
 
     rainbow-mode rainbow-delimiters diminish smex ido-ubiquitous
-    color-theme-approximate git-gutter eproject ibuffer-vc
-    ack-and-a-half wgrep-ack
+    color-theme-approximate git-gutter eproject ibuffer-vc ack-and-a-half
+    wgrep-ack
 
-    apache-mode clojure-mode clojurescript-mode coffee-mode
-    markdown-mode php-mode ruby-mode scss-mode lua-mode js2-mode
-    yaml-mode haskell-mode rust-mode web-mode
+    apache-mode clojure-mode coffee-mode markdown-mode php-mode ruby-mode
+    scss-mode lua-mode js2-mode yaml-mode haskell-mode rust-mode web-mode
 
     nrepl ac-nrepl skewer-mode restclient
     ))

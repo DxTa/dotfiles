@@ -34,9 +34,12 @@
 
 
 ;; Whitespace
-(setq whitespace-display-mappings
+(eval-after-load 'whitespace
+  '(progn
+     (setq whitespace-display-mappings
       '((newline-mark ?\n [?\u00AC ?\n] [?$ ?\n])
         (tab-mark     ?\t [?\u2192 ?\t] [?\\ ?\t])))
+     (delq 'empty whitespace-style)))
 
 
 ;; History based sorting is still awesome
@@ -51,7 +54,7 @@
 ;; (setq jit-lock-defer-time 0.05)
 
 (setq default-frame-alist
-      '((width . 80) (height . 35)
+      '((width . 100) (height . 34)
         (left-fringe . 0) (right-fringe . 0))
       cursor-type 'bar)
 
@@ -66,6 +69,7 @@
 (set-face-attribute 'default nil :family "M+ 1m")
 (set-face-attribute 'mode-line nil :box nil)
 (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
+(set-display-table-slot standard-display-table 0 32)
 
 (eval-after-load 'rainbow-delimiters
   '(progn

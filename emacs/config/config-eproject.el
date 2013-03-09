@@ -8,7 +8,7 @@
 
      (define-key eproject-mode-map (kbd "C-c b") nil)
 
-     (require 'eproject-tags)
+     ;; (require 'eproject-tags)
 
      (require 'eproject-tasks)
      (define-key eproject-mode-map (kbd "C-c C-t") #'eproject-tasks)
@@ -50,7 +50,9 @@
                        "h" (eproject-finder "app/helpers/" "Helper: ")
                        "j" (eproject-finder "app/assets/javascripts/" "JS: ")
                        "s" (eproject-finder "app/assets/stylesheets/" "CSS: "))
-     (define-key eproject-mode-map (kbd "C-c p") #'eproject-tasks)))
+     (global-set-key (kbd "C-c p") 'tung/project-map)
+     ;; (define-key eproject-mode-map (kbd "C-c p") #'eproject-tasks-run)
+     ))
 
 
 (provide 'config-eproject)

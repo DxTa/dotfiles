@@ -23,11 +23,7 @@
      (add-to-list 'which-func-modes 'scss-mode)))
 
 (eval-after-load 'auto-complete
-  '(progn
-     (add-to-list 'ac-modes 'css-mode)
-     (add-hook 'css-mode-hook
-               (lambda ()
-                 (tung/append-ac-sources '(ac-source-css-property))))))
+  '(add-to-list 'ac-modes 'css-mode))
 
 
 (provide 'config-css)

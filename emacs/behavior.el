@@ -1,5 +1,5 @@
 
-(setq ring-bell-function 'tung/bell-function
+(setq ring-bell-function 'ignore
       delete-by-moving-to-trash t
       x-select-enable-clipboard nil)
 

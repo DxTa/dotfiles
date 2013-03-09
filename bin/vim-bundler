@@ -5,9 +5,6 @@
 bundles = [
   ["sunaku/vim-unbundle"],
 
-  # UI
-  # ["Lokaltog/vim-powerline"],
-
   # Editing
   ["tpope/vim-eunuch"],
   ["tpope/vim-fugitive"],
@@ -18,8 +15,12 @@ bundles = [
   ["kana/vim-smartinput"],
   ["godlygeek/tabular"],
   ["mileszs/ack.vim"],
-  ["kien/ctrlp.vim"],
+  # ["kien/ctrlp.vim"],
   ["AndrewRadev/splitjoin.vim"],
+  ["Shougo/unite.vim"],
+  ["Shougo/unite-session"],
+  ["Shougo/unite-outline"],
+  ["jpalardy/vim-slime"],
 
   # Ruby
   ["tpope/vim-rails", "ruby"],
@@ -48,6 +49,9 @@ bundles = [
   ["vim-pandoc/vim-pandoc", "pandoc"],
   ["othree/html5.vim", "html"],
   ["mattn/zencoding-vim"]
+
+  # Go
+  # Rust
 ]
 
 require 'fileutils'

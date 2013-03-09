@@ -213,15 +213,6 @@
     (when (string-match "config/.*\\.el$" fname)
       (byte-compile-file fname))))
 
-(defun tung/bell-function ()
-  (unless
-      (memq this-command '(isearch-abort abort-recursive-edit exit-minibuffer
-                            keyboard-quit keyboard-escape-quit
-                            mac-mwheel-scroll mwheel-scroll
-                            down up next-line previous-line
-                            backward-char forward-char))
-    (ding)))
-
 (defun tung/filter (condp lst)
   (delq nil
         (mapcar (lambda (x) (and (funcall condp x) x)) lst)))

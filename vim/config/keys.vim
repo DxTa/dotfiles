@@ -56,9 +56,10 @@ cnoremap cdf cd %:p:h
 cnoremap %% <c-r>=expand('%:p:h').'/'<cr>
 
 " nmap <leader>e :edit %%
-nnoremap <leader>q :close<cr>
+nnoremap <leader>k :close<cr>
+nnoremap <leader>K :bd<cr>
 
-nnoremap <silent> <leader>x :execute getline(".")<cr>
+" nnoremap <silent> <leader>x :execute getline(".")<cr>
 vnoremap <silent> <leader>x y:execute @@<cr>
 vnoremap <leader> X di<c-r>=@@<cr>
 
@@ -69,3 +70,4 @@ inoremap <m-v> :execute 'set keymap='.(&keymap == '' ? 'vietnamese-telex' : '')<
 nnoremap <leader>vv :vsplit $MYVIMRC<cr>
 nnoremap <leader>vs :source $MYVIMRC<cr>
 
+nnoremap <leader>1 :close<cr>

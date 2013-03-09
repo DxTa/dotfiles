@@ -1,4 +1,3 @@
-
 (tung/add-auto-mode 'js2-mode '("\\.js$" "\\.json$"))
 
 (defun tung/setup-js-mode ()
@@ -22,23 +21,24 @@
            js-enabled-frameworks '(javascript dojo))))
 
 (eval-after-load 'js2-mode
-  '(setq js2-idle-timer-delay 1
-         js2-auto-indent-p t
-         js2-enter-indents-newline t
+  '(progn
+     (setq js2-idle-timer-delay 1
+           js2-auto-indent-p t
+           js2-enter-indents-newline t
 
-         js2-language-version 180
-         js2-include-gears-externs nil
-         js2-include-rhino-externs nil
-         js2-include-node-externs t
-         js2-global-externs '("console" "$" "jQuery" "define" "require")
+           js2-language-version 180
+           js2-include-gears-externs nil
+           js2-include-rhino-externs nil
+           js2-include-node-externs t
+           js2-global-externs '("console" "$" "jQuery" "define" "require")
 
-         js2-allow-keywords-as-property-names nil
-         js2-allow-rhino-new-expr-initializer nil
-         js2-missing-semi-one-line-override t
-         js2-strict-missing-semi-warning nil
+           js2-allow-keywords-as-property-names nil
+           js2-allow-rhino-new-expr-initializer nil
+           js2-missing-semi-one-line-override t
+           js2-strict-missing-semi-warning nil)
 
-         (define-key js2-mode-map (kbd "M-j") nil)
-         ))
+     (define-key js2-mode-map (kbd "M-j") nil)
+     ))
 
 
 ;; Slime

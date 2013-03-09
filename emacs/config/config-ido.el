@@ -23,14 +23,12 @@
 
      (add-hook 'ido-minibuffer-setup-hook
                (lambda ()
-                 (progn
-                   (set (make-local-variable 'truncate-lines) nil)
-                   (tung/fill-keymap ido-common-completion-map
-                                     "C-n" 'ido-next-match
-                                     "C-p" 'ido-prev-match
-                                     "C-h" 'delete-backward-char
-                                     "~" (icalled (if (looking-back "/") (insert "~/")
-                                                    (call-interactively 'self-insert-command)))))))
+                 (tung/fill-keymap ido-common-completion-map
+                                   "C-n" 'ido-next-match
+                                   "C-p" 'ido-prev-match
+                                   "C-h" 'delete-backward-char
+                                   "~" (icalled (if (looking-back "/") (insert "~/")
+                                                  (call-interactively 'self-insert-command))))))
      (ido-ubiquitous-mode t)))
 
 

@@ -13,6 +13,7 @@ if [ -d $LOCAL/bin ]; then
   export PATH=$LOCAL/bin:$PATH
   export PATH=$LOCAL/sbin:$PATH
   export PATH=$LOCAL/share/python:$PATH
+  export PATH=$LOCAL/share/npm/bin:$PATH
 fi
 
 # Python

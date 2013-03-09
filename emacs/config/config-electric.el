@@ -1,13 +1,12 @@
 
 (electric-pair-mode t)
-;; (electric-indent-mode t)
-;; (electric-layout-mode t)
 
 (eval-after-load 'electric
   '(progn
      (defun tung/electric-brace ()
        (when (and (eq last-command-event ?\n)
                   (looking-at "}"))
+         (indent-according-to-mode)
          (evil-open-above 0)))
      (add-hook 'post-self-insert-hook #'tung/electric-brace t)
 

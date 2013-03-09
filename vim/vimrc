@@ -8,5 +8,5 @@ runtime bundle/vim-unbundle/unbundle.vim
 let $PATH=$HOME.'/.rbenv/shims/:'.$HOME.'/local/bin/:'.$PATH
 
 " Config
-runtime! config/**/*.vim
+runtime! config/*.vim
 

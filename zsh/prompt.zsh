@@ -18,16 +18,16 @@ autoload -Uz vcs_info
 zstyle ':vcs_info:*' enable git hg svn
 zstyle ':vcs_info:*' check-for-changes true
 zstyle ':vcs_info:*' get-revision true
-zstyle ':vcs_info:*' stagedstr "%{$fg_bold[green]%}+"
-zstyle ':vcs_info:*' unstagedstr "%{$fg_bold[red]%}+"
-zstyle ':vcs_info:*' formats "%{$fg_bold[green]%}%u%c[%b:%7.7i]"
+zstyle ':vcs_info:*' stagedstr $'%{$fg_bold[green]%}+'
+zstyle ':vcs_info:*' unstagedstr $'%{$fg_bold[red]%}+'
+zstyle ':vcs_info:*' formats $'%{$fg_bold[green]%}%u%c[%b:%7.7i]'
 
 function git_prompt_info() {
   echo "${vcs_info_msg_0_}"
 }
 
 if [[ $CLICOLOR == 1 ]]; then
-  export PROMPT=$'\n%{$fg[red]%}%n%{$reset_color%}@%{$fg[yellow]%}%m%{$reset_color%} in %{$fg[green]%}%~/%{$reset_color%}\n%{$fg[normal]%}»%{$reset_color%} '
+  export PROMPT=$'\n%{$fg[red]%}%n%{$reset_color%}@%{$fg[yellow]%}%m%{$reset_color%} in %{$fg[green]%}%~/%{$reset_color%}\n%{$fg[normal]%}›%{$reset_color%} '
   set_prompt () {
     export RPROMPT="$(git_prompt_info)%{$fg[cyan]%}$(todop)%{$reset_color%}"
   }

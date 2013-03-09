@@ -32,7 +32,7 @@
      (tung/fill-keymap evil-normal-state-map
                        "C-j" (icalled (next-line 10))
                        "C-k" (icalled (previous-line 10))
-                       "]" 'evil-jump-item
+                       "<tab>" 'evil-jump-item
                        "j" 'evil-next-visual-line
                        "k" 'evil-previous-visual-line
                        "M-=" 'cleanup-buffer
@@ -59,7 +59,8 @@
      (tung/fill-keymap evil-insert-state-map
                        "C-a" 'back-to-indentation
                        "C-e" 'end-of-line
-                       "C-h" 'delete-backward-char
+                       "C-d" 'delete-char
+
 
                        "M-h" " => "
                        "M-a" "@"
@@ -67,8 +68,6 @@
 
      (tung/fill-keymap evil-visual-state-map
                        "Y" 'simpleclip-copy
-                       "<tab>" (kbd ">gv")
-                       "<backtab>" (kbd "<gv")
                        "C-a" 'align-regexp
 
                        "C-d" 'mc/mark-next-like-this
@@ -77,7 +76,7 @@
                        "ge" 'extract-variable)
 
      (tung/fill-keymap evil-motion-state-map
-                       "]" 'evil-jump-item)
+                       "<tab>" 'evil-jump-item)
 
      (evil-add-hjkl-bindings ibuffer-mode-map)
 

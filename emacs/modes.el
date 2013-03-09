@@ -24,10 +24,12 @@
 (require 'config-undo-tree)
 (require 'config-evil)
 (require 'config-ido)
-(require 'config-hideshow)
+;; (require 'config-hideshow)
 (require 'config-auto-complete)
+;; (require 'config-simple-complete)
 (require 'config-yasnippet)
 (require 'config-eproject)
+(require 'config-eldoc)
 
 (require 'config-occur)
 (require 'config-electric)

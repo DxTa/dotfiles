@@ -5,7 +5,7 @@ set autoread autowrite
 set hidden
 set mouse=a
 set shortmess=aTI
-let mapleader=","
+" let mapleader=","
 set diffopt=filler,iwhite
 set tags=./tags;/
 
@@ -57,11 +57,8 @@ noremap <f2> :vsp<cr>:bn<cr>
 noremap <f3> :sp<cr>:bn<cr>
 noremap <f4> :close<cr>
 nnoremap <leader>z :close<cr>
-nnoremap <c-l> <c-w><right>
-nnoremap <c-h> <c-w><left>
-nnoremap <c-k> <c-w><up>
-nnoremap <c-j> <c-w><down>
-nnoremap <c-m> <c-w><c-w>
+nnoremap <m-j> <c-w>w
+nnoremap <m-k> <c-w>W
 
 nnoremap <silent> sv :vsp<cr>:bn<cr>
 nnoremap <silent> sh :sp<cr>:bn<cr>

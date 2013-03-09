@@ -39,7 +39,7 @@ if has('gui_running')
     set guifont=M+\ 2m\ 11
   elseif has("gui_macvim") || has("gui_mac")
     set macmeta
-    set guifont=Menlo:h15
+    set guifont=M+\ 2m:h14
   elseif has("gui_win32")
     set guifont=Consolas:h11
   end
