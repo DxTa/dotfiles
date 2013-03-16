@@ -54,8 +54,8 @@ alias bi='bundle install'
 alias v=vim
 
 # Emacs
-alias e="emacsclient -c -a vim"
-alias ec="emacsclient -c -a vim"
+alias e="emacsclient -c -n -a vim"
+alias ec="emacsclient -c -n -a vim"
 es() {
   emacsclient -c -a vim "/sudo::$*"
 }
@@ -98,4 +98,3 @@ extract() {
     echo "'$1' is not a valid file"
   fi
 }
-

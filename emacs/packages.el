@@ -8,7 +8,7 @@
 (defvar tung/packages
   '(melpa
 
-    evil surround sackspace multiple-cursors simpleclip auto-complete yasnippet
+    evil surround sackspace simpleclip auto-complete yasnippet
     magit zencoding-mode flycheck
 
     rainbow-mode rainbow-delimiters diminish smex ido-ubiquitous
@@ -16,9 +16,9 @@
     wgrep-ack
 
     apache-mode clojure-mode coffee-mode markdown-mode php-mode ruby-mode
-    scss-mode lua-mode js2-mode yaml-mode haskell-mode rust-mode web-mode
+    ruby-electric scss-mode lua-mode yaml-mode go-mode graphviz-dot-mode web-mode
 
-    nrepl ac-nrepl skewer-mode restclient
+    nrepl ac-nrepl restclient websocket
     ))
 
 (defun tung/install-packages ()

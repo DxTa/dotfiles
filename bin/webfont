@@ -9,7 +9,7 @@ woff_font=$orig_name."woff"
 
 if [ $orig_ext == 'ttf' ]; then
   echo "Backing up TTF font"
-  mv $1{,.orig}
+  cp $1{,.orig}
 fi
 
 fontforge -c "

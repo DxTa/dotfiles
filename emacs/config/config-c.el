@@ -1,10 +1,14 @@
 
 (defun tung/setup-c-mode ()
   (interactive)
-  (tung/setup-programming-environment)
-  (eldoc-mode t))
+  (tung/setup-programming-environment))
 
 (add-hook 'c-mode-hook #'tung/setup-c-mode)
+
+(eval-after-load 'auto-complete
+  '(progn
+     (add-to-list 'ac-modes 'objc-mode)))
+
 
 (defun tung/c-doc-function ()
   "Lookup C documentation in manpage"

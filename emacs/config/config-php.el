@@ -13,8 +13,5 @@
 (eval-after-load 'auto-complete
   '(add-to-list 'ac-modes 'php-mode))
 
-(eval-after-load 'which-func
-  '(add-to-list 'which-func-modes 'php-mode))
-
 
 (provide 'config-php)

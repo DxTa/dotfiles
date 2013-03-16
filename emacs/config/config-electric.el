@@ -23,5 +23,8 @@
      (add-hook 'post-self-insert-hook #'tung/electric-parenthesis t)
      ))
 
+(eval-after-load 'ruby-electric
+  '(setq ruby-electric-expand-delimiters-list nil))
+
 
 (provide 'config-electric)

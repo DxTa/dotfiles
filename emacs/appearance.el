@@ -1,12 +1,50 @@
 
-(when (not (window-system))
-  (menu-bar-mode -1))
+(global-font-lock-mode t)
+(global-hl-line-mode t)
+(column-number-mode 1)
 
-;; Cleanup
-(setq inhibit-startup-message t)
+;; Window
+(unless (display-graphic-p) (menu-bar-mode -1))
 
 (dolist (m '(tool-bar-mode scroll-bar-mode blink-cursor-mode))
   (when (fboundp m) (eval `(,m -1))))
+
+
+;; Frame
+(setq default-frame-alist
+      '((width . 110) (height . 35)
+        (left-fringe . 24) (right-fringe . 0))
+      cursor-type 'bar
+      initial-frame-alist default-frame-alist)
+
+(defun set-frame-size-and-position-according-to-resolution ()
+  (interactive)
+  (when (display-graphic-p)
+    (let ((frame (selected-frame))
+          (width (x-display-pixel-width))
+          (height (x-display-pixel-height)))
+      (set-frame-height frame (- (/ height 21) 1))
+      (if (> width 1280)
+          (set-frame-position frame (- width 860) 0)
+      (set-frame-position frame (+ width 200) 0)))))
+
+
+(defalias 'aa #'set-frame-size-and-position-according-to-resolution "Auto Adjust")
+
+;; Theme
+(set-display-table-slot standard-display-table 0 32)
+
+(setq custom-theme-directory "~/.emacs.d/themes/")
+(load-theme 'twilight-anti-bright t)
+
+(defun customize-faces (frame)
+  (set-face-attribute 'default frame :family "M+ 2m")
+  (set-face-attribute 'mode-line frame :box nil)
+  (set-face-attribute 'mode-line-highlight frame :box '(:line-width 1))
+  (set-face-attribute 'highlight frame :foreground nil))
+
+(customize-faces nil)
+(add-hook 'after-make-frame-functions #'customize-faces)
 
 
 ;; Uniquify
@@ -29,59 +67,10 @@
 (show-paren-mode t)
 
 
-;; Mode-line format
-(load "modeline")
-
-
 ;; Whitespace
 (eval-after-load 'whitespace
   '(progn
      (setq whitespace-display-mappings
-      '((newline-mark ?\n [?\u00AC ?\n] [?$ ?\n])
-        (tab-mark     ?\t [?\u2192 ?\t] [?\\ ?\t])))
+           '((newline-mark ?\n [?\u00AC ?\n] [?$ ?\n])
+             (tab-mark     ?\t [?\u2192 ?\t] [?\\ ?\t])))
      (delq 'empty whitespace-style)))
-
-
-;; History based sorting is still awesome
-(smex-initialize)
-
-
-;; Theme
-(global-font-lock-mode t)
-(column-number-mode 1)
-(hl-line-mode t)
-
-;; (setq jit-lock-defer-time 0.05)
-
-(setq default-frame-alist
-      '((width . 100) (height . 34)
-        (left-fringe . 0) (right-fringe . 0))
-      cursor-type 'bar)
-
-;; Color Theme don't accumulate
-(defadvice load-theme (before tung/color-theme-dont-accumulate activate)
-  (dolist (theme (custom-available-themes))
-    (disable-theme theme)))
-
-(setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme 'tung t)
-
-(set-face-attribute 'default nil :family "M+ 1m")
-(set-face-attribute 'mode-line nil :box nil)
-(set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
-(set-display-table-slot standard-display-table 0 32)
-
-(eval-after-load 'rainbow-delimiters
-  '(progn
-     (defun set-up-rainbow-delimiter-faces ()
-       (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
-       (set-face-attribute 'rainbow-delimiters-depth-2-face nil :foreground "#deae3e")
-       (set-face-attribute 'rainbow-delimiters-depth-3-face nil :foreground "#81af34")
-       (set-face-attribute 'rainbow-delimiters-depth-4-face nil :foreground "#4e9f75")
-       (set-face-attribute 'rainbow-delimiters-depth-5-face nil :foreground "#11535F")
-       (set-face-attribute 'rainbow-delimiters-depth-6-face nil :foreground "#00959e")
-       (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
-       (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
-     (defadvice load-theme (after tung/rainbow-delimiter-faces activate)
-       (set-up-rainbow-delimiter-faces))
-     (set-up-rainbow-delimiter-faces)))

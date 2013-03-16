@@ -3,7 +3,7 @@
 (loop for (file mode lighter)
       in '(("yasnippet" 'yas-minor-mode "Y")
            ("eldoc" 'eldoc-mode "Doc")
-           ("flycheck" 'flycheck-mode "F")
+           ("flycheck" 'flycheck-mode "Chk")
            ("eproject" 'eproject-mode "Proj")
            ("hideshow" 'hs-minor-mode)
            ("undo-tree" 'undo-tree-mode)
@@ -11,7 +11,8 @@
            ("isearch-mode" 'isearch-mode)
            ("abbrev" 'abbrev-mode)
            ("autopair" 'autopair-mode "P")
-           ("git-gutter" 'git-gutter-mode))
+           ("git-gutter" 'git-gutter-mode)
+           ("sackspace" 'sackspace-mode))
       do
       (eval-after-load file
         `(diminish ,mode ,(when lighter (concat " " lighter)))))

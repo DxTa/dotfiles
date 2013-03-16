@@ -1,6 +1,7 @@
 (tung/fill-keymap (current-global-map)
                   "M-m" 'smex
                   "C-c C-m" 'smex-major-mode-commands
+                  "M-`" 'other-frame
                   "C-x C-b" 'ibuffer
                   "C-l" 'comment-or-uncomment-region-or-line
 
@@ -16,7 +17,7 @@
                   "C-c a" 'eproject-ack
                   "C-c g" 'magit-status
                   "C-c b" 'ido-switch-buffer
-                  "C-c o" 'ido-goto-symbol
+                  "C-c o" 'imenu
                   "C-c r" 'recentf-ido-find-file
                   "C-c t" 'find-tag
 

@@ -93,3 +93,6 @@
 
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+;; History based sorting is still awesome
+(smex-initialize)

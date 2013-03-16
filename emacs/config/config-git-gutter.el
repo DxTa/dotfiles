@@ -1,4 +1,6 @@
 
+(global-git-gutter-mode t)
+
 (defadvice magit-quit-session
   (after update-git-gutter activate)
   (dolist (buffer (buffer-list))
@@ -19,5 +21,6 @@
      (set-face-foreground 'git-gutter:modified "#deae3e")
      (set-face-foreground 'git-gutter:added "#81af34")
      (set-face-foreground 'git-gutter:deleted "red")))
+
 
 (provide 'config-git-gutter)

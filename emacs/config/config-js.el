@@ -1,4 +1,3 @@
-(tung/add-auto-mode 'js2-mode '("\\.js$" "\\.json$"))
 
 (defun tung/setup-js-mode ()
   (interactive)

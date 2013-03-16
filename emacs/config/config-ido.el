@@ -24,6 +24,7 @@
      (add-hook 'ido-minibuffer-setup-hook
                (lambda ()
                  (tung/fill-keymap ido-common-completion-map
+                                   "ESC" 'ido-exit-minibuffer
                                    "C-n" 'ido-next-match
                                    "C-p" 'ido-prev-match
                                    "C-h" 'delete-backward-char

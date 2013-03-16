@@ -1,7 +1,10 @@
 
 (tung/add-auto-mode 'ruby-mode
-                    '("Rakefile$" "Guardfile$" "Gemfile$" "Vagrantfile$"
+                    '("\\.rb$"
+                      "Rakefile$" "Guardfile$" "Gemfile$" "Vagrantfile$"
                       "\\.ru$" "\\.rake$" "\\.gemspec$"))
+
+(add-to-list 'interpreter-mode-alist '("ruby" . enh-ruby-mode))
 
 (defun tung/setup-ruby-mode ()
   (interactive)

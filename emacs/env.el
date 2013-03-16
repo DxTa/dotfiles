@@ -9,11 +9,11 @@
                     "/Applications/Xcode.app/Contents/Developer/usr/bin"))
 
 ;; rbenv
-(tung/add-to-path '("~/.rbenv/bin"
-                    "~/.rbenv/shims"))
+(tung/add-to-path '("~/.rbenv/bin" "~/.rbenv/shims"))
 
 ;; Homebrew
-(tung/add-to-path '("~/local/bin"))
+(tung/add-to-path '("~/local/bin"
+                    "~/local/share/npm/bin"))
 
 ;; User
 (tung/add-to-path '("~/cli/bin"))

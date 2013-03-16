@@ -1,3 +1,4 @@
+
 (require 'eproject)
 (require 'eproject-extras)
 
@@ -13,6 +14,12 @@
      (require 'eproject-tasks)
      (define-key eproject-mode-map (kbd "C-c C-t") #'eproject-tasks)
 
+     ;; (require 'eproject-android)
+     ;; (require 'eproject-clojure-leiningen)
+     ;; (require 'eproject-javascript-npm)
+     ;; (require 'eproject-php-composer)
+     ;; (require 'eproject-php-ruby)
+     ;; (require 'eproject-php-ruby-on-rails)
 
      (define-project-type generic-scm (generic-git generic-hg)
        (or (look-for ".git") (look-for ".hg")

@@ -5,23 +5,29 @@
 (load custom-file 'noerror)
 
 (require 'cl)
-(load "private" 'noerror)
-(load "env")
 (load "packages")
 (load "vendor")
+(load "private" 'noerror)
 (load "helpers")
+
 (load "appearance")
-(load "behavior")
-(load "keys")
-(load "programming")
-(load "modes")
+(load "modeline")
+
+(load "env")
 (when (eq system-type 'darwin)
   (load "osx" t))
 (when (eq system-type 'gnu/linux)
   (load "linux" t))
 
+(load "behavior")
+(load "keys")
+(load "programming")
+(load "modes")
+
 
 ;; Startup
+(setq inhibit-startup-message t)
+
 (defun tung/fortune2scratch ()
   (let ((cookie (shell-command-to-string "fortune -a")))
     (concat

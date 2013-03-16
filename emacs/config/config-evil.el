@@ -3,8 +3,7 @@
 
 (eval-after-load 'evil
   '(progn
-     (require 'sackspace)
-     (sack/install-in-evil)
+     ;; (sackspace-mode t)
 
      (add-hook 'tung/programming-environment-hook
                (lambda () (surround-mode t)))
@@ -61,10 +60,11 @@
                        "C-e" 'end-of-line
                        "C-d" 'delete-char
 
+                       ;; "M-h" " => "
+                       ;; "M-a" "@"
+                       ;; "M-q" 'balance-tags
 
-                       "M-h" " => "
-                       "M-a" "@"
-                       "M-q" 'balance-tags)
+                       "ESC" 'evil-normal-state)
 
      (tung/fill-keymap evil-visual-state-map
                        "Y" 'simpleclip-copy
@@ -73,7 +73,9 @@
                        "C-d" 'mc/mark-next-like-this
                        "M-d" 'mc/mark-all-like-this
 
-                       "ge" 'extract-variable)
+                       "ge" 'extract-variable
+
+                       "ESC" 'evil-normal-state)
 
      (tung/fill-keymap evil-motion-state-map
                        "<tab>" 'evil-jump-item)
