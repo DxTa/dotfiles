@@ -1,4 +1,6 @@
 
+(tung/add-auto-mode 'web-mode '("\\.ejs$"))
+
 (defun tung/setup-html-mode ()
   (interactive)
   (tung/setup-programming-environment)

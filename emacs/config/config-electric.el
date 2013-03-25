@@ -1,5 +1,6 @@
 
 (electric-pair-mode t)
+;; (electric-indent-mode t)
 
 (eval-after-load 'electric
   '(progn

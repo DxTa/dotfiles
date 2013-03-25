@@ -6,7 +6,7 @@ fi
 LOCAL=$HOME/local
 
 # PHP Composer
-# alias composer='php composer.phar'
+alias composer='php composer.phar'
 
 # Homebrew
 if [ -d $LOCAL/bin ]; then
@@ -51,9 +51,15 @@ if [ -d "/usr/local/heroku" ]; then
   export PATH="/usr/local/heroku/bin:$PATH"
 fi
 
-# MAMP & Emacs
+# Android SDK
+if [ -d $HOME/build/adt ]; then
+  export PATH=$HOME/build/adt/sdk/tools:$PATH
+  export PATH=$HOME/build/adt/sdk/platform-tools:$PATH
+fi
+
+
+# Emacs
 if [[ "$OS" = "darwin" ]]; then
-  # export PATH=/Applications/MAMP/bin/php/php5.3.6/bin:$PATH
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS:$PATH
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS/bin:$PATH
 fi

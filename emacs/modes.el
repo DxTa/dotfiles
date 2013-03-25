@@ -16,6 +16,8 @@
 (require 'config-markdown)
 (require 'config-org)
 (require 'config-shell)
+(require 'config-java)
+(require 'config-groovy)
 ; (require 'config-mmm)
 ; (require 'config-deft)
 

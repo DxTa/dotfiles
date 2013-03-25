@@ -11,5 +11,6 @@ emacs/bookmarks/
 emacs/tramp
 emacs/data
 emacs/auto-save-list/
+emacs/javadoc-cache/
 ch/sheets/*
 minimal-session-saver-data.el

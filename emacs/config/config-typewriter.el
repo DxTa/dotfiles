@@ -18,7 +18,9 @@
 
 ;; (toggle-typewriter-sound t)
 
-; (add-hook 'evil-insert-state-entry-hook (lambda () (toggle-typewriter-sound t)))
-; (add-hook 'evil-insert-state-exit-hook (lambda () (toggle-typewriter-sound nil)))
+(eval-after-load 'evil
+  '(progn
+     (add-hook 'evil-insert-state-entry-hook (lambda () (toggle-typewriter-sound t)))
+     (add-hook 'evil-insert-state-exit-hook (lambda () (toggle-typewriter-sound nil)))))
 
 (provide 'config-typewriter)

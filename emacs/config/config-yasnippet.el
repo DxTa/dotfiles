@@ -4,7 +4,7 @@
 
 (eval-after-load 'yasnippet
   '(progn
-     (setq yas-trigger-key "C-]"
+     (setq yas-trigger-key "C-o"
            yas-prompt-functions '(yas-popup-isearch-prompt
                                   yas-ido-prompt
                                   yas-completing-prompt))

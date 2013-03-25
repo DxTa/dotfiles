@@ -12,21 +12,17 @@
      ;; (require 'eproject-tags)
 
      (require 'eproject-tasks)
-     (define-key eproject-mode-map (kbd "C-c C-t") #'eproject-tasks)
+     (define-key eproject-mode-map (kbd "C-c C-t") #'eproject-tasks-run)
 
-     ;; (require 'eproject-android)
-     ;; (require 'eproject-clojure-leiningen)
-     ;; (require 'eproject-javascript-npm)
-     ;; (require 'eproject-php-composer)
-     ;; (require 'eproject-php-ruby)
-     ;; (require 'eproject-php-ruby-on-rails)
+     (require 'eproject-clojure-leiningen)
+     (require 'eproject-javascript-npm)
+     (require 'eproject-php-composer)
+     (require 'eproject-ruby)
+     (require 'eproject-ruby-on-rails)
 
-     (define-project-type generic-scm (generic-git generic-hg)
-       (or (look-for ".git") (look-for ".hg")
-           (look-for "config.ru") (look-for "index.html"))
-       :irrelevant-files (".DS_Store" "TAGS" "tmp/" "log/" "logs/" "vendor/" "public/" "elpa/"
-                          "dojo/" "dojox/" "dijit/" "bundle/" "ftbundle/"))
-
+     (define-project-type gradle (generic)
+       (look-for "build.gradle")
+       :irrelevant-files ("build/"))
 
      (defun eproject-ack (pattern)
        (interactive "sAck pattern: ")

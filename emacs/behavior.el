@@ -81,7 +81,6 @@
 
 (setq-default major-mode 'text-mode
               tab-width 2
-              c-basic-offset 2
               indicate-empty-lines nil
               indent-tabs-mode nil
               truncate-lines t

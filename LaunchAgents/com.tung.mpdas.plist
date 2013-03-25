@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.tung.mpdas</string>
+    <key>WorkingDirectory</key>
+    <string>~</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/tung/local/bin/mpdas</string>
+        <string>-c</string>
+        <string>~/.mpdasrc</string>
+    </array>
+    <key>EnableGlobbing</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+</dict>
+</plist>

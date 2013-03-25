@@ -94,4 +94,3 @@ autoload -U compinit; compinit;
 compdef '_git' g
 
 alias reloadrc="source $HOME/.zshrc"
-

@@ -3,7 +3,8 @@
 
 (eval-after-load 'undo-tree
   '(progn
-     (setq undo-limit (* 8 1024 1024)
+     (setq undo-limit (* 32 1024 1024 1024)
+           undo-strong-limit (* 64 1024 1024 1024)
            undo-tree-auto-save-history t
            undo-tree-history-directory-alist
            '(("." . "~/.emacs.d/data/undos/")))

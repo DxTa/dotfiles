@@ -4,17 +4,20 @@
                       "Rakefile$" "Guardfile$" "Gemfile$" "Vagrantfile$"
                       "\\.ru$" "\\.rake$" "\\.gemspec$"))
 
-(add-to-list 'interpreter-mode-alist '("ruby" . enh-ruby-mode))
-
 (defun tung/setup-ruby-mode ()
   (interactive)
-  (tung/setup-programming-environment)
-  (push '(?= . ("<%= " . " %>")) surround-pairs-alist)
-  (push '(?- . ("<% " . " %>")) surround-pairs-alist)
-  (push '(?# . ("#{" . "}")) surround-pairs-alist))
+  (tung/setup-programming-environment))
 
 (add-hook 'ruby-mode-hook #'tung/setup-ruby-mode)
 (add-hook 'html-erb-mode-hook #'tung/setup-ruby-mode)
+
+(eval-after-load 'surround
+  '(add-hook 'ruby-mode-hook
+             (lambda ()
+               (push '(?= . ("<%= " . " %>")) surround-pairs-alist)
+               (push '(?- . ("<% " . " %>")) surround-pairs-alist)
+               (push '(?# . ("#{" . "}")) surround-pairs-alist))))
+
 
 (eval-after-load 'hs-minor-mode
   '(add-to-list 'hs-special-modes-alist

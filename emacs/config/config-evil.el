@@ -34,7 +34,6 @@
                        "<tab>" 'evil-jump-item
                        "j" 'evil-next-visual-line
                        "k" 'evil-previous-visual-line
-                       "M-=" 'cleanup-buffer
 
                        "gp" 'simpleclip-paste
 
@@ -48,9 +47,6 @@
 
                        "RET" 'evil-ex-nohighlight
 
-                       "C-d" 'mc/mark-next-like-this
-                       "C-S-d" 'mc/mark-all-like-this
-
                        ",," 'evil-buffer
 
                        "gi" 'inline-variable)
@@ -60,22 +56,19 @@
                        "C-e" 'end-of-line
                        "C-d" 'delete-char
 
-                       ;; "M-h" " => "
-                       ;; "M-a" "@"
-                       ;; "M-q" 'balance-tags
-
-                       "ESC" 'evil-normal-state)
+                       "M-h" " => "
+                       "M-a" "@"
+                       "M-q" 'balance-tags)
 
      (tung/fill-keymap evil-visual-state-map
-                       "Y" 'simpleclip-copy
+                       "Y" (lambda ()
+                             (interactive)
+                             (call-interactively 'simpleclip-copy)
+                             (deactivate-mark t))
+
                        "C-a" 'align-regexp
 
-                       "C-d" 'mc/mark-next-like-this
-                       "M-d" 'mc/mark-all-like-this
-
-                       "ge" 'extract-variable
-
-                       "ESC" 'evil-normal-state)
+                       "ge" 'extract-variable)
 
      (tung/fill-keymap evil-motion-state-map
                        "<tab>" 'evil-jump-item)

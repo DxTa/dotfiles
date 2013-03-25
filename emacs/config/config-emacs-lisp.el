@@ -3,7 +3,8 @@
   (interactive)
   (tung/setup-programming-environment)
   (rainbow-delimiters-mode)
-  (eldoc-mode t))
+  ;; (eldoc-mode t)
+  )
 
 (add-hook 'emacs-lisp-mode-hook #'tung/setup-emacs-lisp-mode)
 

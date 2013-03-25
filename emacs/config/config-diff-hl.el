@@ -10,6 +10,8 @@
 
      (customize-diff-hl-faces nil)
      (add-hook 'after-make-frame-functions #'customize-diff-hl-faces)
+     (defadvice load-theme (after apply-customize-diff-hl-faces activate)
+       (customize-diff-hl-faces nil))
 
      (define-fringe-bitmap 'diff-hl-bmp-insert
        [0 24 24 126 126 24 24 0])

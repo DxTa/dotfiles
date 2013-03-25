@@ -1,4 +1,6 @@
 
+(ido-mode t)
+
 (eval-after-load 'ido
   '(progn
      (setq ido-enable-prefix nil
@@ -15,45 +17,35 @@
            ido-ignore-buffers '("\\` ")
            ido-ignore-files '("ido.last" ".*-autoloads.el"))
 
-     (fset 'ido-directory-too-big-p #'ignore)
-     (ido-mode t)
-     (setq ido-decorations
-           '("\n>> " "" "\n   " "\n   ..." "[" "]"
-             " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]"))
+     (defun minibuffer-home ()
+       (interactive)
+       (if (looking-back "/")
+           (insert "~/")
+         (call-interactively 'self-insert-command)))
+
+     (defun minibuffer-insert-word-at-point ()
+       (interactive)
+       (let (word beg)
+         (with-current-buffer (window-buffer (minibuffer-selected-window))
+           (setq word (thing-at-point 'word)))
+         (insert word)))
+
 
      (add-hook 'ido-minibuffer-setup-hook
                (lambda ()
                  (tung/fill-keymap ido-common-completion-map
                                    "ESC" 'ido-exit-minibuffer
-                                   "C-n" 'ido-next-match
-                                   "C-p" 'ido-prev-match
                                    "C-h" 'delete-backward-char
-                                   "~" (icalled (if (looking-back "/") (insert "~/")
-                                                  (call-interactively 'self-insert-command))))))
-     (ido-ubiquitous-mode t)))
+                                   "~" #'minibuffer-home
+                                   "C-i" #'minibuffer-insert-word-at-point)))
 
+     (ido-ubiquitous-mode t)
+     (ido-vertical-mode t)
 
-;; Ido imenu
-(defun ido-goto-symbol ()
-  (interactive)
-  (imenu--cleanup)
-  (setq imenu--index-alist nil)
-  (let* ((index (imenu--make-index-alist))
-         (symbols (reduce
-                   (lambda (lst x)
-                     (cond ((markerp (cdr x)) (append lst `(,x)))
-                           ((listp (cdr x)) (append lst (cdr x)))
-                           (t lst)))
-                   index :initial-value '()))
-         (selected (ido-completing-read "Symbol: " (mapcar 'car symbols))))
-    (imenu (assoc selected symbols))))
-
-
-;; Recentf
-(defun recentf-ido-find-file ()
-  (interactive)
-  (let ((file (ido-completing-read "Recent file: " recentf-list nil t)))
-    (when file (find-file file))))
+     (setq ido-decorations
+           '("\n>> " "" "\n   " "\n   ..." "[" "]"
+             " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]"
+             "\n>> " ""))))
 
 
 (provide 'config-ido)

@@ -25,3 +25,4 @@ Watchfile
 .env
 repl-port
 .\#*
+*.rest

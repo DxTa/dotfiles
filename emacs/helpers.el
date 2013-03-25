@@ -5,11 +5,18 @@
   (dolist (dir '("~/.emacs.d/config" "~/.emacs.d/vendor"))
     (byte-recompile-directory dir 0)))
 
+(defun indent-defun ()
+  "Indent the current defun."
+  (interactive)
+  (save-excursion
+    (mark-defun)
+    (indent-region (region-beginning) (region-end))))
+
 (defun extract-variable (begin end var)
   (interactive "r\nsVariable name: ")
   (kill-region begin end)
   (insert var)
-  (previous-line)
+  (forward-line -1)
   (newline-and-indent)
   (insert var " = ")
   (yank))
@@ -105,12 +112,9 @@
   (interactive)
   (when buffer-file-name
     (shell-command
-     (concat (if (eq system-type 'darwin)
-                 "open"
-               (read-shell-command "Open current file with: "))
-             (if (eq system-type 'linux)
-                 "xgd-open"
-               (read-shell-command "Open current file with: "))
+     (concat (cond ((eq system-type 'darwin) "open")
+                   ((eq system-type 'linux) "xgd-open")
+                   (t (read-shell-command "Open current file with: ")))
              " " buffer-file-name))))
 
 
@@ -165,9 +169,9 @@
     (comment-or-uncomment-line lines)))
 
 
-(defun align-to-assignment (begin end)
+(defun align= (begin end)
   (interactive "r")
-  (align-regexp begin end "\\(\\s-*\\)=" 1 1))
+  (align-regexp begin end "\\(\\s-*\\)[=|:]" 1 1))
 
 
 ;; Functions
