@@ -18,6 +18,7 @@
 (require 'config-shell)
 (require 'config-java)
 (require 'config-groovy)
+(require 'config-go)
 ; (require 'config-mmm)
 ; (require 'config-deft)
 
@@ -30,7 +31,8 @@
 (require 'config-auto-complete)
 ;; (require 'config-simple-complete)
 (require 'config-yasnippet)
-(require 'config-eproject)
+;; (require 'config-eproject)
+(require 'config-projectile)
 (require 'config-eldoc)
 (require 'config-rainbow-delimiters)
 (require 'config-occur)

@@ -12,7 +12,8 @@
            ("abbrev" 'abbrev-mode)
            ("autopair" 'autopair-mode "P")
            ("git-gutter" 'git-gutter-mode)
-           ("sackspace" 'sackspace-mode))
+           ("sackspace" 'sackspace-mode)
+           ("projectile" 'projectile-mode "Proj"))
       do
       (eval-after-load file
         `(diminish ,mode ,(when lighter (concat " " lighter)))))

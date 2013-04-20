@@ -17,8 +17,6 @@
 
                   "C-c g" 'magit-status
                   "C-c f" 'ido-find-file
-                  "M-p" 'eproject-find-file
-                  "C-c a" 'eproject-ack
                   "C-c g" 'magit-status
                   "C-c b" 'ido-switch-buffer
                   "C-c o" 'imenu

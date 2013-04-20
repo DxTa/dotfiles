@@ -8,9 +8,6 @@
 (tung/add-to-path '("/usr/local/bin"
                     "/Applications/Xcode.app/Contents/Developer/usr/bin"))
 
-;; rbenv
-(tung/add-to-path '("~/.rbenv/bin" "~/.rbenv/shims"))
-
 ;; Homebrew
 (tung/add-to-path '("~/local/bin"
                     "~/local/share/npm/bin"))

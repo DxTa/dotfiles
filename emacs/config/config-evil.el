@@ -4,6 +4,7 @@
 (eval-after-load 'evil
   '(progn
      ;; (sackspace-mode t)
+     (global-surround-mode t)
 
      (add-hook 'tung/programming-environment-hook
                (lambda () (surround-mode t)))

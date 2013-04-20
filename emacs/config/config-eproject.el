@@ -54,6 +54,8 @@
                        "j" (eproject-finder "app/assets/javascripts/" "JS: ")
                        "s" (eproject-finder "app/assets/stylesheets/" "CSS: "))
      (global-set-key (kbd "C-c p") 'tung/project-map)
+     (global-set-key (kbd "M-p") 'eproject-find-file)
+     (global-set-key (kdb "C-c a") 'eproject-ack)
      ;; (define-key eproject-mode-map (kbd "C-c p") #'eproject-tasks-run)
      ))
 

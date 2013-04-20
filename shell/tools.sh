@@ -5,27 +5,22 @@ if [ -d $HOME/cli/bin ]; then
 fi
 LOCAL=$HOME/local
 
-# PHP Composer
-alias composer='php composer.phar'
-
 # Homebrew
 if [ -d $LOCAL/bin ]; then
   export PATH=$LOCAL/bin:$PATH
   export PATH=$LOCAL/sbin:$PATH
-  export PATH=$LOCAL/share/python:$PATH
   export PATH=$LOCAL/share/npm/bin:$PATH
-fi
+  export PATH=$LOCAL/share/pypy:$PATH
 
-# Python
-if [ -d $HOME/.local/bin ]; then
-  export PATH=$HOME/.local/bin:$PATH
+  export RBENV_ROOT=$LOCAL/var/rbenv
+  export ANDROID_SDK_ROOT=$LOCAL/opt/android-sdk
 fi
 
 # Ruby
 if [ -d $HOME/.rbenv ]; then
   export PATH=$HOME/.rbenv/bin:$PATH
-  eval "$(rbenv init -)"
 fi
+if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 # Node
 [[ -s "$HOME/.nvm/nvm.sh" ]] && . "$HOME/.nvm/nvm.sh"
@@ -52,9 +47,9 @@ if [ -d "/usr/local/heroku" ]; then
 fi
 
 # Android SDK
-if [ -d $HOME/build/adt ]; then
-  export PATH=$HOME/build/adt/sdk/tools:$PATH
-  export PATH=$HOME/build/adt/sdk/platform-tools:$PATH
+if [ -d $LOCAL/adt ]; then
+  export PATH=$LOCAL/adt/sdk/tools:$PATH
+  export PATH=$LOCAL/adt/sdk/platform-tools:$PATH
 fi
 
 
@@ -85,4 +80,3 @@ fi
 command -v vault >/dev/null 2>&1 && function pws() {
   vault "$1" -p | pbc
 }
-

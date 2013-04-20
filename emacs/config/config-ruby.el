@@ -6,6 +6,8 @@
 
 (defun tung/setup-ruby-mode ()
   (interactive)
+  (setq ruby-deep-arglist nil
+        ruby-deep-indent-paren nil)
   (tung/setup-programming-environment))
 
 (add-hook 'ruby-mode-hook #'tung/setup-ruby-mode)
