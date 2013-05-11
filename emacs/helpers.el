@@ -174,6 +174,13 @@
   (align-regexp begin end "\\(\\s-*\\)[=|:]" 1 1))
 
 
+(defun shell-execute ()
+  (interactive)
+  (let ((file-buffer (or (buffer-file-name) ""))
+        (command (read-shell-command "Shell command: " nil nil nil)))
+    (shell-command (replace-regexp-in-string "%" file-buffer command))))
+
+
 ;; Functions
 (defun tung/occurences (regex string)
   (let ((matches '())

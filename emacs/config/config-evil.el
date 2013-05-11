@@ -69,7 +69,9 @@
 
                        "C-a" 'align-regexp
 
-                       "ge" 'extract-variable)
+                       "ge" 'extract-variable
+                       "*" 'evil-visual-search
+                       "#" 'evil-visual-search)
 
      (tung/fill-keymap evil-motion-state-map
                        "<tab>" 'evil-jump-item)
@@ -94,6 +96,15 @@
        (after tung/return-evil-normal-state activate)
        (evil-normal-state))
 
+     (defun evil-visual-search (beg end)
+       (interactive "r")
+       (when (evil-visual-state-p)
+         (evil-exit-visual-state)
+         (setq isearch-forward t)
+         (evil-search
+          (regexp-quote (buffer-substring-no-properties beg end))
+          t t)))
+
      ;; Change cursor in Terminal mode
      ;; Some terminal support escape sequence
      ;; iTerm and Konsole: "\033]50;CursorShape=?\x7"
@@ -111,13 +122,14 @@
          (emacs . "orange")))
 
      (defun evil-update-terminal-cursor ()
-       (let* ((color (cdr (assoc evil-state evil-terminal-cursor)))
-              (terminal-string-format
-               (if (getenv "TMUX" (selected-frame))
-                   "\033Ptmux;\033\033]12;%s\007\033\\" "\033]12;%s\007"))
-              (terminal-string (format terminal-string-format color)))
-         (when (and color (not (window-system)))
-           (send-string-to-terminal terminal-string))))
+       (unless (window-system)
+         (let* ((color (cdr (assoc evil-state evil-terminal-cursor)))
+                (terminal-string-format
+                 (if (getenv "TMUX" (selected-frame))
+                     "\033Ptmux;\033\033]12;%s\007\033\\" "\033]12;%s\007"))
+                (terminal-string (format terminal-string-format color)))
+           (when color
+             (send-string-to-terminal terminal-string)))))
 
      (add-hook 'evil-insert-state-entry-hook #'evil-update-terminal-cursor)
      (add-hook 'evil-normal-state-entry-hook #'evil-update-terminal-cursor)

@@ -14,6 +14,12 @@ if [ -d $LOCAL/bin ]; then
 
   export RBENV_ROOT=$LOCAL/var/rbenv
   export ANDROID_SDK_ROOT=$LOCAL/opt/android-sdk
+  export ANDROID_HOME=$ANDROID_SDK_ROOT
+fi
+
+# Java
+if [ -e "/usr/libexec/java_home" ]; then
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
 fi
 
 # Ruby
@@ -80,3 +86,4 @@ fi
 command -v vault >/dev/null 2>&1 && function pws() {
   vault "$1" -p | pbc
 }
+

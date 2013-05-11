@@ -5,8 +5,7 @@
 (defun tung/setup-php-mode ()
   (interactive)
   (tung/setup-programming-environment)
-  (php-enable-drupal-coding-style)
-  (zencoding-mode t))
+  (php-enable-drupal-coding-style))
 
 (add-hook 'php-mode-hook #'tung/setup-php-mode)
 

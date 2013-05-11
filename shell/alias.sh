@@ -49,6 +49,15 @@ alias grep="grep --color"
 alias r=rails
 alias be='bundle exec'
 alias bi='bundle install'
+function fr() {
+  if [ -e "Procfile.dev" ]; then
+    echo "::DEVELOPMENT::"
+    foreman start -f Procfile.dev
+  elif [ -e "Procfile" ]; then
+    echo "::PRODUCTION::"
+    foreman start
+  fi
+}
 
 # Vim
 alias v=vim
@@ -102,3 +111,4 @@ extract() {
     echo "'$1' is not a valid file"
   fi
 }
+

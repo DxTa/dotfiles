@@ -3,7 +3,8 @@
   (interactive)
   (tung/setup-programming-environment)
   (define-key c-mode-map (kbd "<tab>") #'indent-for-tab-command)
-  (setq c-basic-offset 4))
+  (setq c-basic-offset 2
+        indent-tabs-mode nil))
 
 (add-hook 'c-mode-hook #'tung/setup-c-mode)
 
