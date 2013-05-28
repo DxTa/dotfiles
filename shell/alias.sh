@@ -50,9 +50,9 @@ alias r=rails
 alias be='bundle exec'
 alias bi='bundle install'
 function fr() {
-  if [ -e "Procfile.dev" ]; then
+  if [ -e "Procfile.local" ]; then
     echo "::DEVELOPMENT::"
-    foreman start -f Procfile.dev
+    foreman start -f Procfile.local
   elif [ -e "Procfile" ]; then
     echo "::PRODUCTION::"
     foreman start

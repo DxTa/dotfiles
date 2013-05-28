@@ -61,7 +61,7 @@ bindkey '^W' backward-kill-word
 
 
 # Mac OS X Proxy Icon in Terminal
-if [ "$OS" = "darwin" ] && [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
+if [ "$TERM_PROGRAM" = "Apple_Terminal" ] || [ "$TERM_PROGRAM" = "iTerm.app" ]; then
   update_terminal_cwd () {
     local SEARCH=' '
     local REPLACE='%20'

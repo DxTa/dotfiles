@@ -26,3 +26,4 @@ Watchfile
 repl-port
 .\#*
 *.rest
+routes.local
