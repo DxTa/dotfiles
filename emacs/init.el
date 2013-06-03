@@ -68,12 +68,9 @@
         "/usr/local/bin"
         "/Application/Xcode.app/Contents/Developer/usr/bin"))
 
-(setenv "PATH"
-        (td-join ":"
-                 (append (mapcar 'expand-file-name td-extra-paths)
-                         (list (getenv "PATH")))))
-
-(mapc (lambda (path) (push path exec-path)) td-extra-paths)
+(setq exec-path
+      (append (mapcar #'expand-file-name td-extra-paths) exec-path))
+(setenv "PATH" (td-join ":" exec-path))
 
 ;;;; startup
 (defun td-scratch-fortune ()
@@ -461,10 +458,14 @@
 ;;;; projectile
 (after 'projectile-autoloads
   (projectile-global-mode)
-  (setq projectile-known-projects-file
-        (expand-file-name "projectile-bookmarks.eld" "~/.emacs.d/data"))
   (td-bind "M-p" #'projectile-find-file
            "C-c a" #'projectile-ack))
+
+(after 'projectile
+  (setq projectile-known-projects-file
+        (expand-file-name "projectile-bookmarks.eld" "~/.emacs.d/data")
+        projectile-tags-command "~/local/bin/ctags -Re %s %s")
+  (push "build.gradle" projectile-project-root-files))
 
 ;;;; ispell
 ;; TODO: ispell word completing suggestion
@@ -512,9 +513,13 @@
 
 ;;;; diff-hl
 (after 'diff-hl-autoloads
-  (global-diff-hl-mode t))
+  (add-hook 'prog-mode-hook #'turn-on-diff-hl-mode)
+  (add-hook 'vc-dir-mode-hook #'turn-on-diff-hl-mode))
 
 (after 'diff-hl
+  (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
+    "Markers disappear and reapear is kind of annoying.")
+
   (setq diff-hl-draw-borders nil)
 
   (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
@@ -836,7 +841,8 @@
 (defun byte-recompile-config ()
   (interactive)
   (when (string-match "init.el" buffer-file-name)
-    (byte-compile-file buffer-file-name)))
+    (let ((byte-compile-verbose nil))
+      (byte-compile-file buffer-file-name))))
 
 (add-hook 'after-save-hook #'byte-recompile-config)
 
@@ -969,4 +975,5 @@
   (when buffer-file-name (save-buffer)))
 
 ;;;; inbox
-;; (find-file "~/Dropbox/inbox.org")
+(find-file "~/Dropbox/inbox.org")
+(switch-to-buffer "*scratch*")
