@@ -1,0 +1,62 @@
+#!/bin/bash
+
+HOST_FILE="/etc/hosts"
+
+is_localized() {
+  grep $1 $HOST_FILE
+}
+
+localized() {
+  grep '127.0.0.1' $HOST_FILE
+  grep '::1' $HOST_FILE
+}
+
+localize() {
+  if [ -n "$(is_localized $1)" ]; then
+    echo "$1 is already localized!"
+  else
+    echo "127.0.0.1 $1" >> $HOST_FILE
+    echo "::1 $1" >> $HOST_FILE
+  fi
+}
+
+unlocalize() {
+  sed -i '' -e "/$1/d" $HOST_FILE
+}
+
+usage() {
+  cat <<EOF
+USAGE
+    lh [<action>] [<url>]
+
+DESCIRPTION
+    lh brings host to local
+
+ACTIONS
+    -l,--list,l,list
+        List the already localized hosts
+
+    -u,--unlocalize,u,unlocalize host
+        Unlocalize the given host
+
+The default action is to localize the given host
+
+EOF
+}
+
+if [ $# = 0 ]; then
+  usage;
+else
+  case "$1" in
+    -l|--list|l|list)
+      localized;
+      ;;
+    -u|--unlocalize|unlocalize)
+      unlocalize $2;
+      ;;
+    *)
+      localize $1;
+      ;;
+  esac
+fi
+
