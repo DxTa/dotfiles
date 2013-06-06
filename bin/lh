@@ -2,26 +2,44 @@
 
 HOST_FILE="/etc/hosts"
 
-is_localized() {
+is_local() {
   grep $1 $HOST_FILE
 }
 
-localized() {
-  grep '127.0.0.1' $HOST_FILE
-  grep '::1' $HOST_FILE
+list() {
+  grep '127.0.0.1' $HOST_FILE  | cut -f 2
 }
 
-localize() {
-  if [ -n "$(is_localized $1)" ]; then
-    echo "$1 is already localized!"
+add() {
+  if [ -n "$(is_local $1)" ]; then
+    echo "$1 is already local!"
   else
-    echo "127.0.0.1 $1" >> $HOST_FILE
-    echo "::1 $1" >> $HOST_FILE
+    echo "127.0.0.1\t$1" >> $HOST_FILE
   fi
 }
 
-unlocalize() {
+remove() {
   sed -i '' -e "/$1/d" $HOST_FILE
+}
+
+query() {
+  # Alfred 2 support
+  if [ -z $1 ]; then
+    query='.'
+  else
+    query="$1"
+  fi
+
+  echo '<?xml version="1.0"?>'
+  echo '<items>'
+
+  list | grep $query | while read domain; do
+    echo "<item uid=\"domain $domain\" arg=\"$domain\">"
+    echo "<title>$domain</title>"
+    echo "</item>"
+  done
+
+  echo '</items>'
 }
 
 usage() {
@@ -34,12 +52,15 @@ DESCIRPTION
 
 ACTIONS
     -l,--list,l,list
-        List the already localized hosts
+        List the already list hosts
 
-    -u,--unlocalize,u,unlocalize host
-        Unlocalize the given host
+    -r,--remove,r,remove host
+        Remove the given host
 
-The default action is to localize the given host
+    -a,--add,a,add host
+        Add the given host
+
+The default action is to add the given host
 
 EOF
 }
@@ -49,13 +70,16 @@ if [ $# = 0 ]; then
 else
   case "$1" in
     -l|--list|l|list)
-      localized;
+      list;
       ;;
-    -u|--unlocalize|unlocalize)
-      unlocalize $2;
+    -q|--query|q|query)
+      query $2;
       ;;
-    *)
-      localize $1;
+    -r|--remove|r|remove)
+      remove $2;
+      ;;
+    -a|--add|a|add)
+      add $2;
       ;;
   esac
 fi

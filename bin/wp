@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "Setup a new Wordpress instance"
+
+# curl -OL http://wordpress.org/latest.zip
+# unzip latest.zip
+
+# mv wordpress wp
+# mv wp/wp-content src
+
+echo > Procfile.local <<EOF
+web: php -S localhost:5000
+db: mysqld
+EOF
+
+

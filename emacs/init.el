@@ -1,10 +1,49 @@
 
 ;; init.el --- tungd's Emacs configuration file
-(mapc (lambda (mode)
-        (when (fboundp mode) (funcall mode -1)))
-      '(tool-bar-mode scroll-bar-mode blink-cursor-mode))
+(setq default-frame-alist
+      '((left-fringe . 24) (right-fringe . 0))
+      initial-frame-alist default-frame-alist)
 
-(unless (display-graphic-p) (menu-bar-mode -1))
+(setq td-screen-layouts
+      '((:query (= (x-display-pixel-width) 1366)
+                :height 35 :width 100 :top 0 :left 600)
+        (:query (and (= (x-display-pixel-width) 1280) (= (x-display-screens) 2))
+                :height 48 :width 100 :top 10 :left (+ (x-display-pixel-width) 200))
+        (:query (= (x-display-pixel-width) (+ 1366 1280))
+                :height 48 :width 100 :top 0 :left (+ 1366 200))))
+
+(defun set-frame-size-and-position-according-to-display ()
+  (interactive)
+  (when (display-graphic-p)
+    (mapc (lambda (layout)
+            (when (eval (plist-get layout :query))
+              (and (plist-get layout :width)
+                   (set-frame-width (selected-frame) (eval (plist-get layout :width))))
+              (and (plist-get layout :height)
+                   (set-frame-height (selected-frame) (eval (plist-get layout :height))))
+              (set-frame-position (selected-frame)
+                                  (eval (plist-get layout :left))
+                                  (eval (plist-get layout :top)))))
+          td-screen-layouts)))
+
+(set-frame-size-and-position-according-to-display)
+
+(defalias 'aa #'set-frame-size-and-position-according-to-display
+  "Auto Adjust frame size according to current display")
+
+(defun td-custom-frame (&optional frame)
+  (interactive)
+  (mapc (lambda (mode)
+          (when (fboundp mode) (funcall mode -1)))
+        '(tool-bar-mode scroll-bar-mode blink-cursor-mode))
+
+  (unless (display-graphic-p) (menu-bar-mode -1)))
+
+(td-custom-frame)
+(add-hook 'after-make-frame-functions #'td-custom-frame)
+
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file 'noerror)
 
 ;;;; packages
 (require 'package)
@@ -23,7 +62,7 @@
 ;;;; helpers
 (defmacro after (mode &rest body)
   (declare (indent defun))
-  (eval `(require ,mode))
+  ;; (eval `(require ,mode))
   `(eval-after-load ,mode
      `(funcall (function ,(lambda () ,@body)))))
 
@@ -46,19 +85,14 @@
 (defun td-filter (condp l)
   (delq nil (mapcar (lambda (x) (and (funcall condp x) x)) l)))
 
+(defun td-uniq (l)
+  (delq nil (delete-dups l)))
+
 (defun even? (n)
   (eq 0 (mod n 2)))
 
 (defun odd? (n)
   (not (even? n)))
-
-;;;; requires
-(require 'uniquify)
-(after 'uniquify
-  (setq uniquify-buffer-name-style 'post-forward
-        uniquify-separator " - "
-        uniquify-after-kill-buffer-p t
-        uniquify-ignore-buffers-re "^\\*"))
 
 ;;;; paths
 (setq td-extra-paths
@@ -71,6 +105,21 @@
 (setq exec-path
       (append (mapcar #'expand-file-name td-extra-paths) exec-path))
 (setenv "PATH" (td-join ":" exec-path))
+
+;;;; platform specific
+(when (eq system-type 'darwin)
+  (setq delete-by-moving-to-trash t
+        mac-command-modifier 'meta
+        mac-option-modifier 'super))
+
+(when (eq system-type 'gnu/linux)
+  (menu-bar-mode -1))
+
+(after 'browse-url
+  (setq browse-url-browser-function
+        (cond
+         ((eq system-type 'darwin) 'browse-url-default-macosx-browser)
+         ((eq system-type 'gnu/linux) "xdg-open"))))
 
 ;;;; startup
 (defun td-scratch-fortune ()
@@ -90,7 +139,9 @@
           'append)
 
 ;;;; server
-(ignore-errors (server-start nil))
+(require 'server)
+(after 'server
+  (unless (server-running-p) (server-start nil)))
 
 ;;;; aliases
 (defalias 'qrr 'query-replace-regexp)
@@ -121,7 +172,7 @@
 (td-bind "C-=" #'indent-defun)
 
 (td-bind "M-j" #'other-window)
-(td-bind "M-k" #'other-window-reverse)
+(td-bind "M-k" (td-cmd (other-window -1)))
 (td-bind "M-`" #'other-frame)
 (td-bind "C-c q" #'delete-frame)
 (td-bind "C-c Q" #'delete-window)
@@ -145,7 +196,8 @@
       imenu-auto-rescan t
       scroll-margin 3
       frame-title-format '("%b %+%+ %f")
-      default-input-method 'vietnamese-telex)
+      default-input-method 'vietnamese-telex
+      tab-stop-list (number-sequence 2 100 2))
 
 (setq-default major-mode 'text-mode
               tab-width 2
@@ -153,10 +205,6 @@
               indent-tabs-mode nil
               fill-column 90
               truncate-lines t)
-
-(let ((ratio (/ (car tab-stop-list) 2)))
-  (setq tab-stop-list
-        (mapcar (lambda (n) (/ n ratio)) tab-stop-list)))
 
 (column-number-mode t)
 (visual-line-mode -1)
@@ -202,12 +250,12 @@
         tramp-persistency-file-name "~/emacs.d/data/tramp"))
 
 ;;;; file
-(defadvice ido-find-file
-  (after find-file-sudo activate)
-  (when (and buffer-file-name
-             (not (eq (user-uid)
-                      (nth 2 (file-attributes buffer-file-name)))))
-    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+;; (defadvice ido-find-file
+;;   (after find-file-sudo activate)
+;;   (when (and buffer-file-name
+;;              (not (eq (user-uid)
+;;                       (nth 2 (file-attributes buffer-file-name)))))
+;;     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
 (defun before-save-make-directories ()
   (let ((dir (file-name-directory buffer-file-name)))
@@ -216,6 +264,14 @@
 
 (add-hook 'before-save-hook #'before-save-make-directories)
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
+
+;;;; uniquify
+(require 'uniquify)
+(after 'uniquify
+  (setq uniquify-buffer-name-style 'post-forward
+        uniquify-separator " - "
+        uniquify-after-kill-buffer-p t
+        uniquify-ignore-buffers-re "^\\*"))
 
 ;;;; saveplace
 (require 'saveplace)
@@ -228,25 +284,8 @@
 (add-to-list 'recentf-exclude "ido.last")
 (add-hook 'server-visit-hook #'recentf-save-list)
 
-;;;; platform specific
-(when (eq system-type 'darwin)
-  (setq delete-by-moving-to-trash t
-        mac-command-modifier 'meta
-        mac-option-modifier 'super))
-
-(when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1))
-
-(after 'browse-url
-  (setq browse-url-browser-function
-        (cond
-         ((eq system-type 'darwin) 'browse-url-default-macosx-browser)
-         ((eq system-type 'gnu/linux) "xdg-open"))))
-
 ;;;; theme
-(after 'color-theme-approximate-autoloads
-  (color-theme-approximate-on))
-
+(color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
 (load-theme 'twilight-anti-bright t)
 
@@ -259,49 +298,17 @@
 (defadvice load-theme (before theme-dont-propagate activate)
   (mapcar #'disable-theme custom-enabled-themes))
 
-;;;; gui
-(setq default-frame-alist
-      '((left-fringe . 24) (right-fringe . 0))
-      initial-frame-alist default-frame-alist)
-
-(setq td-screen-layouts
-      '((:query (= (x-display-pixel-width) 1366)
-                :height 35 :width 100 :top 0 :left 600)
-        (:query (and (= (x-display-pixel-width) 1280) (= (x-display-screens) 2))
-                :height 48 :width 100 :top 10 :left (+ (x-display-pixel-width) 200))
-        (:query (= (x-display-pixel-width) (+ 1366 1280))
-                :height 35 :width 100 :top 0 :left (- 1366 760))))
-
-(defun set-frame-size-and-position-according-to-display ()
-  (interactive)
-  (when (display-graphic-p)
-    (mapc (lambda (layout)
-            (when (eval (plist-get layout :query))
-              (and (plist-get layout :width)
-                   (set-frame-width (selected-frame) (eval (plist-get layout :width))))
-              (and (plist-get layout :height)
-                   (set-frame-height (selected-frame) (eval (plist-get layout :height))))
-              (set-frame-position (selected-frame)
-                                  (eval (plist-get layout :left))
-                                  (eval (plist-get layout :top)))))
-          td-screen-layouts)))
-
-(set-frame-size-and-position-according-to-display)
-
-(defalias 'aa #'set-frame-size-and-position-according-to-display
-  "Auto Adjust frame size according to current display")
-
 ;; show-paren-mode
 (after 'paren
   (setq show-paren-delay 0))
 (show-paren-mode t)
 
 ;;;; diminish
-(defun td-compact-mode-line (file mode &optional lighter)
-  (eval-after-load file
-    `(diminish ,mode ,(when lighter (concat " " lighter)))))
-
 (after 'diminish-autoloads
+  (defun td-compact-mode-line (file mode &optional lighter)
+    (eval-after-load file
+      `(diminish ,mode ,(when lighter (concat " " lighter)))))
+
   (mapc (lambda (args)
           (apply #'td-compact-mode-line args))
         '(("yasnippet" 'yas-minor-mode "Y")
@@ -369,15 +376,14 @@
 
 ;;;; hippie-expand
 (require 'hippie-exp)
+
 (after 'hippie-exp
-  (setq hippie-expand-verbose nil
+  (setq hippie-expand-verbose t
         hippie-expand-try-functions-list
         '(try-expand-all-abbrevs
           try-expand-dabbrev-visible
           try-expand-dabbrev
-          try-expand-dabbrev-same-mode-buffers
-          try-complete-lisp-symbol-partially
-          try-complete-lisp-symbol))
+          try-expand-dabbrev-same-mode-buffers))
 
   (define-prefix-command 'td-completion-map)
   (td-bind "C-;" 'td-completion-map)
@@ -386,10 +392,25 @@
                 '(try-complete-file-name-partially try-complete-file-name) t)
            "l" (make-hippie-expand-function
                 '(try-expand-line) t))
-  ;; (add-to-list 'hippie-expand-try-functions-list #'ispell-complete-word t)
+
   (defun try-expand-dabbrev-same-mode-buffers (prefix)
-    (let ((buffer-list (same-mode-buffers)))
-      (try-expand-dabbrev-all-buffers prefix))))
+    (cl-flet ((buffer-list () (same-mode-buffers)))
+      (try-expand-dabbrev-all-buffers prefix)))
+
+  (setq td-mode-completers
+        '((emacs-lisp-mode . (try-complete-lisp-symbol-partially
+                              try-complete-lisp-symbol))
+          (js2-mode . ())
+          (markdown-mode . (try-ispell-expand))
+          (org-mode . (try-ispell-expand))))
+
+  (defun td-he-set-sources ()
+    (set (make-local-variable 'hippie-expand-try-functions-list)
+         (td-uniq
+          (append hippie-expand-try-functions-list
+                  (cdr (assoc major-mode td-mode-completers))))))
+
+  (add-hook 'emacs-lisp-mode-hook #'td-he-set-sources))
 
 (defun smart-he-tab (prefix)
   (interactive "*P")
@@ -435,12 +456,12 @@
 
   (defun td-ido-hook ()
     (td-bind ido-completion-map
-             "C-h" 'delete-backward-char
-             "ESC" 'ido-exit-minibuffer
-             "C-w" 'ido-delete-backward-updir
-             "C-n" 'ido-next-match
-             "C-p" 'ido-prev-match
-             "TAB" 'ido-complete
+             "C-h" #'delete-backward-char
+             "ESC" #'ido-exit-minibuffer
+             "C-w" #'ido-delete-backward-updir
+             "C-n" #'ido-next-match
+             "C-p" #'ido-prev-match
+             "TAB" #'ido-complete
              "C-l" #'td-minibuffer-insert-word-at-point
              "~" #'td-minibuffer-home))
 
@@ -468,13 +489,39 @@
   (push "build.gradle" projectile-project-root-files))
 
 ;;;; ispell
-;; TODO: ispell word completing suggestion
-(defun ispell-expand (old)
-  ())
+(defun ispell-suggest-word (word)
+  (let* ((cmd (format "echo '%s' | aspell -a --sug-mode=ultra --suggest | sed -n '1!p'" word))
+         (raw (shell-command-to-string cmd)))
+    (when (string-match ":\s+\\(.*\\)" raw)
+      (split-string (match-string 1 raw) ", "))))
 
-;; TODO: ispell selection using ido
-(defun ido-ispell (word)
-  ())
+(defun ido-ispell-word-at-point ()
+  (interactive)
+  (let* ((word (current-word))
+         (prompt (format "Suggestions [%s]: " word))
+         (sugs (ispell-suggest-word word))
+         (select (and sugs (ido-completing-read prompt sugs))))
+    (when select
+      (save-excursion
+        (beginning-of-thing 'word)
+        (kill-word 1)
+        (insert select)))))
+
+(td-bind "C-c i" #'ido-ispell-word-at-point)
+
+(defun try-ispell-expand (old)
+  (unless old
+    (he-init-string (he-dabbrev-beg) (point))
+    (setq he-expand-list (ispell-suggest-word he-search-string)))
+  (while (and he-expand-list
+              (he-string-member (car he-expand-list) he-tried-table))
+    (setq he-expand-list (cdr he-expand-list)))
+  (if (null he-expand-list)
+      (progn (he-reset-string) nil)
+    (he-substitute-string (car he-expand-list))
+    (setq he-tried-table (cons (car he-expand-list) (cdr he-tried-table)))
+    (setq he-expand-list (cdr he-expand-list))
+    t))
 
 ;;;; yasnippets
 (after 'yasnippet-autoloads
@@ -499,7 +546,8 @@
 ;;;; rainbow-delimiters
 (after 'rainbow-delimiters-autoloads
   (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable))
+  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable)
+  (add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable))
 
 (after 'rainbow-delimiters
   (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
@@ -513,12 +561,11 @@
 
 ;;;; diff-hl
 (after 'diff-hl-autoloads
-  (add-hook 'prog-mode-hook #'turn-on-diff-hl-mode)
-  (add-hook 'vc-dir-mode-hook #'turn-on-diff-hl-mode))
+  (global-diff-hl-mode))
 
 (after 'diff-hl
   (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
-    "Markers disappear and reapear is kind of annoying.")
+    "Markers disappear and reapear is kind of annoying to me.")
 
   (setq diff-hl-draw-borders nil)
 
@@ -538,9 +585,6 @@
     (mapc (lambda (buffer)
             (with-current-buffer buffer (diff-hl-update)))
           (buffer-list)))
-
-  (defadvice load-theme (after apply-customize-diff-hl-faces activate)
-    (customize-diff-hl-faces nil))
 
   (defun diff-hl-fringe-spec (type pos)
     (let* ((key (cons type pos))
@@ -588,7 +632,7 @@
            "j" #'evil-next-visual-line
            "k" #'evil-previous-visual-line
            "<tab>" #'evil-jump-item
-           "gp" "\"*p"
+           "gp" #'clipboard-yank
            "C-:" #'eval-expression
            "C-e" #'end-of-line
            "SPC" #'evil-toggle-fold
@@ -604,7 +648,7 @@
            "M-h" " => "
            "M-a" "@")
   (td-bind evil-visual-state-map
-           "Y" "\"*y"
+           "Y" #'clipboard-kill-ring-save
            "C-a" #'align=
            "ge" #'extract-variable
            "*" #'evil-visual-search)
@@ -691,18 +735,18 @@
 ;;;; web
 (after 'web-mode-autoloads
   (td-mode 'web-mode
-           "\\.html$" "\\.erb" "\\.rhtml$" "\\.ejs$" "*twig*" "*tmpl*"
+           "\\.html$" "\\.erb" "\\.rhtml$" "\\.ejs$" "*twig*" "*tmpl*" "\\.hbs$"
            "\\.ctp$" "/\\(views\\|html\\|templates\\)/.*\\.php\\'")
   ;; electric pair mode is not flexible enough
   (defadvice electric-pair-post-self-insert-function
     (around disable-electric-pair activate)
     (unless (eq major-mode 'web-mode) ad-do-it)))
 
-(after 'skewer-mode-autoloads
-  (setq httpd-port 6000)
-  (add-hook 'js2-mode-hook #'skewer-mode)
-  (add-hook 'css-mode-hook #'skewer-mode)
-  (add-hook 'web-mode-hook #'skewer-mode))
+;; (after 'skewer-mode-autoloads
+;;   (setq httpd-port 6000)
+;;   (add-hook 'js2-mode-hook #'skewer-mode)
+;;   (add-hook 'css-mode-hook #'skewer-mode)
+;;   (add-hook 'web-mode-hook #'skewer-mode))
 
 ;;;; js2
 (after 'js2-mode-autoloads
@@ -764,6 +808,12 @@
                  "\\(def\\|do\\|{\\)" "\\(end\\|end\\|}\\)" "#"
                  (lambda (arg) (ruby-end-of-block)) nil)))
 
+;;;; python
+(after 'python
+  (defun setup-python-mode ()
+    (setq tab-width 4))
+  (add-hook 'python-mode-hook #'setup-python-mode))
+
 ;;;; c
 
 ;;;; java
@@ -775,10 +825,13 @@
     (GET 2) (POST 2) (PUT 2) (DELETE 2) (HEAD 2) (ANY 2)))
 
 (after 'nrepl
+  (setq nrepl-hide-special-buffers t
+        nrepl-popup-stacktraces nil)
   (defun td-setup-nrepl ()
     (nrepl-eval "(set! *print-length* 30)")
     (nrepl-eval "(set! *print-level* 5)"))
-  (add-hook 'nrepl-interaction-mode-hook #'td-setup-nrepl))
+  (add-hook 'nrepl-interaction-mode-hook #'td-setup-nrepl)
+  (add-hook 'nrepl-interaction-mode-hook #'nrepl-turn-on-eldoc-mode))
 
 ;;;; markdown
 (after 'markdown-mode-autoloads
@@ -824,6 +877,11 @@
             (when (y-or-n-p (format "Creat %s?" path))
               (find-file path))))))))
 
+(defun finder ()
+  "Open the current working directory in finder."
+  (interactive)
+  (shell-command (concat "open " (shell-quote-argument default-directory))))
+
 (defun toggle-comment-dwim (&optional args)
   (interactive "*P")
   (comment-normalize-vars)
@@ -844,7 +902,7 @@
     (let ((byte-compile-verbose nil))
       (byte-compile-file buffer-file-name))))
 
-(add-hook 'after-save-hook #'byte-recompile-config)
+;; (add-hook 'after-save-hook #'byte-recompile-config)
 
 (defun indent-defun ()
   "Indent the current defun."
@@ -955,11 +1013,11 @@
 
 (defun other-buffer-files ()
   (td-filter (lambda (b) (not (current-buffer? b)))
-             (td-filter 'buffer-file-name (buffer-list))))
+             (td-filter #'buffer-file-name (buffer-list))))
 
 (defun kill-other-buffers ()
   (interactive)
-  (mapc 'kill-buffer (other-buffer-files)))
+  (mapc #'kill-buffer (other-buffer-files)))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
@@ -976,4 +1034,5 @@
 
 ;;;; inbox
 (find-file "~/Dropbox/inbox.org")
+(td-bind "C-c j" (td-cmd (find-file "~/Dropbox/inbox.org")))
 (switch-to-buffer "*scratch*")

@@ -32,4 +32,4 @@ cat <<-RUBY > $config
   run lambda { |env| [404,{},'<h1>Not Found</h1>'] }
 RUBY
 
-thin --rackup "$config" "$@" start
+puma "$config"

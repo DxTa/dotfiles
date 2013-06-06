@@ -28,13 +28,21 @@
 
 --langdef=Rust
 --langmap=Rust:.rs
---regex-rust=/[ \t]*fn[ \t]+([a-zA-Z0-9_]+)/\1/f,function/
---regex-rust=/[ \t]*type[ \t]+([a-zA-Z0-9_]+)/\1/T,types/
---regex-rust=/[ \t]*enum[ \t]+([a-zA-Z0-9_]+)/\1/T,types/
---regex-rust=/[ \t]*struct[ \t]+([a-zA-Z0-9_]+)/\1/m,types/
---regex-rust=/[ \t]*class[ \t]+([a-zA-Z0-9_]+)/\1/m,types/
---regex-rust=/[ \t]*mod[ \t]+([a-zA-Z0-9_]+)/\1/m,modules/
---regex-rust=/[ \t]*const[ \t]+([a-zA-Z0-9_]+)/\1/m,consts/
---regex-rust=/[ \t]*trait[ \t]+([a-zA-Z0-9_]+)/\1/m,traits/
---regex-rust=/[ \t]*impl[ \t]+([a-zA-Z0-9_]+)/\1/m,impls/
---regex-rust=/[ \t]*impl[ \t]+of[ \t]([a-zA-Z0-9_]+)/\1/m,impls/
+--regex-Rust=/[ \t]*fn[ \t]+([a-zA-Z0-9_]+)/\1/f,function/
+--regex-Rust=/[ \t]*type[ \t]+([a-zA-Z0-9_]+)/\1/T,types/
+--regex-Rust=/[ \t]*enum[ \t]+([a-zA-Z0-9_]+)/\1/T,types/
+--regex-Rust=/[ \t]*struct[ \t]+([a-zA-Z0-9_]+)/\1/m,types/
+--regex-Rust=/[ \t]*class[ \t]+([a-zA-Z0-9_]+)/\1/m,types/
+--regex-Rust=/[ \t]*mod[ \t]+([a-zA-Z0-9_]+)/\1/m,modules/
+--regex-Rust=/[ \t]*const[ \t]+([a-zA-Z0-9_]+)/\1/m,consts/
+--regex-Rust=/[ \t]*trait[ \t]+([a-zA-Z0-9_]+)/\1/m,traits/
+--regex-Rust=/[ \t]*impl[ \t]+([a-zA-Z0-9_]+)/\1/m,impls/
+--regex-Rust=/[ \t]*impl[ \t]+of[ \t]([a-zA-Z0-9_]+)/\1/m,impls/
+
+--langdef=Coffee
+--langmap=Coffee:.coffee
+--regex-Coffee=/^class ([A-Za-z.]+)( extends [A-Za-z.]+)?$/\1/c,class/
+--regex-Coffee=/^[ \t]*@?([A-Za-z.]+):.*[-=]>.*$/\1/f,function/
+--regex-Coffee=/^[ \t]*([A-Za-z.]+)[ \t]+=.*[-=]>.*$/\1/f,function/
+--regex-Coffee=/^[ \t]*([A-Za-z.]+)[ \t]+=[^->\n]*$/\1/v,variable/
+
