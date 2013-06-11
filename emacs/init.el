@@ -36,7 +36,6 @@
   (mapc (lambda (mode)
           (when (fboundp mode) (funcall mode -1)))
         '(tool-bar-mode scroll-bar-mode blink-cursor-mode))
-
   (unless (display-graphic-p) (menu-bar-mode -1)))
 
 (td-custom-frame)
@@ -60,6 +59,8 @@
         ack-and-a-half))
 
 ;;;; helpers
+(setq user-emacs-directory "~/.emacs.d/data/")
+
 (defmacro after (mode &rest body)
   (declare (indent defun))
   ;; (eval `(require ,mode))
@@ -210,8 +211,6 @@
 (visual-line-mode -1)
 (global-hl-line-mode t)
 (which-function-mode t)
-
-(setq savehist-file (expand-file-name "history" "~/.emacs.d/data"))
 (savehist-mode t)
 
 ;;;; encoding
@@ -233,21 +232,22 @@
       kept-new-versions 6
       kept-old-versions 2
       version-control t
-      backup-directory-alist `((".*" . "~/.emacs.d/data/backups/")
-                               (,tramp-file-name-regexp . nil)))
+      backup-directory-alist
+      `((".*" . ,(expand-file-name "backups" user-emacs-directory))
+        (,tramp-file-name-regexp . nil)))
 
 (global-auto-revert-mode t)
 (setq global-auto-revert-non-file-buffers t
       auto-revert-verbose nil)
 
 (setq auto-save-default nil
-      auto-save-list-file-prefix  "~/.emacs.d/data/auto-saves/")
+      auto-save-list-file-prefix
+      (expand-file-name "auto-saves" user-emacs-directory))
 
 ;;;; tramp
 (after 'tramp
   (setq password-cache-expiry nil
-        tramp-default-method "ftp"
-        tramp-persistency-file-name "~/emacs.d/data/tramp"))
+        tramp-default-method "ftp"))
 
 ;;;; file
 ;; (defadvice ido-find-file
@@ -276,7 +276,7 @@
 ;;;; saveplace
 (require 'saveplace)
 (setq-default save-place t)
-(setq save-place-file "~/.emacs.d/data/saved-places")
+(setq save-place-file (expand-file-name "save-places" user-emacs-directory))
 
 ;;;; recentf
 (recentf-mode t)
@@ -431,7 +431,7 @@
         ido-use-url-at-point nil
         ido-use-filename-at-point nil
         ido-ignore-extensions t
-        ido-save-directory-list-file (expand-file-name "~/.emacs.d/data/ido.last")
+        ido-save-directory-list-file (expand-file-name "ido.last" user-emacs-directory)
         ido-everywhere t
         ido-ignore-buffers '("\\` ")
         ido-ignore-files '("ido.last" ".*-autoloads.el"))
@@ -483,9 +483,7 @@
            "C-c a" #'projectile-ack))
 
 (after 'projectile
-  (setq projectile-known-projects-file
-        (expand-file-name "projectile-bookmarks.eld" "~/.emacs.d/data")
-        projectile-tags-command "~/local/bin/ctags -Re %s %s")
+  (setq projectile-tags-command "~/local/bin/ctags -Re %s %s")
   (push "build.gradle" projectile-project-root-files))
 
 ;;;; ispell
@@ -604,7 +602,8 @@
         undo-tree-auto-save-history t
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
-        undo-tree-history-directory-alist '(("." . "~/.emacs.d/data/undos/"))))
+        undo-tree-history-directory-alist
+        `(("." . ,(expand-file-name "undos" user-emacs-directory)))))
 
 ;;;; evil
 (after 'evil-autoloads
