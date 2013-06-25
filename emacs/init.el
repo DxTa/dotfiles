@@ -6,11 +6,11 @@
 
 (setq td-screen-layouts
       '((:query (= (x-display-pixel-width) 1366)
-                :height 35 :width 100 :top 0 :left 600)
+                :height 35 :width 140 :top 0 :left 200)
         (:query (and (= (x-display-pixel-width) 1280) (= (x-display-screens) 2))
                 :height 48 :width 100 :top 10 :left (+ (x-display-pixel-width) 200))
         (:query (= (x-display-pixel-width) (+ 1366 1280))
-                :height 48 :width 100 :top 0 :left (+ 1366 200))))
+                :height 48 :width 100 :top 0 :left (- 1366 750))))
 
 (defun set-frame-size-and-position-according-to-display ()
   (interactive)
@@ -41,22 +41,19 @@
 (td-custom-frame)
 (add-hook 'after-make-frame-functions #'td-custom-frame)
 
-(setq custom-file "~/.emacs.d/custom.el")
-(load custom-file 'noerror)
-
 ;;;; packages
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
 (setq td-packages
-      ;; (mapcar (lambda (info) (car info)) package-alist)
-      '(yasnippet
-        yaml-mode web-mode undo-tree twilight-anti-bright-theme surround smex scss-mode
-        restclient rainbow-mode rainbow-delimiters projectile nrepl melpa markdown-mode
-        magit js2-mode ido-ubiquitous ibuffer-vc groovy-mode go-mode expand-region
-        diminish diff-hl evil color-theme-approximate coffee-mode clojure-mode
-        ack-and-a-half))
+      ;; (reverse (mapcar (lambda (info) (car info)) package-alist))
+      '(ack-and-a-half alert clojure-mode coffee-mode color-theme-approximate dash diff-hl
+        diminish elixir-mode emmet-mode evil expand-region go-mode groovy-mode ibuffer-vc
+        ido-ubiquitous js-comint js2-mode magit markdown-mode melpa nrepl org-pomodoro
+        php-mode projectile rainbow-delimiters rainbow-mode restclient s scss-mode
+        simple-httpd skewer-mode smex soothe-theme surround twilight-anti-bright-theme
+        undo-tree web-mode wgrep yaml-mode yasnippet))
 
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
@@ -94,6 +91,23 @@
 
 (defun odd? (n)
   (not (even? n)))
+
+;;;; custom
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file 'noerror)
+
+(defvar after-load-theme-functions nil)
+(defadvice load-theme (after load-theme-hooks activate)
+  (run-hooks 'after-load-theme-functions))
+
+(defun td-custom-faces ()
+  (set-face-attribute 'default nil :family "M+ 1m" :height 140)
+  (set-face-attribute 'mode-line nil :box nil)
+  (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
+  (set-face-attribute 'highlight nil :foreground nil)
+  (set-face-attribute 'font-lock-comment-face nil :background nil))
+
+(add-hook 'after-load-theme-functions #'td-custom-faces)
 
 ;;;; paths
 (setq td-extra-paths
@@ -162,7 +176,7 @@
              (cmd (pop mappings)))
         (define-key keymap (kbd key) cmd)))))
 
-(td-bind "s-<return>" #'ns-toogle-fullscreen)
+(td-bind "M-RET" #'td-fullscreen)
 (td-bind "M-m" #'execute-extended-command)
 
 (td-bind "M-z" #'zap-up-to-char)
@@ -198,7 +212,8 @@
       scroll-margin 3
       frame-title-format '("%b %+%+ %f")
       default-input-method 'vietnamese-telex
-      tab-stop-list (number-sequence 2 100 2))
+      tab-stop-list (number-sequence 2 100 2)
+      require-final-newline t)
 
 (setq-default major-mode 'text-mode
               tab-width 2
@@ -287,13 +302,7 @@
 ;;;; theme
 (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme 'twilight-anti-bright t)
-
-(set-face-attribute 'default nil :family "M+ 1m" :height 140)
-(set-face-attribute 'mode-line nil :box nil)
-(set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
-(set-face-attribute 'highlight nil :foreground nil)
-(set-face-attribute 'font-lock-comment-face nil :background nil)
+(load-theme 'subatomic t)
 
 (defadvice load-theme (before theme-dont-propagate activate)
   (mapcar #'disable-theme custom-enabled-themes))
@@ -537,25 +546,31 @@
 
 ;;;; org
 (after 'org
-  (set-face-attribute 'org-level-1 nil :height 1.3)
-  (set-face-attribute 'org-level-2 nil :height 1.2)
-  (set-face-attribute 'org-level-3 nil :height 1.1))
+  (defun td-custom-org-faces ()
+    (set-face-attribute 'org-level-1 nil :height 1.3)
+    (set-face-attribute 'org-level-2 nil :height 1.2)
+    (set-face-attribute 'org-level-3 nil :height 1.1))
+  (td-custom-org-faces)
+  (add-hook 'after-load-theme-functions #'td-custom-org-faces))
 
 ;;;; rainbow-delimiters
 (after 'rainbow-delimiters-autoloads
+  (defun td-custom-rainbow-delimiter-faces ()
+    (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
+    (set-face-attribute 'rainbow-delimiters-depth-2-face nil :foreground "#deae3e")
+    (set-face-attribute 'rainbow-delimiters-depth-3-face nil :foreground "#81af34")
+    (set-face-attribute 'rainbow-delimiters-depth-4-face nil :foreground "#4e9f75")
+    (set-face-attribute 'rainbow-delimiters-depth-5-face nil :foreground "#11535F")
+    (set-face-attribute 'rainbow-delimiters-depth-6-face nil :foreground "#00959e")
+    (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
+    (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
+  (td-custom-rainbow-delimiter-faces)
+  (add-hook 'after-load-theme-functions #'td-custom-rainbow-delimiter-faces)
+
   (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
   (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable)
   (add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable))
 
-(after 'rainbow-delimiters
-  (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
-  (set-face-attribute 'rainbow-delimiters-depth-2-face nil :foreground "#deae3e")
-  (set-face-attribute 'rainbow-delimiters-depth-3-face nil :foreground "#81af34")
-  (set-face-attribute 'rainbow-delimiters-depth-4-face nil :foreground "#4e9f75")
-  (set-face-attribute 'rainbow-delimiters-depth-5-face nil :foreground "#11535F")
-  (set-face-attribute 'rainbow-delimiters-depth-6-face nil :foreground "#00959e")
-  (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
-  (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
 
 ;;;; diff-hl
 (after 'diff-hl-autoloads
@@ -566,10 +581,6 @@
     "Markers disappear and reapear is kind of annoying to me.")
 
   (setq diff-hl-draw-borders nil)
-
-  (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
-  (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
-  (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
 
   (define-fringe-bitmap 'diff-hl-bmp-insert
     [0 24 24 126 126 24 24 0])
@@ -592,7 +603,14 @@
                (bmp-sym (intern (concat "diff-hl-bmp-" (symbol-name type)))))
           (setq val (propertize " " 'display `((left-fringe ,bmp-sym ,face-sym))))
           (puthash key val diff-hl-spec-cache)))
-      val)))
+      val))
+
+  (defun td-custom-diff-hl-faces ()
+    (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
+    (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
+    (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e"))
+  (td-custom-diff-hl-faces)
+  (add-hook 'after-load-theme-functions #'td-custom-diff-hl-faces))
 
 ;;;; undo-tree
 (after 'undo-tree-autoloads
@@ -630,16 +648,18 @@
            "C-k" "10gk"
            "j" #'evil-next-visual-line
            "k" #'evil-previous-visual-line
-           "<tab>" #'evil-jump-item
+           "TAB" #'evil-jump-item
            "gp" #'clipboard-yank
            "C-:" #'eval-expression
            "C-e" #'end-of-line
            "SPC" #'evil-toggle-fold
            "RET" #'evil-ex-nohighlight
            "gi" #'inline-variable
-           ",," #'evil-buffer)
+           ",," #'evil-buffer
+           ",w" #'evil-write-all
+           ",e" #'ido-find-file)
   (td-bind evil-insert-state-map
-           "<tab>" #'smart-he-tab
+           "TAB" #'smart-he-tab
            "<backtab>" (td-cmd (he-reset-string))
            "C-a" #'back-to-indentation
            "C-e" #'end-of-line
@@ -717,8 +737,6 @@
 
 ;;;; whitespace
 (after 'whitespace
-  (set-face-attribute 'whitespace-space nil :background nil)
-  (set-face-attribute 'whitespace-tab nil :background nil)
   (add-to-list 'whitespace-display-mappings
                '(newline-mark ?\n [?\u00AC ?\n] [?$ ?\n]) t)
   (setq whitespace-style
@@ -728,18 +746,39 @@
           newline newline-mark
           trailing lines-tail
           space-before-tab space-after-tab))
-  (setq whitespace-line-column fill-column))
+  (setq whitespace-line-column fill-column)
+
+  (defun td-custom-whitespace-faces ()
+    (set-face-attribute 'whitespace-space nil :background nil)
+    (set-face-attribute 'whitespace-tab nil :background nil))
+  (td-custom-whitespace-faces)
+  (add-hook 'after-load-theme-functions #'td-custom-whitespace-faces))
 
 ;; prog
 ;;;; web
 (after 'web-mode-autoloads
   (td-mode 'web-mode
            "\\.html$" "\\.erb" "\\.rhtml$" "\\.ejs$" "*twig*" "*tmpl*" "\\.hbs$"
-           "\\.ctp$" "/\\(views\\|html\\|templates\\)/.*\\.php\\'")
+           "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php\\'")
   ;; electric pair mode is not flexible enough
   (defadvice electric-pair-post-self-insert-function
     (around disable-electric-pair activate)
-    (unless (eq major-mode 'web-mode) ad-do-it)))
+    (unless (eq major-mode 'web-mode) ad-do-it))
+
+  (add-hook 'web-mode-hook #'emmet-mode))
+
+(after 'emmet-mode
+  (setq emmet-indentation 2
+        emmet-preview-default nil)
+
+  (defadvice emmet-preview
+    (after emmet-preview-hide-tooltip activate)
+    (overlay-put emmet-preview-output 'before-string nil))
+
+  (defun td-custom-emmet-faces ()
+    (set-face-attribute 'emmet-preview-input nil :box nil))
+  (td-custom-emmet-faces)
+  (add-hook 'after-load-theme-functions #'td-custom-emmet-faces))
 
 ;; (after 'skewer-mode-autoloads
 ;;   (setq httpd-port 6000)
@@ -810,7 +849,8 @@
 ;;;; python
 (after 'python
   (defun setup-python-mode ()
-    (setq tab-width 4))
+    (setq tab-width 4
+          python-indent 4))
   (add-hook 'python-mode-hook #'setup-python-mode))
 
 ;;;; c
@@ -1017,6 +1057,13 @@
 (defun kill-other-buffers ()
   (interactive)
   (mapc #'kill-buffer (other-buffer-files)))
+
+(defun td-fullscreen ()
+  "ns-toggle-fullscreen is not cool for me"
+  (interactive)
+  (set-frame-position (selected-frame) 0 0)
+  (set-frame-width (selected-frame) 190)
+  (set-frame-height (selected-frame) 34))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs

@@ -3,6 +3,8 @@
 	email = me@tungdao.com
 [github]
   user = tungd
+[credential]
+	helper = osxkeychain
 [core]
 	excludesfile = ~/.gitignore
 	whitespace = trailing-space,space-before-tab

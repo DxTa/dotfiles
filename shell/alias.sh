@@ -52,10 +52,10 @@ alias bi='bundle install'
 function fr() {
   if [ -e "Procfile.local" ]; then
     echo "::DEVELOPMENT::"
-    foreman start -f Procfile.local
+    nf start -j Procfile.local
   elif [ -e "Procfile" ]; then
     echo "::PRODUCTION::"
-    foreman start
+    nf start
   fi
 }
 
