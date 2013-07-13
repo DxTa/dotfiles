@@ -1,35 +1,9 @@
 
 ;; init.el --- tungd's Emacs configuration file
 (setq default-frame-alist
-      '((left-fringe . 24) (right-fringe . 0))
+      '((left-fringe . 24) (right-fringe . 0)
+        (width . 140) (height . 35) (left . 350))
       initial-frame-alist default-frame-alist)
-
-(setq td-screen-layouts
-      '((:query (= (x-display-pixel-width) 1366)
-                :height 35 :width 140 :top 0 :left 200)
-        (:query (and (= (x-display-pixel-width) 1280) (= (x-display-screens) 2))
-                :height 48 :width 100 :top 10 :left (+ (x-display-pixel-width) 200))
-        (:query (= (x-display-pixel-width) (+ 1366 1280))
-                :height 48 :width 100 :top 0 :left (- 1366 750))))
-
-(defun set-frame-size-and-position-according-to-display ()
-  (interactive)
-  (when (display-graphic-p)
-    (mapc (lambda (layout)
-            (when (eval (plist-get layout :query))
-              (and (plist-get layout :width)
-                   (set-frame-width (selected-frame) (eval (plist-get layout :width))))
-              (and (plist-get layout :height)
-                   (set-frame-height (selected-frame) (eval (plist-get layout :height))))
-              (set-frame-position (selected-frame)
-                                  (eval (plist-get layout :left))
-                                  (eval (plist-get layout :top)))))
-          td-screen-layouts)))
-
-(set-frame-size-and-position-according-to-display)
-
-(defalias 'aa #'set-frame-size-and-position-according-to-display
-  "Auto Adjust frame size according to current display")
 
 (defun td-custom-frame (&optional frame)
   (interactive)
@@ -46,14 +20,7 @@
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
-(setq td-packages
-      ;; (reverse (mapcar (lambda (info) (car info)) package-alist))
-      '(ack-and-a-half alert clojure-mode coffee-mode color-theme-approximate dash diff-hl
-        diminish elixir-mode emmet-mode evil expand-region go-mode groovy-mode ibuffer-vc
-        ido-ubiquitous js-comint js2-mode magit markdown-mode melpa nrepl org-pomodoro
-        php-mode projectile rainbow-delimiters rainbow-mode restclient s scss-mode
-        simple-httpd skewer-mode smex soothe-theme surround twilight-anti-bright-theme
-        undo-tree web-mode wgrep yaml-mode yasnippet))
+(setq td-packages (reverse (mapcar #'car package-alist)))
 
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
@@ -101,6 +68,7 @@
   (run-hooks 'after-load-theme-functions))
 
 (defun td-custom-faces ()
+  (interactive)
   (set-face-attribute 'default nil :family "M+ 1m" :height 140)
   (set-face-attribute 'mode-line nil :box nil)
   (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
@@ -176,7 +144,7 @@
              (cmd (pop mappings)))
         (define-key keymap (kbd key) cmd)))))
 
-(td-bind "M-RET" #'td-fullscreen)
+(td-bind "C-M-f" #'td-toggle-fullscreen)
 (td-bind "M-m" #'execute-extended-command)
 
 (td-bind "M-z" #'zap-up-to-char)
@@ -239,7 +207,7 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
+(prefer-coding-system 'utf-8-unix)
 
 ;;;; backup
 (setq backup-by-copying t
@@ -302,7 +270,7 @@
 ;;;; theme
 (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme 'subatomic t)
+(load-theme 'solarized-dark t)
 
 (defadvice load-theme (before theme-dont-propagate activate)
   (mapcar #'disable-theme custom-enabled-themes))
@@ -392,7 +360,8 @@
         '(try-expand-all-abbrevs
           try-expand-dabbrev-visible
           try-expand-dabbrev
-          try-expand-dabbrev-same-mode-buffers))
+          ;; try-expand-dabbrev-same-mode-buffers
+          ))
 
   (define-prefix-command 'td-completion-map)
   (td-bind "C-;" 'td-completion-map)
@@ -403,8 +372,9 @@
                 '(try-expand-line) t))
 
   (defun try-expand-dabbrev-same-mode-buffers (prefix)
-    (cl-flet ((buffer-list () (same-mode-buffers)))
-      (try-expand-dabbrev-all-buffers prefix)))
+    (let ((matching-buffers (same-mode-buffers)))
+      (cl-flet ((buffer-list () matching-buffers))
+        (try-expand-dabbrev-all-buffers prefix))))
 
   (setq td-mode-completers
         '((emacs-lisp-mode . (try-complete-lisp-symbol-partially
@@ -432,7 +402,7 @@
 
 (after 'ido
   (setq ido-enable-prefix nil
-        ido-enable-flex-matching t
+        ;; ido-enable-flex-matching t
         ido-enable-dot-prefix t
         ido-use-virtual-buffers t
         ido-auto-merge-delay-time 15
@@ -478,6 +448,17 @@
 
 (after 'ido-ubiquitous-autoloads
   (ido-ubiquitous-mode t))
+
+(after 'flx-autoloads
+  (flx-ido-mode t)
+
+  (setq ido-use-faces nil
+        gc-cons-threshold 20000000)
+
+  (defun td-custom-flx-faces ()
+    (set-face-attribute 'flx-highlight-face nil :bold nil :underline nil))
+  (td-custom-flx-faces)
+  (add-hook 'after-load-theme-functions #'td-custom-flx-faces))
 
 ;;;; smex
 (after 'smex-autoloads
@@ -542,7 +523,7 @@
   (add-hook 'css-mode-hook #'rainbow-mode))
 
 ;;;; expand-region
-(td-bind "M--" #'er/expand-region)
+(td-bind "C--" #'er/expand-region)
 
 ;;;; org
 (after 'org
@@ -555,6 +536,11 @@
 
 ;;;; rainbow-delimiters
 (after 'rainbow-delimiters-autoloads
+  (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
+  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable)
+  (add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable))
+
+(after 'rainbow-delimiters
   (defun td-custom-rainbow-delimiter-faces ()
     (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
     (set-face-attribute 'rainbow-delimiters-depth-2-face nil :foreground "#deae3e")
@@ -565,12 +551,7 @@
     (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
     (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
   (td-custom-rainbow-delimiter-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-rainbow-delimiter-faces)
-
-  (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable)
-  (add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable))
-
+  (add-hook 'after-load-theme-functions #'td-custom-rainbow-delimiter-faces))
 
 ;;;; diff-hl
 (after 'diff-hl-autoloads
@@ -632,17 +613,21 @@
 (after 'evil
   (when (boundp 'global-surround-mode)
     (global-surround-mode))
-  (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
+
+  (setq evil-move-cursor-back nil
+        evil-mode-line-format nil
+        evil-cross-lines t
+        evil-emacs-state-cursor '("orange"))
+
   (mapc (lambda (mode) (evil-set-initial-state mode 'emacs))
         '(nrepl-mode
           nrepl-popup-buffer-mode
           ack-mode
           magin-log-edit-mode
           undo-tree-visualizer-mode))
-  (setq evil-move-cursor-back nil
-        evil-mode-line-format nil
-        evil-cross-lines t
-        evil-emacs-state-cursor '("orange"))
+
+  (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
+
   (td-bind evil-normal-state-map
            "C-j" "10gj"
            "C-k" "10gk"
@@ -673,9 +658,11 @@
            "*" #'evil-visual-search)
   (td-bind evil-motion-state-map
            "<tab>" #'evil-jump-item)
+
   (defadvice evil-ex-pattern-whole-line
     (after evil-global-defaults activate)
     (setq ad-return-value "g"))
+
   (defun evil-visual-search (beg end)
     (interactive "r")
     (when (evil-visual-state-p)
@@ -701,27 +688,44 @@
   (td-bind magit-status-mode-map "q" #'magit-quit-session))
 
 ;;;; electric
-(electric-pair-mode t)
-(after 'electric
-  (defun td-electric-brace ()
-    (when (and (eq last-command-event ?\n)
-               (looking-at "}"))
-      (indent-according-to-mode)
-      (forward-line -1)
-      (end-of-line)
-      (newline-and-indent)))
-  (add-hook 'post-self-insert-hook #'td-electric-brace t)
-  (defun td-electric-parenthesis ()
-    (when (and (eq last-command-event ?\s)
-               (or (and (looking-back "( " (- (point) 2))
-                        (looking-at ")"))
-                   (and (looking-back "{ " (- (point) 2))
-                        (looking-at "}"))
-                   (and (looking-back "\\[ " (- (point) 2))
-                        (looking-at "\\]"))))
-      (insert " ")
-      (backward-char 1)))
-  (add-hook 'post-self-insert-hook #'td-electric-parenthesis t))
+;; (electric-pair-mode t)
+(defun td-smart-brace ()
+  (when (and (eq last-command-event ?\n)
+             (looking-at "}"))
+    (indent-according-to-mode)
+    (forward-line -1)
+    (end-of-line)
+    (newline-and-indent)))
+(add-hook 'post-self-insert-hook #'td-smart-brace t)
+
+(defun td-smart-parenthesis ()
+  (when (and (eq last-command-event ?\s)
+             (or (and (looking-back "( " (- (point) 2))
+                      (looking-at ")"))
+                 (and (looking-back "{ " (- (point) 2))
+                      (looking-at "}"))
+                 (and (looking-back "\\[ " (- (point) 2))
+                      (looking-at "\\]"))))
+    (insert " ")
+    (backward-char 1)))
+(add-hook 'post-self-insert-hook #'td-smart-parenthesis t)
+
+;;;; smartparens
+(smartparens-global-mode t)
+(after 'smartparens
+  (setq sp-autoescape-string-quote nil)
+  (require 'smartparens-ruby)
+
+  (sp-pair "'" nil :unless '(sp-point-after-word-p))
+
+  (sp-with-modes sp--lisp-modes
+    (sp-local-pair "'" nil :actions nil)
+    (sp-local-pair "`" "'" :when '(sp-in-string-p)))
+
+  (sp-with-modes '(web-mode)
+    (sp-local-pair "{" nil :actions nil)
+    (sp-local-pair "<" ">")
+    (sp-local-tag "<" "<_>" "</_>" :transform 'sp-match-sgml-tags)))
 
 ;;;; hideshow
 
@@ -760,16 +764,12 @@
   (td-mode 'web-mode
            "\\.html$" "\\.erb" "\\.rhtml$" "\\.ejs$" "*twig*" "*tmpl*" "\\.hbs$"
            "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php\\'")
-  ;; electric pair mode is not flexible enough
-  (defadvice electric-pair-post-self-insert-function
-    (around disable-electric-pair activate)
-    (unless (eq major-mode 'web-mode) ad-do-it))
-
   (add-hook 'web-mode-hook #'emmet-mode))
 
 (after 'emmet-mode
   (setq emmet-indentation 2
-        emmet-preview-default nil)
+        emmet-preview-default nil
+        emmet-insert-flash-time 0.1)
 
   (defadvice emmet-preview
     (after emmet-preview-hide-tooltip activate)
@@ -780,11 +780,11 @@
   (td-custom-emmet-faces)
   (add-hook 'after-load-theme-functions #'td-custom-emmet-faces))
 
-;; (after 'skewer-mode-autoloads
-;;   (setq httpd-port 6000)
-;;   (add-hook 'js2-mode-hook #'skewer-mode)
-;;   (add-hook 'css-mode-hook #'skewer-mode)
-;;   (add-hook 'web-mode-hook #'skewer-mode))
+(after 'skewer-mode-autoloads
+  (setq httpd-port 6000)
+  (add-hook 'js2-mode-hook #'skewer-mode)
+  (add-hook 'css-mode-hook #'skewer-mode)
+  (add-hook 'web-mode-hook #'skewer-mode))
 
 ;;;; js2
 (after 'js2-mode-autoloads
@@ -794,7 +794,9 @@
         js2-bounce-indent-p t
         js2-language-version 180
         js2-strict-missing-semi-warning nil
-        js2-global-externs '($ jQuery Ember require define)
+        js2-global-externs '("jQuery" "Zepto" "$"
+                             "Ember" "angular" "dojo"
+                             "require" "define")
         js2-include-node-externs t))
 
 (after 'js2-mode
@@ -840,11 +842,18 @@
 
 (after 'ruby-mode
   (setq ruby-deep-arglist nil
-        ruby-deep-indent-paren nil)
+        ruby-deep-indent-paren nil
+        ruby-insert-encoding-magic-comment nil)
+
+  (td-bind ruby-mode-map "C-M-f" nil)
+
   (add-to-list 'hs-special-modes-alist
                '(ruby-mode
                  "\\(def\\|do\\|{\\)" "\\(end\\|end\\|}\\)" "#"
                  (lambda (arg) (ruby-end-of-block)) nil)))
+
+(after 'ruby-dev-autoloads
+  (add-hook 'ruby-mode-hook 'turn-on-ruby-dev))
 
 ;;;; python
 (after 'python
@@ -1037,33 +1046,22 @@
 
 (defun buffers-of-mode (mode)
   (td-filter (lambda (b)
-               (with-current-buffer b
-                 (eq mode major-mode)))
+               (with-current-buffer b (eq mode major-mode)))
              (buffer-list)))
-
-(defun current-buffer? (b)
-  (eql b (current-buffer)))
 
 (defun same-mode-buffers ()
   (buffers-of-mode major-mode))
 
-(defun other-buffers ()
-  (td-filter #'current-buffer? (buffer-list)))
-
-(defun other-buffer-files ()
-  (td-filter (lambda (b) (not (current-buffer? b)))
-             (td-filter #'buffer-file-name (buffer-list))))
-
-(defun kill-other-buffers ()
-  (interactive)
-  (mapc #'kill-buffer (other-buffer-files)))
-
-(defun td-fullscreen ()
+(defun td-toggle-fullscreen ()
   "ns-toggle-fullscreen is not cool for me"
   (interactive)
-  (set-frame-position (selected-frame) 0 0)
-  (set-frame-width (selected-frame) 190)
-  (set-frame-height (selected-frame) 34))
+  (set-frame-parameter
+   nil 'fullscreen
+   (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+
+(defun local-buffer? (buffer)
+  (and (buffer-file-name buffer)
+       (not (string-match tramp-file-name-regexp (buffer-file-name buffer)))))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
@@ -1072,13 +1070,22 @@
 
 (defadvice switch-to-buffer
   (before save-buffer-now activate)
-  (when buffer-file-name (save-buffer)))
+  (when (local-buffer? (current-buffer)) (save-buffer)))
 
 (defadvice other-window
   (before save-buffer-now activate)
-  (when buffer-file-name (save-buffer)))
+  (when (local-buffer? (current-buffer)) (save-buffer)))
 
 ;;;; inbox
 (find-file "~/Dropbox/inbox.org")
 (td-bind "C-c j" (td-cmd (find-file "~/Dropbox/inbox.org")))
 (switch-to-buffer "*scratch*")
+
+(defun prepare-template ()
+  (interactive)
+  (set-buffer-file-coding-system 'utf-8-unix)
+  (goto-char 0)
+  (search-forward "<?php echo $header; ?>")
+  (replace-match "<?php get_layout('main'); ?>\n\n<?php startblock('content'); ?>\n\n<div class=\"inner shop\">\n\n")
+  (search-forward "<?php echo $footer; ?>")
+  (replace-match "</div>\n\n<?php endblock('content'); ?>"))

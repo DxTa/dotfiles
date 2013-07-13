@@ -83,7 +83,8 @@ else
 fi
 
 # Vault
+# Config vault first: vault -c -p
 command -v vault >/dev/null 2>&1 && function pws() {
-  vault "$1" -p | pbc
+  vault "$1" | pbc
 }
 
