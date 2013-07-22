@@ -460,12 +460,6 @@
   (td-custom-flx-faces)
   (add-hook 'after-load-theme-functions #'td-custom-flx-faces))
 
-;;;; smex
-(after 'smex-autoloads
-  (smex-initialize)
-  (td-bind "M-m" #'smex
-           "M-M" #'smex-major-mode-commands))
-
 ;;;; projectile
 (after 'projectile-autoloads
   (projectile-global-mode)

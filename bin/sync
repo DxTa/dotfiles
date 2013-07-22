@@ -1,5 +1,0 @@
-#!/bin/sh
-
-notify-send "Unison start syncing..."
-unison -ui text box
-notify-send "Unison sync finished!"
