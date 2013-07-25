@@ -718,7 +718,6 @@
 
   (sp-with-modes '(web-mode)
     (sp-local-pair "{" nil :actions nil)
-    (sp-local-pair "<" ">")
     (sp-local-tag "<" "<_>" "</_>" :transform 'sp-match-sgml-tags)))
 
 ;;;; hideshow
@@ -753,11 +752,19 @@
   (add-hook 'after-load-theme-functions #'td-custom-whitespace-faces))
 
 ;; prog
+
+(defun font-lock-comment-annotations ()
+  (font-lock-add-keywords
+   nil '(("\\<\\(FIX\\(ME\\)?\\|TODO\\|HACK\\|REFACTOR\\):"
+          1 font-lock-warning-face t))))
+
+(add-hook 'prog-mode-hook 'font-lock-comment-annotations)
+
 ;;;; web
 (after 'web-mode-autoloads
   (td-mode 'web-mode
-           "\\.html$" "\\.erb" "\\.rhtml$" "\\.ejs$" "*twig*" "*tmpl*" "\\.hbs$"
-           "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php\\'")
+           "*html*" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
+           "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php$")
   (add-hook 'web-mode-hook #'emmet-mode))
 
 (after 'emmet-mode
