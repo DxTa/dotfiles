@@ -12,6 +12,7 @@ if [ "$OS" = "darwin" ]; then
   alias pbp=pbpaste
   alias pbc=pbcopy
   alias vim='mvim -v'
+  alias vim='emacsclient -a "mvim -v"'
   alias emacs='Emacs'
 fi
 
@@ -111,4 +112,3 @@ extract() {
     echo "'$1' is not a valid file"
   fi
 }
-

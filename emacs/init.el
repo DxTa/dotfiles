@@ -2,7 +2,7 @@
 ;; init.el --- tungd's Emacs configuration file
 (setq default-frame-alist
       '((left-fringe . 24) (right-fringe . 0)
-        (width . 140) (height . 35) (left . 350))
+        (width . 120) (height . 35) (left . 500))
       initial-frame-alist default-frame-alist)
 
 (defun td-custom-frame (&optional frame)
@@ -66,11 +66,14 @@
 (defvar after-load-theme-functions nil)
 (defadvice load-theme (after load-theme-hooks activate)
   (run-hooks 'after-load-theme-functions))
+(add-hook 'after-make-frame-functions
+          (lambda (&optional rest) (run-hooks 'after-load-theme-functions)))
 
 (defun td-custom-faces ()
   (interactive)
   (set-face-attribute 'default nil :family "M+ 1m" :height 140)
   (set-face-attribute 'mode-line nil :box nil)
+  (set-face-attribute 'font-lock-warning-face nil :background nil)
   (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
   (set-face-attribute 'highlight nil :foreground nil)
   (set-face-attribute 'font-lock-comment-face nil :background nil))
@@ -162,7 +165,8 @@
 (td-bind "C-c k" #'kill-buffer-and-window)
 
 (td-bind "C-c c" #'server-edit)
-(td-bind "C-c o" #'imenu)
+(td-bind "C-c o" #'imenu-flat)
+(td-bind "C-c i" #'imenu)
 (td-bind "C-c b" #'ido-switch-buffer)
 (td-bind "C-c f" #'find-file)
 (td-bind "C-c t" #'find-tag)
@@ -177,7 +181,7 @@
 (setq ring-bell-function 'ignore
       x-select-enable-clipboard nil
       imenu-auto-rescan t
-      scroll-margin 3
+      ;; scroll-margin 3
       frame-title-format '("%b %+%+ %f")
       default-input-method 'vietnamese-telex
       tab-stop-list (number-sequence 2 100 2)
@@ -270,7 +274,7 @@
 ;;;; theme
 (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme 'solarized-dark t)
+(load-theme 'twilight t)
 
 (defadvice load-theme (before theme-dont-propagate activate)
   (mapcar #'disable-theme custom-enabled-themes))
@@ -351,61 +355,75 @@
 
   (add-hook 'ibuffer-mode-hook #'td-ibuffer-hook))
 
-;;;; hippie-expand
-(require 'hippie-exp)
 
-(after 'hippie-exp
-  (setq hippie-expand-verbose t
-        hippie-expand-try-functions-list
-        '(try-expand-all-abbrevs
-          try-expand-dabbrev-visible
-          try-expand-dabbrev
-          ;; try-expand-dabbrev-same-mode-buffers
-          ))
+;;;; completion
+(define-prefix-command 'td-completion-map)
+(td-bind "C-;" 'td-completion-map)
 
-  (define-prefix-command 'td-completion-map)
-  (td-bind "C-;" 'td-completion-map)
+;;;; auto-complete
+(after 'auto-complete
+  (setq ac-auto-show-menu nil
+        ac-disable-inline t
+        ac-use-menu-map t
+        ac-expand-on-auto-complete nil
+        ac-candidate-menu-min 0)
+
+  (add-to-list 'ac-modes 'scss-mode)
+  (add-to-list 'ac-modes 'html-mode)
+
+  (ac-define-source buffer-lines
+    '((prefix . "^\\(.*\\)")
+      (candidates . (split-string
+                     (buffer-substring-no-properties (point-min) (point-max))
+                     "\n"))))
+
   (td-bind td-completion-map
-           "f" (make-hippie-expand-function
-                '(try-complete-file-name-partially try-complete-file-name) t)
-           "l" (make-hippie-expand-function
-                '(try-expand-line) t))
+           "s" #'ac-complete-yasnippet
+           "f" #'ac-complete-filename
+           "l" #'ac-complete-buffer-lines
+           "h" #'ac-last-quick-help)
 
-  (defun try-expand-dabbrev-same-mode-buffers (prefix)
-    (let ((matching-buffers (same-mode-buffers)))
-      (cl-flet ((buffer-list () matching-buffers))
-        (try-expand-dabbrev-all-buffers prefix))))
+  (td-bind ac-completing-map
+           "C-n" 'ac-next
+           "C-p" 'ac-previous
+           "C-l" 'ac-expand-common))
 
-  (setq td-mode-completers
-        '((emacs-lisp-mode . (try-complete-lisp-symbol-partially
-                              try-complete-lisp-symbol))
-          (js2-mode . ())
-          (markdown-mode . (try-ispell-expand))
-          (org-mode . (try-ispell-expand))))
+(after 'auto-complete-config
+  ;; (ac-config-default)
+  (defun make-ac-sources (&optional sources)
+    (append '(ac-source-yasnippet
+              ac-source-imenu
+              ac-source-words-in-same-mode-buffers)
+            sources
+            '(ac-source-dictionary)))
 
-  (defun td-he-set-sources ()
-    (set (make-local-variable 'hippie-expand-try-functions-list)
-         (td-uniq
-          (append hippie-expand-try-functions-list
-                  (cdr (assoc major-mode td-mode-completers))))))
+  (defun set-local-ac-sources (sources)
+    (set (make-local-variable 'ac-sources)
+         (make-ac-sources sources)))
 
-  (add-hook 'emacs-lisp-mode-hook #'td-he-set-sources))
+  (setq-default ac-sources (make-ac-sources))
 
-(defun smart-he-tab (prefix)
-  (interactive "*P")
-  (if (looking-at "\\_>")
-      (hippie-expand prefix)
-    (indent-for-tab-command)))
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda ()
+              (set-local-ac-sources
+               '(ac-source-symbols ac-source-functions ac-source-variables ac-source-features))))
+  (add-hook 'css-mode-hook
+            (lambda () (set-local-ac-sources '(ac-source-css-property))))
+  (add-hook 'scss-mode-hook
+            (lambda () (set-local-ac-sources '(ac-source-css-property)))))
+
+(after 'auto-complete-autoloads
+  (require 'auto-complete-config)
+  (global-auto-complete-mode))
 
 ;;;; ido
 (ido-mode t)
 
 (after 'ido
   (setq ido-enable-prefix nil
-        ;; ido-enable-flex-matching t
         ido-enable-dot-prefix t
         ido-use-virtual-buffers t
-        ido-auto-merge-delay-time 15
+        ido-auto-merge-delay-time -1
         ido-create-new-buffer 'always
         ido-use-url-at-point nil
         ido-use-filename-at-point nil
@@ -489,7 +507,7 @@
         (kill-word 1)
         (insert select)))))
 
-(td-bind "C-c i" #'ido-ispell-word-at-point)
+(td-bind "C-c s" #'ido-ispell-word-at-point)
 
 (defun try-ispell-expand (old)
   (unless old
@@ -603,6 +621,7 @@
   (evil-mode t)
   (setq-default mode-line-format
                 (cons '(evil-mode ("" evil-mode-line-tag)) mode-line-format)))
+;;(pending-delete-mode t)
 
 (after 'evil
   (when (boundp 'global-surround-mode)
@@ -638,8 +657,6 @@
            ",w" #'evil-write-all
            ",e" #'ido-find-file)
   (td-bind evil-insert-state-map
-           "TAB" #'smart-he-tab
-           "<backtab>" (td-cmd (he-reset-string))
            "C-a" #'back-to-indentation
            "C-e" #'end-of-line
            "C-d" #'delete-char
@@ -718,6 +735,11 @@
 
   (sp-with-modes '(web-mode)
     (sp-local-pair "{" nil :actions nil)
+    (sp-local-pair "<" ">")
+    (sp-local-tag "<" "<_>" "</_>" :transform 'sp-match-sgml-tags))
+
+  (sp-with-modes '(html-mode)
+    (sp-local-pair "<" ">")
     (sp-local-tag "<" "<_>" "</_>" :transform 'sp-match-sgml-tags)))
 
 ;;;; hideshow
@@ -761,11 +783,18 @@
 (add-hook 'prog-mode-hook 'font-lock-comment-annotations)
 
 ;;;; web
-(after 'web-mode-autoloads
-  (td-mode 'web-mode
-           "*html*" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
-           "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php$")
-  (add-hook 'web-mode-hook #'emmet-mode))
+;; (after 'web-mode-autoloads
+;;   (td-mode 'web-mode
+;;            "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
+;;            "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php$"))
+(td-mode 'html-mode
+         "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
+         "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php$")
+
+(after 'emmet-mode-autoloads
+  (add-hook 'sgml-mode-hook #'emmet-mode)
+  (add-hook 'web-mode-hook #'emmet-mode)
+  (add-hook 'css-mode-hook #'emmet-mode))
 
 (after 'emmet-mode
   (setq emmet-indentation 2
@@ -795,7 +824,7 @@
         js2-bounce-indent-p t
         js2-language-version 180
         js2-strict-missing-semi-warning nil
-        js2-global-externs '("jQuery" "Zepto" "$"
+        js2-global-externs '("jQuery" "Zepto" "$" "_"
                              "Ember" "angular" "dojo"
                              "require" "define")
         js2-include-node-externs t))
@@ -1045,6 +1074,16 @@
   (untabify (point-min) (point-max))
   (whitespace-cleanup))
 
+(defun imenu-flat ()
+  (interactive)
+  (let* ((symbols
+          (mapcar (lambda (index)
+                    (if (listp (cdr index)) (cdr index) (list index)))
+                  imenu--index-alist))
+         (symbols (apply #'append symbols))
+         (index (completing-read "Symbol: " symbols)))
+    (goto-char (cdr (assoc index symbols)))))
+
 (defun buffers-of-mode (mode)
   (td-filter (lambda (b)
                (with-current-buffer b (eq mode major-mode)))
@@ -1081,12 +1120,3 @@
 (find-file "~/Dropbox/inbox.org")
 (td-bind "C-c j" (td-cmd (find-file "~/Dropbox/inbox.org")))
 (switch-to-buffer "*scratch*")
-
-(defun prepare-template ()
-  (interactive)
-  (set-buffer-file-coding-system 'utf-8-unix)
-  (goto-char 0)
-  (search-forward "<?php echo $header; ?>")
-  (replace-match "<?php get_layout('main'); ?>\n\n<?php startblock('content'); ?>\n\n<div class=\"inner shop\">\n\n")
-  (search-forward "<?php echo $footer; ?>")
-  (replace-match "</div>\n\n<?php endblock('content'); ?>"))

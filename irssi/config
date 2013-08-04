@@ -19,9 +19,9 @@ channels = (
   { name = "#archlinux"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#ubuntu-vn"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#emacs"; chatnet = "freenode"; autojoin = "Yes"; },
-  { name = "#vim"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#clojure"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#ruby"; chatnet = "freenode"; autojoin = "Yes"; }
+  { name = "#angularjs"; chatnet = "freenode"; autojoin = "Yes"; }
 );
 
 statusbar = {
@@ -45,7 +45,7 @@ settings = {
   core = { real_name = "Tung Dao"; user_name = "tungd"; nick = "tungd"; };
   "fe-text" = { actlist_sort = "refnum"; };
   "fe-common/core" = {
-    theme = "crshd";
+    theme = "lyynx";
     bell_beeps = "yes";
     beep_msg_level = "MSGS NOTICES DCC DCCMSGS HILIGHT";
   };
