@@ -373,9 +373,7 @@
 
   (ac-define-source buffer-lines
     '((prefix . "^\\(.*\\)")
-      (candidates . (split-string
-                     (buffer-substring-no-properties (point-min) (point-max))
-                     "\n"))))
+      (candidates . current-buffer-lines)))
 
   (td-bind td-completion-map
            "s" #'ac-complete-yasnippet
@@ -1102,6 +1100,13 @@
 (defun local-buffer? (buffer)
   (and (buffer-file-name buffer)
        (not (string-match tramp-file-name-regexp (buffer-file-name buffer)))))
+
+(defun current-buffer-lines (&optional buffer)
+  (unless buffer (setq buffer (current-buffer)))
+  (with-current-buffer buffer
+    (split-string
+     (buffer-substring-no-properties (point-min) (point-max))
+     "\n")))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
