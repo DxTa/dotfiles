@@ -58,11 +58,15 @@ if [ -d $LOCAL/adt ]; then
   export PATH=$LOCAL/adt/sdk/platform-tools:$PATH
 fi
 
-
 # Emacs
 if [[ "$OS" = "darwin" ]]; then
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS:$PATH
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS/bin:$PATH
+fi
+
+# WP-cli
+if [ -d $HOME/.wp-cli ]; then
+  export PATH=$HOME/.wp-cli/bin:$PATH
 fi
 
 # Shortcut
@@ -87,4 +91,3 @@ fi
 command -v vault >/dev/null 2>&1 && function pws() {
   vault "$1" | pbc
 }
-
