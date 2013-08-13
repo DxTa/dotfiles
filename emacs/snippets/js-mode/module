@@ -2,8 +2,8 @@
 # name: module
 # key: module
 # --
-(function(exports) {
+!function() {
   "use strict";
 
-
-})(typeof exports === "undefined" ? (self.${1:name}) : exports);
+  $0
+}($1)

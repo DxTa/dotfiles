@@ -19,9 +19,9 @@ else
 fi
 
 # Better shell on vim and emacs
-if [[ $TERM == "dumb" ]]; then
-  export CLICOLOR=0
-else
+# if [[ $TERM == "dumb" ]]; then
+  # export CLICOLOR=0
+# else
   export CLICOLOR=1
   if [ "$OS" = "linux" ]; then
     alias ls='ls --color=auto'
@@ -29,7 +29,7 @@ else
   else
     alias ls='ls -G'
   fi
-fi
+# fi
 
 export GREP_OPTIONS='--color=auto' GREP_COLOR='1;32'
 

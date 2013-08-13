@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: function
-# key: fun
+# key: fn
 # --
-function${1: ${2:name}}(${3:arguments}) {
+function$1($2) {
   $0
 }

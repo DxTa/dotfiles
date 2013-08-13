@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: angular
-# key: angular
-# --
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>

@@ -12,7 +12,7 @@ if [ "$OS" = "darwin" ]; then
   alias pbp=pbpaste
   alias pbc=pbcopy
   alias vim='mvim -v'
-  alias vim='emacsclient -a "mvim -v"'
+  alias vim='emacsclient -n -a "mvim -v"'
   alias emacs='Emacs'
 fi
 
@@ -84,7 +84,8 @@ alias whois="whois -h whois-servers.net"
 alias sniff="sudo ngrep -d 'en1' -t '^(GET|POST) ' 'tcp and port 80'"
 alias httpdump="sudo tcpdump -i en1 -n -s 0 -w - | grep -a -o -E \"Host\: .*|GET \/.*\""
 
-alias gr=grade
+alias grd=gradle
+alias grt=grunt
 alias mk=make
 alias rk=rake
 

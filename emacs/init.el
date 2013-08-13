@@ -169,22 +169,30 @@
 (td-bind "C-c i" #'imenu)
 (td-bind "C-c b" #'ido-switch-buffer)
 (td-bind "C-c f" #'find-file)
+(td-bind "C-c u" #'recentf-ido-find-file)
 (td-bind "C-c t" #'find-tag)
 (td-bind "C-c C-b" #'ibuffer)
 (td-bind "C-c w" #'whitespace-mode)
 
 (td-bind "C-c C-e" #'eval-and-replace)
-(td-bind "C-l" #'toggle-comment-dwim)
+(td-bind "C-l" #'comment-or-uncomment-region-dwim)
 (td-bind "M-o" #'open-file-at-cursor)
+
+;;;; inbox
+(td-bind "C-c j" (td-cmd (find-file "~/Dropbox/inbox.org")))
+(td-bind "C-c l" (td-cmd (find-file "~/.emacs.d/init.el")))
 
 ;;;; general
 (setq ring-bell-function 'ignore
       x-select-enable-clipboard nil
       imenu-auto-rescan t
-      ;; scroll-margin 3
       frame-title-format '("%b %+%+ %f")
       default-input-method 'vietnamese-telex
       tab-stop-list (number-sequence 2 100 2)
+      history-length 128
+      confirm-nonexistent-file-or-buffer nil
+      linum-format " %4d "
+      comment-style 'multi-line
       require-final-newline t)
 
 (setq-default major-mode 'text-mode
@@ -301,7 +309,8 @@
           ("rainbow-mode" 'rainbow-mode)
           ("isearch-mode" 'isearch-mode)
           ("abbrev" 'abbrev-mode)
-          ("sackspace" 'sackspace-mode))))
+          ("sackspace" 'sackspace-mode)
+          ("emmet-mode" 'emmet-mode "Em"))))
 
 ;;;; ibuffer
 (after 'ibuffer
@@ -368,18 +377,33 @@
         ac-expand-on-auto-complete nil
         ac-candidate-menu-min 0)
 
+  (ac-linum-workaround)
+
   (add-to-list 'ac-modes 'scss-mode)
   (add-to-list 'ac-modes 'html-mode)
+  (add-to-list 'ac-modes 'coffee-mode)
+  (add-to-list 'ac-modes 'nodejs-repl-mode)
 
   (ac-define-source buffer-lines
     '((prefix . "^\\(.*\\)")
       (candidates . current-buffer-lines)))
 
+  (defun nodejs-repl-ac-candidates ()
+    (let* ((input (buffer-substring (comint-line-beginning-position) (point)))
+           (token (nodejs-repl--get-last-token input))
+           (candidates (nodejs-repl-get-candidates token)))
+      candidates))
+
+  (ac-define-source nodejs-repl
+    '((prefix . (comint-line-beginning-position))
+      (candidates . nodejs-repl-ac-candidates)))
+
   (td-bind td-completion-map
            "s" #'ac-complete-yasnippet
            "f" #'ac-complete-filename
            "l" #'ac-complete-buffer-lines
-           "h" #'ac-last-quick-help)
+           "h" #'ac-last-quick-help
+           "t" #'ac-complete-nodejs-repl)
 
   (td-bind ac-completing-map
            "C-n" 'ac-next
@@ -420,8 +444,8 @@
 (after 'ido
   (setq ido-enable-prefix nil
         ido-enable-dot-prefix t
-        ido-use-virtual-buffers t
-        ido-auto-merge-delay-time -1
+        ido-use-virtual-buffers nil
+        ido-auto-merge-work-directories-length -1
         ido-create-new-buffer 'always
         ido-use-url-at-point nil
         ido-use-filename-at-point nil
@@ -631,11 +655,14 @@
         evil-emacs-state-cursor '("orange"))
 
   (mapc (lambda (mode) (evil-set-initial-state mode 'emacs))
-        '(nrepl-mode
-          nrepl-popup-buffer-mode
+        '(nrepl-popup-buffer-mode
           ack-mode
-          magin-log-edit-mode
           undo-tree-visualizer-mode))
+
+  (mapc (lambda (mode) (evil-set-initial-state mode 'insert))
+        '(nrepl-mode
+          magin-log-edit-mode
+          nodejs-repl-mode))
 
   (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
 
@@ -685,6 +712,8 @@
   (td-bind "C-c g" #'magit-status))
 
 (after 'magit
+  (setq magit-commit-all-when-nothing-staged t)
+
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it
@@ -697,7 +726,7 @@
   (td-bind magit-status-mode-map "q" #'magit-quit-session))
 
 ;;;; electric
-;; (electric-pair-mode t)
+(electric-pair-mode t)
 (defun td-smart-brace ()
   (when (and (eq last-command-event ?\n)
              (looking-at "}"))
@@ -718,27 +747,6 @@
     (insert " ")
     (backward-char 1)))
 (add-hook 'post-self-insert-hook #'td-smart-parenthesis t)
-
-;;;; smartparens
-(smartparens-global-mode t)
-(after 'smartparens
-  (setq sp-autoescape-string-quote nil)
-  (require 'smartparens-ruby)
-
-  (sp-pair "'" nil :unless '(sp-point-after-word-p))
-
-  (sp-with-modes sp--lisp-modes
-    (sp-local-pair "'" nil :actions nil)
-    (sp-local-pair "`" "'" :when '(sp-in-string-p)))
-
-  (sp-with-modes '(web-mode)
-    (sp-local-pair "{" nil :actions nil)
-    (sp-local-pair "<" ">")
-    (sp-local-tag "<" "<_>" "</_>" :transform 'sp-match-sgml-tags))
-
-  (sp-with-modes '(html-mode)
-    (sp-local-pair "<" ">")
-    (sp-local-tag "<" "<_>" "</_>" :transform 'sp-match-sgml-tags)))
 
 ;;;; hideshow
 
@@ -772,32 +780,41 @@
   (add-hook 'after-load-theme-functions #'td-custom-whitespace-faces))
 
 ;; prog
-
-(defun font-lock-comment-annotations ()
+(defun td-custom-font-lock-hightlights ()
   (font-lock-add-keywords
    nil '(("\\<\\(FIX\\(ME\\)?\\|TODO\\|HACK\\|REFACTOR\\):"
-          1 font-lock-warning-face t))))
+          1 font-lock-warning-face t)))
+  (font-lock-add-keywords
+   nil '(("%\\(?:[-+0-9\\$.]+\\)?[bdiuoxXDOUfeEgGcCsSpn]"
+          0 font-lock-preprocessor-face t))))
 
-(add-hook 'prog-mode-hook 'font-lock-comment-annotations)
+(add-hook 'prog-mode-hook 'td-custom-font-lock-hightlights)
 
 ;;;; web
-;; (after 'web-mode-autoloads
-;;   (td-mode 'web-mode
-;;            "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
-;;            "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php$"))
 (td-mode 'html-mode
          "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
-         "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\)/.*\\.php$")
+         "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\|layouts\\)/.*\\.php$")
 
 (after 'emmet-mode-autoloads
   (add-hook 'sgml-mode-hook #'emmet-mode)
-  (add-hook 'web-mode-hook #'emmet-mode)
   (add-hook 'css-mode-hook #'emmet-mode))
 
 (after 'emmet-mode
   (setq emmet-indentation 2
         emmet-preview-default nil
         emmet-insert-flash-time 0.1)
+
+  (defun emmet-move-to-next-insert-point ()
+    (interactive)
+    (let ((markup (buffer-substring-no-properties (point) (point-max))))
+      (goto-char (+ (point) (emmet-html-next-insert-point markup)))))
+
+  (td-bind emmet-mode-keymap
+           "C-'" #'emmet-move-to-next-insert-point)
+
+  (defadvice emmet-expand-line
+    (after emmet-expand-line-move-cursor activate)
+    (emmet-move-to-next-insert-point))
 
   (defadvice emmet-preview
     (after emmet-preview-hide-tooltip activate)
@@ -808,13 +825,12 @@
   (td-custom-emmet-faces)
   (add-hook 'after-load-theme-functions #'td-custom-emmet-faces))
 
-(after 'skewer-mode-autoloads
-  (setq httpd-port 6000)
-  (add-hook 'js2-mode-hook #'skewer-mode)
-  (add-hook 'css-mode-hook #'skewer-mode)
-  (add-hook 'web-mode-hook #'skewer-mode))
+;;;; javascript
+(after 'js
+  (setq js-indent-level 2
+        js-expr-indent-offset 2
+        js-flat-functions t))
 
-;;;; js2
 (after 'js2-mode-autoloads
   (td-mode 'js2-mode "\\.js$")
   (td-repl 'js2-mode "node")
@@ -830,27 +846,35 @@
 (after 'js2-mode
   (td-bind js2-mode-map "M-j" nil))
 
+(after 'nodejs-repl-autoloads
+  (defalias 'run-js 'nodejs-repl)
+
+  (defun js-send-region-dwim (&optional args)
+    (interactive "*P")
+    (do-on-region-or-line #'js-send-region))
+
+  (defun td-inf-js-setup ()
+    (td-bind (current-local-map)
+             "C-x C-e" #'js-send-region-dwim
+             "C-x C-b" #'js-send-buffer))
+
+  (add-hook 'js-mode-hook #'td-inf-js-setup))
+
 ;;;; coffee
 (after 'coffee-mode-autoloads
   (td-mode 'coffee-mode "\\.coffee$" "Cakefile"))
 
 ;;;; css
 (defun td-css-imenu-expressions ()
-  (add-to-list
-   'imenu-generic-expression
-   `((nil
-      ,(concat "^\\([ \t]*[^@:{}\n][^:{}]+\\(?::"
-               (regexp-opt css-pseudo-ids t)
-               "\\(?:([^)]+)\\)?[^:{\n]*\\)*\\)\\(?:\n[ \t]*\\)*{")
-      1)) t))
-
-(add-hook 'css-mode-hook #'td-css-imenu-expressions)
+  (add-to-list 'imenu-generic-expression '("Section" "^.*\\* =\\(.+\\)$" 1) t))
 
 (after 'css-mode
+  (add-hook 'css-mode-hook #'td-css-imenu-expressions)
   (setq css-indent-offset 2))
 
 ;;;; scss
 (after 'scss-mode
+  (add-hook 'scss-mode-hook #'td-css-imenu-expressions)
   (setq scss-compile-at-save nil))
 
 ;;;; emacs lisp
@@ -938,6 +962,16 @@
   (td-bind markdown-mode-map "C-c C-b" nil))
 
 ;;;; commands
+(defun do-on-region-or-line (op)
+  (if (region-active-p)
+      (funcall op (region-beginning) (region-end))
+    (funcall op (line-beginning-position) (line-end-position))))
+
+(defun comment-or-uncomment-region-dwim (&optional args)
+  (interactive "*P")
+  (comment-normalize-vars)
+  (do-on-region-or-line #'comment-or-uncomment-region))
+
 (defun open-file-at-cursor ()
   (interactive)
   (let ((path (if (region-active-p)
@@ -957,14 +991,6 @@
   "Open the current working directory in finder."
   (interactive)
   (shell-command (concat "open " (shell-quote-argument default-directory))))
-
-(defun toggle-comment-dwim (&optional args)
-  (interactive "*P")
-  (comment-normalize-vars)
-  (if (not (region-active-p))
-      (comment-or-uncomment-region
-       (line-beginning-position) (line-end-position))
-    (comment-dwim args)))
 
 (defun byte-recompile-config-dir ()
   (interactive)
@@ -1108,6 +1134,13 @@
      (buffer-substring-no-properties (point-min) (point-max))
      "\n")))
 
+(defun recentf-ido-find-file ()
+  "Find a recent file using Ido."
+  (interactive)
+  (let ((file (ido-completing-read "Recent file: " recentf-list nil t)))
+    (when file
+      (find-file file))))
+
 ;;;; advices
 (defadvice save-buffers-kill-emacs
   (around no-query-kill-emacs activate)
@@ -1120,8 +1153,3 @@
 (defadvice other-window
   (before save-buffer-now activate)
   (when (local-buffer? (current-buffer)) (save-buffer)))
-
-;;;; inbox
-(find-file "~/Dropbox/inbox.org")
-(td-bind "C-c j" (td-cmd (find-file "~/Dropbox/inbox.org")))
-(switch-to-buffer "*scratch*")
