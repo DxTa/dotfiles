@@ -22,6 +22,9 @@
 (package-initialize)
 (setq td-packages (reverse (mapcar #'car package-alist)))
 
+;;;; vendors
+(add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
+
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
 
@@ -282,12 +285,19 @@
 ;;;; theme
 (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme 'twilight t)
+(load-theme 'graham t)
 
 (defadvice load-theme (before theme-dont-propagate activate)
   (mapcar #'disable-theme custom-enabled-themes))
 
-;; show-paren-mode
+;;;; hl-line
+(after 'hl-line
+  (defun td-custom-hl-line-faces ()
+    (set-face-attribute 'hl-line nil :bold nil :underline nil))
+  (td-custom-hl-line-faces)
+  (add-hook 'after-load-theme-functions #'td-custom-hl-line-faces))
+
+;;;; show-paren-mode
 (after 'paren
   (setq show-paren-delay 0))
 (show-paren-mode t)
@@ -368,6 +378,10 @@
 ;;;; completion
 (define-prefix-command 'td-completion-map)
 (td-bind "C-;" 'td-completion-map)
+
+(td-bind td-completion-map
+         ";" #'end-with-semicolon
+         "C-;" #'end-with-semicolon)
 
 ;;;; auto-complete
 (after 'auto-complete
@@ -496,7 +510,7 @@
         gc-cons-threshold 20000000)
 
   (defun td-custom-flx-faces ()
-    (set-face-attribute 'flx-highlight-face nil :bold nil :underline nil))
+    (set-face-attribute 'flx-highlight-face nil :bold nil :underline nil :foreground "#FFA927"))
   (td-custom-flx-faces)
   (add-hook 'after-load-theme-functions #'td-custom-flx-faces))
 
@@ -558,6 +572,12 @@
 
 ;;;; expand-region
 (td-bind "C--" #'er/expand-region)
+
+;;;; multiple-cursors
+(after 'multiple-cursors-autoloads
+  (td-bind "C-<" #'mc/mark-previous-like-this
+           "C->" #'mc/mark-next-like-this
+           "C-c C->" #'mc/mark-all-like-this))
 
 ;;;; org
 (after 'org
@@ -636,7 +656,12 @@
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
         undo-tree-history-directory-alist
-        `(("." . ,(expand-file-name "undos" user-emacs-directory)))))
+        `(("." . ,(expand-file-name "undos" user-emacs-directory))))
+  (add-hook 'before-save-hook 'undo-tree-save-history-hook))
+
+;;;; ace-jump-mode
+(after 'ace-jump-mode-autoloads
+  (td-bind "C-'" #'ace-jump-mode))
 
 ;;;; evil
 (after 'evil-autoloads
@@ -667,6 +692,7 @@
   (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
 
   (td-bind evil-normal-state-map
+           "''" "``"
            "C-j" "10gj"
            "C-k" "10gk"
            "j" #'evil-next-visual-line
@@ -675,6 +701,7 @@
            "gp" #'clipboard-yank
            "C-:" #'eval-expression
            "C-e" #'end-of-line
+           "z SPC" #'evil-toggle-fold
            "SPC" #'evil-toggle-fold
            "RET" #'evil-ex-nohighlight
            "gi" #'inline-variable
@@ -749,6 +776,17 @@
 (add-hook 'post-self-insert-hook #'td-smart-parenthesis t)
 
 ;;;; hideshow
+(autoload 'hideshowvis-symbols
+  "hideshowvis"
+  "Will indicate regions foldable with hideshow in the fringe.")
+
+(after 'hideshowvis
+  (defadvice display-code-line-counts
+    (around hideshowvis-no-line-count activate)
+    ad-do-it
+    (overlay-put ov 'display " ...")))
+
+(hideshowvis-symbols)
 
 ;;;; figlet
 (defun figlet-region (beg end)
@@ -1140,6 +1178,11 @@
   (let ((file (ido-completing-read "Recent file: " recentf-list nil t)))
     (when file
       (find-file file))))
+
+(defun end-with-semicolon ()
+  (interactive)
+  (end-of-line)
+  (insert ";"))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
