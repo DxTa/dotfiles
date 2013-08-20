@@ -85,7 +85,8 @@
 
 ;;;; paths
 (setq td-extra-paths
-      '("~/cli/bin"
+      '("~/Applications/Emacs.app/Contents/MacOS/bin"
+        "~/cli/bin"
         "~/local/bin"
         "~/local/share/npm/bin"
         "/usr/local/bin"
@@ -469,10 +470,10 @@
         ido-ignore-buffers '("\\` ")
         ido-ignore-files '("ido.last" ".*-autoloads.el"))
 
-  (setq ido-decorations
-        '("\n>> " "" "\n   " "\n   ..." "[" "]"
-          " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]"
-          "\n>> " ""))
+  ;; (setq ido-decorations
+  ;;       '("\n>> " "" "\n   " "\n   ..." "[" "]"
+  ;;         " [No match]" " [Matched]" " [Not readable]" " [Too big]" " [Confirm]"
+  ;;         "\n>> " ""))
 
   (defun td-minibuffer-home ()
     (interactive)
@@ -502,6 +503,9 @@
 
 (after 'ido-ubiquitous-autoloads
   (ido-ubiquitous-mode t))
+
+(after 'ido-vertical-mode-autoloads
+  (ido-vertical-mode t))
 
 (after 'flx-autoloads
   (flx-ido-mode t)
@@ -752,6 +756,14 @@
     (jump-to-register :magit-fullscreen))
   (td-bind magit-status-mode-map "q" #'magit-quit-session))
 
+(after 'git-commit-mode
+  (defun magit-exit-commit-mode ()
+    (interactive)
+    (kill-buffer)
+    (delete-window)
+    (magit-quit-session))
+  (td-bind git-commit-mode-map "C-c C-k" #'magit-exit-commit-mode))
+
 ;;;; electric
 (electric-pair-mode t)
 (defun td-smart-brace ()
@@ -883,6 +895,12 @@
 
 (after 'js2-mode
   (td-bind js2-mode-map "M-j" nil))
+
+(after 'tern-autoloads
+  (add-hook 'js-mode (lambda () (tern-mode t))))
+
+(after 'tern-auto-complete-autoloads
+  (tern-ac-setup))
 
 (after 'nodejs-repl-autoloads
   (defalias 'run-js 'nodejs-repl)
