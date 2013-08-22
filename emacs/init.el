@@ -25,6 +25,11 @@
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
 
+;;;; autoloads
+(autoload '-filter "dash")
+(autoload '-uniq "dash")
+(autoload 's-trim-left "s")
+
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
 
@@ -37,9 +42,6 @@
 (defmacro td-cmd (&rest body)
   `(lambda () (interactive) ,@body))
 
-(defun td-join (sep parts)
-  (mapconcat #'identity parts sep))
-
 (defun td-mode (mode &rest patterns)
   (mapc (lambda (pattern)
           (add-to-list 'auto-mode-alist (cons pattern mode)))
@@ -49,12 +51,6 @@
   (mapc (lambda (repl)
           (add-to-list 'interpreter-mode-alist (cons repl mode)))
         repls))
-
-(defun td-filter (condp l)
-  (delq nil (mapcar (lambda (x) (and (funcall condp x) x)) l)))
-
-(defun td-uniq (l)
-  (delq nil (delete-dups l)))
 
 (defun even? (n)
   (eq 0 (mod n 2)))
@@ -83,33 +79,15 @@
 
 (add-hook 'after-load-theme-functions #'td-custom-faces)
 
-;;;; paths
-(setq td-extra-paths
-      '("~/Applications/Emacs.app/Contents/MacOS/bin"
-        "~/cli/bin"
-        "~/local/bin"
-        "~/local/share/npm/bin"
-        "/usr/local/bin"
-        "/Application/Xcode.app/Contents/Developer/usr/bin"))
-
-(setq exec-path
-      (append (mapcar #'expand-file-name td-extra-paths) exec-path))
-(setenv "PATH" (td-join ":" exec-path))
-
 ;;;; platform specific
 (when (eq system-type 'darwin)
+  (exec-path-from-shell-initialize)
   (setq delete-by-moving-to-trash t
         mac-command-modifier 'meta
         mac-option-modifier 'super))
 
 (when (eq system-type 'gnu/linux)
   (menu-bar-mode -1))
-
-(after 'browse-url
-  (setq browse-url-browser-function
-        (cond
-         ((eq system-type 'darwin) 'browse-url-default-macosx-browser)
-         ((eq system-type 'gnu/linux) "xdg-open"))))
 
 ;;;; startup
 (defun td-scratch-fortune ()
@@ -233,6 +211,7 @@
       version-control t
       backup-directory-alist
       `((".*" . ,(expand-file-name "backups" user-emacs-directory))
+        (".*-autoloads.el")
         (,tramp-file-name-regexp . nil)))
 
 (global-auto-revert-mode t)
@@ -283,7 +262,14 @@
 (add-to-list 'recentf-exclude "ido.last")
 (add-hook 'server-visit-hook #'recentf-save-list)
 
-;;;; theme
+;;;; display
+(setq indicate-buffer-boundaries t)
+
+(set-display-table-slot
+ standard-display-table 'truncation ?¬)
+(setcdr
+ (assoc 'truncation default-fringe-indicator-alist) nil)
+
 (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
 (load-theme 'graham t)
@@ -315,13 +301,14 @@
           ("eldoc" 'eldoc-mode "Doc")
           ("flycheck" 'flycheck-mode "Chk")
           ("projectile" 'projectile-mode "Proj")
+          ("flyspell" 'flyspell-mode "Spell")
+          ("emmet-mode" 'emmet-mode "Em")
           ("hideshow" 'hs-minor-mode)
           ("undo-tree" 'undo-tree-mode)
           ("rainbow-mode" 'rainbow-mode)
           ("isearch-mode" 'isearch-mode)
           ("abbrev" 'abbrev-mode)
-          ("sackspace" 'sackspace-mode)
-          ("emmet-mode" 'emmet-mode "Em"))))
+          ("sackspace" 'sackspace-mode))))
 
 ;;;; ibuffer
 (after 'ibuffer
@@ -393,15 +380,24 @@
         ac-candidate-menu-min 0)
 
   (ac-linum-workaround)
+  (ac-flyspell-workaround)
 
   (add-to-list 'ac-modes 'scss-mode)
   (add-to-list 'ac-modes 'html-mode)
   (add-to-list 'ac-modes 'coffee-mode)
+  (add-to-list 'ac-modes 'nrepl-mode)
   (add-to-list 'ac-modes 'nodejs-repl-mode)
 
+  (defun auto-complete-completion-at-point ()
+    (setq completion-at-point-functions '(auto-complete)))
+  (add-hook 'auto-complete-mode-hook #'auto-complete-completion-at-point)
+
+  (defun current-buffer-line-candidates ()
+    (-uniq (mapcar #'s-trim-left (current-buffer-lines))))
+
   (ac-define-source buffer-lines
-    '((prefix . "^\\(.*\\)")
-      (candidates . current-buffer-lines)))
+    '((prefix . "^\s*\\(.+\\)")
+      (candidates . current-buffer-line-candidates)))
 
   (defun nodejs-repl-ac-candidates ()
     (let* ((input (buffer-substring (comint-line-beginning-position) (point)))
@@ -468,7 +464,8 @@
         ido-save-directory-list-file (expand-file-name "ido.last" user-emacs-directory)
         ido-everywhere t
         ido-ignore-buffers '("\\` ")
-        ido-ignore-files '("ido.last" ".*-autoloads.el"))
+        ido-ignore-files '("ido.last" ".*-autoloads.el")
+        ido-file-extension-order '(".rb" ".php" ".clj" ".py" ".js" ".scss" ".el" ".css" ".html"))
 
   ;; (setq ido-decorations
   ;;       '("\n>> " "" "\n   " "\n   ..." "[" "]"
@@ -528,7 +525,16 @@
   (setq projectile-tags-command "~/local/bin/ctags -Re %s %s")
   (push "build.gradle" projectile-project-root-files))
 
-;;;; ispell
+;;;; spell
+(add-hook 'text-mode-hook #'turn-on-flyspell)
+(add-hook 'prog-mode-hook #'flyspell-prog-mode)
+
+(after 'flyspell
+  (td-bind flyspell-mode-map "C-;" nil))
+
+(after 'ispell
+  (setq ispell-extra-args '("-C")))
+
 (defun ispell-suggest-word (word)
   (let* ((cmd (format "echo '%s' | aspell -a --sug-mode=ultra --suggest | sed -n '1!p'" word))
          (raw (shell-command-to-string cmd)))
@@ -567,8 +573,7 @@
 (after 'yasnippet-autoloads
   (setq yas-snippet-dirs '("~/.emacs.d/snippets")
         yas-prompt-functions '(yas-ido-prompt yas-completing-prompt yas-no-prompt))
-  (yas-global-mode t)
-  (push #'yas-hippie-try-expand hippie-expand-try-functions-list))
+  (yas-global-mode t))
 
 ;;;; rainbow-mode
 (after 'rainbow-mode-autoloads
@@ -660,7 +665,12 @@
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
         undo-tree-history-directory-alist
-        `(("." . ,(expand-file-name "undos" user-emacs-directory))))
+        `((".*" . ,(expand-file-name "undos" user-emacs-directory))))
+
+  (defadvice undo-tree-make-history-save-file-name
+    (after undo-tree activate)
+    (setq ad-return-value (concat ad-return-value ".gz")))
+
   (add-hook 'before-save-hook 'undo-tree-save-history-hook))
 
 ;;;; ace-jump-mode
@@ -686,7 +696,8 @@
   (mapc (lambda (mode) (evil-set-initial-state mode 'emacs))
         '(nrepl-popup-buffer-mode
           ack-mode
-          undo-tree-visualizer-mode))
+          undo-tree-visualizer-mode
+          epa-key-list-mode))
 
   (mapc (lambda (mode) (evil-set-initial-state mode 'insert))
         '(nrepl-mode
@@ -757,11 +768,13 @@
   (td-bind magit-status-mode-map "q" #'magit-quit-session))
 
 (after 'git-commit-mode
+  (defadvice git-commit-end-session
+    (after td-git-commit-end-session activate)
+    (delete-window))
   (defun magit-exit-commit-mode ()
     (interactive)
     (kill-buffer)
-    (delete-window)
-    (magit-quit-session))
+    (delete-window))
   (td-bind git-commit-mode-map "C-c C-k" #'magit-exit-commit-mode))
 
 ;;;; electric
@@ -840,6 +853,20 @@
 
 (add-hook 'prog-mode-hook 'td-custom-font-lock-hightlights)
 
+;;;; flycheck
+(after 'flycheck-autoloads
+  (defun turn-on-flycheck ()
+    (interactive)
+    (flycheck-mode t))
+
+  (add-hook 'go-mode-hook #'turn-on-flycheck))
+
+(after 'flycheck
+  (setq flycheck-check-syntax-automatically '(mode-enabled save))
+  (mapc (lambda (checker)
+          (delq checker flycheck-checkers))
+        '(go-build emacs-lisp-checkdoc)))
+
 ;;;; web
 (td-mode 'html-mode
          "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
@@ -859,8 +886,8 @@
     (let ((markup (buffer-substring-no-properties (point) (point-max))))
       (goto-char (+ (point) (emmet-html-next-insert-point markup)))))
 
-  (td-bind emmet-mode-keymap
-           "C-'" #'emmet-move-to-next-insert-point)
+  ;; (td-bind emmet-mode-keymap
+  ;;          "C-'" #'emmet-move-to-next-insert-point)
 
   (defadvice emmet-expand-line
     (after emmet-expand-line-move-cursor activate)
@@ -897,10 +924,10 @@
   (td-bind js2-mode-map "M-j" nil))
 
 (after 'tern-autoloads
-  (add-hook 'js-mode (lambda () (tern-mode t))))
+  (add-hook 'js-mode-hook (lambda () (tern-mode t))))
 
 (after 'tern-auto-complete-autoloads
-  (tern-ac-setup))
+  (add-hook 'js-mode-hook #'tern-ac-setup))
 
 (after 'nodejs-repl-autoloads
   (defalias 'run-js 'nodejs-repl)
@@ -939,6 +966,7 @@
   (add-to-list 'imenu-generic-expression '("Section" "^;;;; \\(.+\\)$" 1) t))
 
 (add-hook 'emacs-lisp-mode-hook #'td-elisp-imenu-expressions)
+(add-hook 'emacs-lisp-mode-hook #'turn-on-eldoc-mode)
 
 ;;;; php
 (after 'php-mode
@@ -983,15 +1011,28 @@
 (after 'nrepl
   (setq nrepl-hide-special-buffers t
         nrepl-popup-stacktraces nil)
+
   (defun td-setup-nrepl ()
+    (ac-nrepl-setup)
     (nrepl-eval "(set! *print-length* 30)")
     (nrepl-eval "(set! *print-level* 5)"))
+
+  (add-hook 'nrepl-mode-hook #'ac-nrepl-setup)
+  (add-hook 'nrepl-mode-hook #'nrepl-turn-on-eldoc-mode)
+
   (add-hook 'nrepl-interaction-mode-hook #'td-setup-nrepl)
   (add-hook 'nrepl-interaction-mode-hook #'nrepl-turn-on-eldoc-mode))
+
+;;;; go
+(after 'go-mode
+  (exec-path-from-shell-copy-env "GOPATH")
+  (require 'go-autocomplete)
+  (add-hook 'go-mode-hook #'go-eldoc-setup))
 
 ;;;; markdown
 (after 'markdown-mode-autoloads
   (td-mode 'markdown-mode "\\.md$" "\\.mkd$" "\\.markdown$")
+  (add-hook 'markdown-mode-hook #'turn-on-flyspell)
   (setq markdown-command "pandoc -s"
         markdown-enable-math t
         markdown-header-face '(:inherit font-lock-function-name-face :weight bold)
@@ -1165,7 +1206,7 @@
     (goto-char (cdr (assoc index symbols)))))
 
 (defun buffers-of-mode (mode)
-  (td-filter (lambda (b)
+  (-filter (lambda (b)
                (with-current-buffer b (eq mode major-mode)))
              (buffer-list)))
 

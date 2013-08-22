@@ -47,6 +47,12 @@ if [ -d $LOCAL/clojurescript ]; then
   export PATH=$CLOJURESCRIPT_HOME/bin:$PATH
 fi
 
+# Go
+if [ -d $HOME/build/go-learning ]; then
+  export GOPATH=$HOME/build/go-learning
+  export PATH=$GOPATH/bin:$PATH
+fi
+
 # Heroku
 if [ -d "/usr/local/heroku" ]; then
   export PATH="/usr/local/heroku/bin:$PATH"
