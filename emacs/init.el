@@ -1,26 +1,20 @@
 
 ;; init.el --- tungd's Emacs configuration file
-(setq default-frame-alist
-      '((left-fringe . 24) (right-fringe . 0)
-        (width . 120) (height . 35) (left . 500))
-      initial-frame-alist default-frame-alist)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(blink-cursor-mode -1)
+(unless (display-graphic-p) (menu-bar-mode -1))
 
-(defun td-custom-frame (&optional frame)
-  (interactive)
-  (mapc (lambda (mode)
-          (when (fboundp mode) (funcall mode -1)))
-        '(tool-bar-mode scroll-bar-mode blink-cursor-mode))
-  (unless (display-graphic-p) (menu-bar-mode -1)))
-
-(td-custom-frame)
-(add-hook 'after-make-frame-functions #'td-custom-frame)
+(fringe-mode '(16 . 8))
+(set-face-attribute 'default nil :family "M+ 1m" :height 140)
+(set-frame-size (selected-frame) 120 35)
+(set-frame-position (selected-frame) 500 22)
 
 ;;;; packages
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
-(setq td-packages (reverse (mapcar #'car package-alist)))
 
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
@@ -35,7 +29,7 @@
 
 (defmacro after (mode &rest body)
   (declare (indent defun))
-  ;; (eval `(require ,mode))
+  (eval `(require ,mode))
   `(eval-after-load ,mode
      `(funcall (function ,(lambda () ,@body)))))
 
@@ -62,28 +56,10 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
 
-(defvar after-load-theme-functions nil)
-(defadvice load-theme (after load-theme-hooks activate)
-  (run-hooks 'after-load-theme-functions))
-(add-hook 'after-make-frame-functions
-          (lambda (&optional rest) (run-hooks 'after-load-theme-functions)))
-
-(defun td-custom-faces ()
-  (interactive)
-  (set-face-attribute 'default nil :family "M+ 1m" :height 140)
-  (set-face-attribute 'mode-line nil :box nil)
-  (set-face-attribute 'font-lock-warning-face nil :background nil)
-  (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
-  (set-face-attribute 'highlight nil :foreground nil)
-  (set-face-attribute 'font-lock-comment-face nil :background nil))
-
-(add-hook 'after-load-theme-functions #'td-custom-faces)
-
 ;;;; platform specific
 (when (eq system-type 'darwin)
   (exec-path-from-shell-initialize)
-  (setq delete-by-moving-to-trash t
-        mac-command-modifier 'meta
+  (setq mac-command-modifier 'meta
         mac-option-modifier 'super))
 
 (when (eq system-type 'gnu/linux)
@@ -91,12 +67,7 @@
 
 ;;;; startup
 (defun td-scratch-fortune ()
-  (let ((cookie (shell-command-to-string "fortune -a")))
-    (concat
-     (replace-regexp-in-string
-      " *$" ""
-      (replace-regexp-in-string "^" ";; " cookie))
-     "\n")))
+  (shell-command-to-string "fortune -a | sed -e 's/^/;; /'"))
 
 (setq inhibit-startup-message t
       initial-scratch-message (td-scratch-fortune))
@@ -165,24 +136,30 @@
 (td-bind "C-c l" (td-cmd (find-file "~/.emacs.d/init.el")))
 
 ;;;; general
-(setq ring-bell-function 'ignore
+(setq delete-by-moving-to-trash t
+      ring-bell-function 'ignore
       x-select-enable-clipboard nil
-      imenu-auto-rescan t
       frame-title-format '("%b %+%+ %f")
       default-input-method 'vietnamese-telex
-      tab-stop-list (number-sequence 2 100 2)
-      history-length 128
+      tab-stop-list (number-sequence 2 128 2)
+      history-length 256
       confirm-nonexistent-file-or-buffer nil
-      linum-format " %4d "
       comment-style 'multi-line
       require-final-newline t)
 
 (setq-default major-mode 'text-mode
               tab-width 2
               indicate-empty-lines nil
+              indicate-buffer-boundaries 'right
               indent-tabs-mode nil
               fill-column 90
               truncate-lines t)
+
+(after 'imenu
+  (setq imenu-auto-rescan t))
+
+(after 'linum
+  (setq linum-format " %4d "))
 
 (column-number-mode t)
 (visual-line-mode -1)
@@ -215,8 +192,10 @@
         (,tramp-file-name-regexp . nil)))
 
 (global-auto-revert-mode t)
-(setq global-auto-revert-non-file-buffers t
-      auto-revert-verbose nil)
+
+(after 'autorevert
+  (setq global-auto-revert-non-file-buffers t
+        auto-revert-verbose nil))
 
 (setq auto-save-default nil
       auto-save-list-file-prefix
@@ -258,31 +237,37 @@
 
 ;;;; recentf
 (recentf-mode t)
-(setq recentf-max-saved-items 100)
-(add-to-list 'recentf-exclude "ido.last")
-(add-hook 'server-visit-hook #'recentf-save-list)
+(after 'recentf
+  (setq recentf-max-saved-items 100)
+  (add-to-list 'recentf-exclude "ido.last")
+  (add-hook 'server-visit-hook #'recentf-save-list))
 
 ;;;; display
-(setq indicate-buffer-boundaries t)
-
-(set-display-table-slot
- standard-display-table 'truncation ?¬)
 (setcdr
- (assoc 'truncation default-fringe-indicator-alist) nil)
+ (assoc 'truncation fringe-indicator-alist) nil)
+
+(let ((display-table
+       (or standard-display-table
+           (setq standard-display-table (make-display-table)))))
+  (set-display-table-slot display-table 'truncation ?¬)
+  (set-window-display-table (selected-window) display-table))
 
 (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
 (load-theme 'graham t)
 
+(set-face-attribute 'mode-line nil :box nil)
+(set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
+(set-face-attribute 'font-lock-warning-face nil :background nil)
+(set-face-attribute 'highlight nil :foreground nil)
+(set-face-attribute 'font-lock-comment-face nil :background nil)
+
 (defadvice load-theme (before theme-dont-propagate activate)
-  (mapcar #'disable-theme custom-enabled-themes))
+  (mapc #'disable-theme custom-enabled-themes))
 
 ;;;; hl-line
 (after 'hl-line
-  (defun td-custom-hl-line-faces ()
-    (set-face-attribute 'hl-line nil :bold nil :underline nil))
-  (td-custom-hl-line-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-hl-line-faces))
+  (set-face-attribute 'hl-line nil :bold nil :underline nil))
 
 ;;;; show-paren-mode
 (after 'paren
@@ -384,6 +369,7 @@
 
   (add-to-list 'ac-modes 'scss-mode)
   (add-to-list 'ac-modes 'html-mode)
+  (add-to-list 'ac-modes 'web-mode)
   (add-to-list 'ac-modes 'coffee-mode)
   (add-to-list 'ac-modes 'nrepl-mode)
   (add-to-list 'ac-modes 'nodejs-repl-mode)
@@ -414,12 +400,13 @@
            "f" #'ac-complete-filename
            "l" #'ac-complete-buffer-lines
            "h" #'ac-last-quick-help
-           "t" #'ac-complete-nodejs-repl)
+           "t" #'ac-complete-tern-completion)
 
   (td-bind ac-completing-map
-           "C-n" 'ac-next
-           "C-p" 'ac-previous
-           "C-l" 'ac-expand-common))
+           "C-s" #'ac-isearch
+           "C-n" #'ac-next
+           "C-p" #'ac-previous
+           "C-l" #'ac-expand-common))
 
 (after 'auto-complete-config
   ;; (ac-config-default)
@@ -443,7 +430,9 @@
   (add-hook 'css-mode-hook
             (lambda () (set-local-ac-sources '(ac-source-css-property))))
   (add-hook 'scss-mode-hook
-            (lambda () (set-local-ac-sources '(ac-source-css-property)))))
+            (lambda () (set-local-ac-sources '(ac-source-css-property))))
+  (add-hook 'js-mode-hook
+            (lambda () (set-local-ac-sources '(ac-source-tern-completion)))))
 
 (after 'auto-complete-autoloads
   (require 'auto-complete-config)
@@ -506,14 +495,9 @@
 
 (after 'flx-autoloads
   (flx-ido-mode t)
-
   (setq ido-use-faces nil
         gc-cons-threshold 20000000)
-
-  (defun td-custom-flx-faces ()
-    (set-face-attribute 'flx-highlight-face nil :bold nil :underline nil :foreground "#FFA927"))
-  (td-custom-flx-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-flx-faces))
+  (set-face-attribute 'flx-highlight-face nil :bold nil :underline nil :foreground "#FFA927"))
 
 ;;;; projectile
 (after 'projectile-autoloads
@@ -526,8 +510,8 @@
   (push "build.gradle" projectile-project-root-files))
 
 ;;;; spell
-(add-hook 'text-mode-hook #'turn-on-flyspell)
-(add-hook 'prog-mode-hook #'flyspell-prog-mode)
+;; (add-hook 'text-mode-hook #'turn-on-flyspell)
+;; (add-hook 'prog-mode-hook #'flyspell-prog-mode)
 
 (after 'flyspell
   (td-bind flyspell-mode-map "C-;" nil))
@@ -555,25 +539,28 @@
 
 (td-bind "C-c s" #'ido-ispell-word-at-point)
 
-(defun try-ispell-expand (old)
-  (unless old
-    (he-init-string (he-dabbrev-beg) (point))
-    (setq he-expand-list (ispell-suggest-word he-search-string)))
-  (while (and he-expand-list
-              (he-string-member (car he-expand-list) he-tried-table))
-    (setq he-expand-list (cdr he-expand-list)))
-  (if (null he-expand-list)
-      (progn (he-reset-string) nil)
-    (he-substitute-string (car he-expand-list))
-    (setq he-tried-table (cons (car he-expand-list) (cdr he-tried-table)))
-    (setq he-expand-list (cdr he-expand-list))
-    t))
+(after 'hippie-exp
+  (defun try-ispell-expand (old)
+    (unless old
+      (he-init-string (he-dabbrev-beg) (point))
+      (setq he-expand-list (ispell-suggest-word he-search-string)))
+    (while (and he-expand-list
+                (he-string-member (car he-expand-list) he-tried-table))
+      (setq he-expand-list (cdr he-expand-list)))
+    (if (null he-expand-list)
+        (progn (he-reset-string) nil)
+      (he-substitute-string (car he-expand-list))
+      (setq he-tried-table (cons (car he-expand-list) (cdr he-tried-table)))
+      (setq he-expand-list (cdr he-expand-list))
+      t)))
 
 ;;;; yasnippets
 (after 'yasnippet-autoloads
-  (setq yas-snippet-dirs '("~/.emacs.d/snippets")
-        yas-prompt-functions '(yas-ido-prompt yas-completing-prompt yas-no-prompt))
+  (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
   (yas-global-mode t))
+
+(after 'yasnippet
+  (setq yas-prompt-functions '(yas-ido-prompt yas-completing-prompt yas-no-prompt)))
 
 ;;;; rainbow-mode
 (after 'rainbow-mode-autoloads
@@ -590,12 +577,9 @@
 
 ;;;; org
 (after 'org
-  (defun td-custom-org-faces ()
-    (set-face-attribute 'org-level-1 nil :height 1.3)
-    (set-face-attribute 'org-level-2 nil :height 1.2)
-    (set-face-attribute 'org-level-3 nil :height 1.1))
-  (td-custom-org-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-org-faces))
+  (set-face-attribute 'org-level-1 nil :height 1.3)
+  (set-face-attribute 'org-level-2 nil :height 1.2)
+  (set-face-attribute 'org-level-3 nil :height 1.1))
 
 ;;;; rainbow-delimiters
 (after 'rainbow-delimiters-autoloads
@@ -604,40 +588,40 @@
   (add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable))
 
 (after 'rainbow-delimiters
-  (defun td-custom-rainbow-delimiter-faces ()
-    (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
-    (set-face-attribute 'rainbow-delimiters-depth-2-face nil :foreground "#deae3e")
-    (set-face-attribute 'rainbow-delimiters-depth-3-face nil :foreground "#81af34")
-    (set-face-attribute 'rainbow-delimiters-depth-4-face nil :foreground "#4e9f75")
-    (set-face-attribute 'rainbow-delimiters-depth-5-face nil :foreground "#11535F")
-    (set-face-attribute 'rainbow-delimiters-depth-6-face nil :foreground "#00959e")
-    (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
-    (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
-  (td-custom-rainbow-delimiter-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-rainbow-delimiter-faces))
+  (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
+  (set-face-attribute 'rainbow-delimiters-depth-2-face nil :foreground "#deae3e")
+  (set-face-attribute 'rainbow-delimiters-depth-3-face nil :foreground "#81af34")
+  (set-face-attribute 'rainbow-delimiters-depth-4-face nil :foreground "#4e9f75")
+  (set-face-attribute 'rainbow-delimiters-depth-5-face nil :foreground "#11535F")
+  (set-face-attribute 'rainbow-delimiters-depth-6-face nil :foreground "#00959e")
+  (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
+  (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
 
 ;;;; diff-hl
 (after 'diff-hl-autoloads
   (global-diff-hl-mode))
 
 (after 'diff-hl
-  (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
-    "Markers disappear and reapear is kind of annoying to me.")
-
   (setq diff-hl-draw-borders nil)
 
-  (define-fringe-bitmap 'diff-hl-bmp-insert
-    [0 24 24 126 126 24 24 0])
-  (define-fringe-bitmap 'diff-hl-bmp-delete
-    [0 0 0 126 126 0 0 0])
-  (define-fringe-bitmap 'diff-hl-bmp-change
-    [0 60 126 126 126 126 60 0])
+  (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
+  (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
+  (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
+  (add-hook 'after-make-frame-functions
+            (lambda (&rest args)
+              (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")))
 
-  (defadvice magit-quit-session
-    (after update-diff-hl activate)
-    (mapc (lambda (buffer)
-            (with-current-buffer buffer (diff-hl-update)))
-          (buffer-list)))
+  ;; (define-fringe-bitmap 'diff-hl-bmp-insert
+  ;;   [0 24 24 126 126 24 24 0])
+  ;; (define-fringe-bitmap 'diff-hl-bmp-delete
+  ;;   [0 0 0 126 126 0 0 0])
+  ;; (define-fringe-bitmap 'diff-hl-bmp-change
+  ;;   [0 60 126 126 126 126 60 0]
+  ;;   [0 0 24 60 60 24 0 0])
+
+  (define-fringe-bitmap 'diff-hl-bmp-insert [57344] 1 16 '(top t))
+  (define-fringe-bitmap 'diff-hl-bmp-delete [57344] 1 16 '(top t))
+  (define-fringe-bitmap 'diff-hl-bmp-change [57344] 1 16 '(top t))
 
   (defun diff-hl-fringe-spec (type pos)
     (let* ((key (cons type pos))
@@ -649,16 +633,19 @@
           (puthash key val diff-hl-spec-cache)))
       val))
 
-  (defun td-custom-diff-hl-faces ()
-    (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
-    (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
-    (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e"))
-  (td-custom-diff-hl-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-diff-hl-faces))
+  (defadvice magit-quit-session
+    (after update-diff-hl activate)
+    (mapc (lambda (buffer)
+            (with-current-buffer buffer (diff-hl-update)))
+          (buffer-list)))
+  (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
+    "Markers disappear and reapear is kind of annoying to me."))
 
 ;;;; undo-tree
 (after 'undo-tree-autoloads
-  (global-undo-tree-mode t)
+  (global-undo-tree-mode t))
+
+(after 'undo-tree
   (setq undo-limit (* 32 1024 1024 1024)
         undo-strong-limit (* 64 1024 1024 1024)
         undo-tree-auto-save-history t
@@ -676,6 +663,9 @@
 ;;;; ace-jump-mode
 (after 'ace-jump-mode-autoloads
   (td-bind "C-'" #'ace-jump-mode))
+
+(after 'ace-jump-mode
+  (setq ace-jump-word-mode-use-query-char nil))
 
 ;;;; evil
 (after 'evil-autoloads
@@ -707,9 +697,9 @@
   (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
 
   (td-bind evil-normal-state-map
-           "''" "``"
-           "C-j" "10gj"
-           "C-k" "10gk"
+           "''" (td-cmd (evil-goto-mark ?`))
+           "C-j" (td-cmd (evil-next-visual-line 10))
+           "C-k" (td-cmd (evil-previous-visual-line 10))
            "j" #'evil-next-visual-line
            "k" #'evil-previous-visual-line
            "TAB" #'evil-jump-item
@@ -754,8 +744,6 @@
   (td-bind "C-c g" #'magit-status))
 
 (after 'magit
-  (setq magit-commit-all-when-nothing-staged t)
-
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it
@@ -768,8 +756,10 @@
   (td-bind magit-status-mode-map "q" #'magit-quit-session))
 
 (after 'git-commit-mode
-  (defadvice git-commit-end-session
-    (after td-git-commit-end-session activate)
+  (setq magit-commit-all-when-nothing-staged t)
+
+  (defadvice git-commit-commit
+    (after delete-window activate)
     (delete-window))
   (defun magit-exit-commit-mode ()
     (interactive)
@@ -836,11 +826,8 @@
           space-before-tab space-after-tab))
   (setq whitespace-line-column fill-column)
 
-  (defun td-custom-whitespace-faces ()
-    (set-face-attribute 'whitespace-space nil :background nil)
-    (set-face-attribute 'whitespace-tab nil :background nil))
-  (td-custom-whitespace-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-whitespace-faces))
+  (set-face-attribute 'whitespace-space nil :background nil)
+  (set-face-attribute 'whitespace-tab nil :background nil))
 
 ;; prog
 (defun td-custom-font-lock-hightlights ()
@@ -859,7 +846,8 @@
     (interactive)
     (flycheck-mode t))
 
-  (add-hook 'go-mode-hook #'turn-on-flycheck))
+  (add-hook 'go-mode-hook #'turn-on-flycheck)
+  (add-hook 'emacs-lisp-mode-hook #'turn-on-flycheck))
 
 (after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save))
@@ -872,8 +860,17 @@
          "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
          "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\|layouts\\)/.*\\.php$")
 
+;; (after 'web-mode
+;;   (defun td-web-mode-rescan-buffer ()
+;;     "Sometimes web-mode is out of sync."
+;;     (when (eq major-mode 'web-mode)
+;;       (run-with-idle-timer 0.1 nil #'web-mode-scan-buffer)))
+;;   (add-hook 'web-mode-hook #'td-web-mode-rescan-buffer)
+;;   (add-hook 'before-save-hook #'td-web-mode-rescan-buffer))
+
 (after 'emmet-mode-autoloads
   (add-hook 'sgml-mode-hook #'emmet-mode)
+  (add-hook 'web-mode-hook #'emmet-mode)
   (add-hook 'css-mode-hook #'emmet-mode))
 
 (after 'emmet-mode
@@ -897,10 +894,7 @@
     (after emmet-preview-hide-tooltip activate)
     (overlay-put emmet-preview-output 'before-string nil))
 
-  (defun td-custom-emmet-faces ()
-    (set-face-attribute 'emmet-preview-input nil :box nil))
-  (td-custom-emmet-faces)
-  (add-hook 'after-load-theme-functions #'td-custom-emmet-faces))
+  (set-face-attribute 'emmet-preview-input nil :box nil))
 
 ;;;; javascript
 (after 'js
@@ -908,20 +902,20 @@
         js-expr-indent-offset 2
         js-flat-functions t))
 
-(after 'js2-mode-autoloads
-  (td-mode 'js2-mode "\\.js$")
-  (td-repl 'js2-mode "node")
-  (setq js2-basic-offset 2
-        js2-bounce-indent-p t
-        js2-language-version 180
-        js2-strict-missing-semi-warning nil
-        js2-global-externs '("jQuery" "Zepto" "$" "_"
-                             "Ember" "angular" "dojo"
-                             "require" "define")
-        js2-include-node-externs t))
+;; (after 'js2-mode-autoloads
+;;   (td-mode 'js2-mode "\\.js$")
+;;   (td-repl 'js2-mode "node")
+;;   (setq js2-basic-offset 2
+;;         js2-bounce-indent-p t
+;;         js2-language-version 180
+;;         js2-strict-missing-semi-warning nil
+;;         js2-global-externs '("jQuery" "Zepto" "$" "_"
+;;                              "Ember" "angular" "dojo"
+;;                              "require" "define")
+;;         js2-include-node-externs t))
 
-(after 'js2-mode
-  (td-bind js2-mode-map "M-j" nil))
+;; (after 'js2-mode
+;;   (td-bind js2-mode-map "M-j" nil))
 
 (after 'tern-autoloads
   (add-hook 'js-mode-hook (lambda () (tern-mode t))))
@@ -989,13 +983,16 @@
                  (lambda (arg) (ruby-end-of-block)) nil)))
 
 (after 'ruby-dev-autoloads
-  (add-hook 'ruby-mode-hook 'turn-on-ruby-dev))
+  (add-hook 'ruby-mode-hook #'turn-on-ruby-dev))
+
+(after 'ruby-dev
+  (setq ruby-dev-ruby-executable "~/local/var/rbenv/shims/ruby"))
 
 ;;;; python
 (after 'python
   (defun setup-python-mode ()
     (setq tab-width 4
-          python-indent 4))
+          python-indent-offset 4))
   (add-hook 'python-mode-hook #'setup-python-mode))
 
 ;;;; c
@@ -1029,10 +1026,15 @@
   (require 'go-autocomplete)
   (add-hook 'go-mode-hook #'go-eldoc-setup))
 
+;;;; rust
+(after 'rust-mode
+  (setq rust-indent-offset 4))
+
 ;;;; markdown
 (after 'markdown-mode-autoloads
-  (td-mode 'markdown-mode "\\.md$" "\\.mkd$" "\\.markdown$")
-  (add-hook 'markdown-mode-hook #'turn-on-flyspell)
+  (td-mode 'markdown-mode "\\.md$" "\\.mkd$" "\\.markdown$"))
+
+(after 'markdown-mode
   (setq markdown-command "pandoc -s"
         markdown-enable-math t
         markdown-header-face '(:inherit font-lock-function-name-face :weight bold)
@@ -1040,6 +1042,9 @@
         markdown-header-face-2 '(:inherit markdown-header-face :height 1.6)
         markdown-header-face-3 '(:inherit markdown-header-face :height 1.4)
         markdown-header-face-4 '(:inherit markdown-header-face :height 1.2))
+
+  (add-hook 'markdown-mode-hook #'turn-on-flyspell)
+
   (defun markdown-export-docx ()
     (interactive)
     (let* ((parts (list markdown-command))
@@ -1052,9 +1057,8 @@
       (push (concat "-o ~/Desktop/" output-file) parts)
       (push (buffer-file-name) parts)
       (when (= 0 (shell-command (mapconcat 'identity (nreverse parts) " ")))
-        (message (concat "Wrote " output-file))))))
+        (message (concat "Wrote " output-file)))))
 
-(after 'markdown-mode
   (td-bind markdown-mode-map "M-p" nil)
   (td-bind markdown-mode-map "C-c C-b" nil))
 
@@ -1101,7 +1105,7 @@
     (let ((byte-compile-verbose nil))
       (byte-compile-file buffer-file-name))))
 
-;; (add-hook 'after-save-hook #'byte-recompile-config)
+(add-hook 'after-save-hook #'byte-recompile-config)
 
 (defun indent-defun ()
   "Indent the current defun."
@@ -1207,8 +1211,8 @@
 
 (defun buffers-of-mode (mode)
   (-filter (lambda (b)
-               (with-current-buffer b (eq mode major-mode)))
-             (buffer-list)))
+             (with-current-buffer b (eq mode major-mode)))
+           (buffer-list)))
 
 (defun same-mode-buffers ()
   (buffers-of-mode major-mode))
@@ -1246,7 +1250,7 @@
 ;;;; advices
 (defadvice save-buffers-kill-emacs
   (around no-query-kill-emacs activate)
-  (labels ((process-list ())) ad-do-it))
+  (cl-labels ((process-list ())) ad-do-it))
 
 (defadvice switch-to-buffer
   (before save-buffer-now activate)
