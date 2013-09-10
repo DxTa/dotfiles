@@ -602,11 +602,13 @@
   (global-diff-hl-mode))
 
 (after 'diff-hl
-  (setq diff-hl-draw-borders nil)
+  (setq diff-hl-draw-borders nil
+        diff-hl-fringe-bmp-function #'td-diff-hl-bmp)
 
   (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
   (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
   (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
+  (set-face-attribute 'diff-hl-unknown nil :inherit nil :foreground "#81af34")
   (add-hook 'after-make-frame-functions
             (lambda (&rest args)
               (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")))
@@ -619,19 +621,8 @@
   ;;   [0 60 126 126 126 126 60 0]
   ;;   [0 0 24 60 60 24 0 0])
 
-  (define-fringe-bitmap 'diff-hl-bmp-insert [57344] 1 16 '(top t))
-  (define-fringe-bitmap 'diff-hl-bmp-delete [57344] 1 16 '(top t))
-  (define-fringe-bitmap 'diff-hl-bmp-change [57344] 1 16 '(top t))
-
-  (defun diff-hl-fringe-spec (type pos)
-    (let* ((key (cons type pos))
-           (val (gethash key diff-hl-spec-cache)))
-      (unless val
-        (let* ((face-sym (intern (concat "diff-hl-" (symbol-name type))))
-               (bmp-sym (intern (concat "diff-hl-bmp-" (symbol-name type)))))
-          (setq val (propertize " " 'display `((left-fringe ,bmp-sym ,face-sym))))
-          (puthash key val diff-hl-spec-cache)))
-      val))
+  (define-fringe-bitmap 'td-diff-hl-bmp [57344] 1 16 '(top t))
+  (defun td-diff-hl-bmp (type pos) 'td-diff-hl-bmp)
 
   (defadvice magit-quit-session
     (after update-diff-hl activate)
@@ -965,7 +956,8 @@
 ;;;; php
 (after 'php-mode
   (setq php-template-compatibility nil)
-  (add-hook 'php-mode-hook #'php-enable-drupal-coding-style))
+  (add-hook 'php-mode-hook #'php-enable-drupal-coding-style)
+  (td-bind php-mode-map "C-c C-b" nil))
 
 ;;;; ruby
 (td-mode 'ruby-mode "Rakefile" "Guardfile" "Gemfile" "Vagrantfile" "\\.ru$" "\\.rake$")
