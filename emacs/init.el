@@ -663,7 +663,7 @@
   (evil-mode t)
   (setq-default mode-line-format
                 (cons '(evil-mode ("" evil-mode-line-tag)) mode-line-format)))
-;;(pending-delete-mode t)
+;; (pending-delete-mode t)
 
 (after 'evil
   (when (boundp 'global-surround-mode)
@@ -735,6 +735,7 @@
   (td-bind "C-c g" #'magit-status))
 
 (after 'magit
+  (set-face-attribute 'magit-item-highlight nil :background "#222")
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it

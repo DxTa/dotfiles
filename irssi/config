@@ -20,7 +20,7 @@ channels = (
   { name = "#ubuntu-vn"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#emacs"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#clojure"; chatnet = "freenode"; autojoin = "Yes"; },
-  { name = "#ruby"; chatnet = "freenode"; autojoin = "Yes"; }
+  { name = "#ruby"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#angularjs"; chatnet = "freenode"; autojoin = "Yes"; }
 );
 
@@ -35,9 +35,18 @@ statusbar = {
         input = { priority = "10"; };
         act = { alignment = "right"; };
       };
+      position = "2";
     };
 
     window = { disabled = "yes"; };
+    awl_0 = {
+      items = {
+        barstart = { priority = "100"; };
+        awl_0 = { };
+        barend = { priority = "100"; alignment = "right"; };
+      };
+      position = "1";
+    };
   };
 };
 
@@ -45,18 +54,20 @@ settings = {
   core = { real_name = "Tung Dao"; user_name = "tungd"; nick = "tungd"; };
   "fe-text" = { actlist_sort = "refnum"; };
   "fe-common/core" = {
-    theme = "lyynx";
+    theme = "xchat";
     bell_beeps = "yes";
     beep_msg_level = "MSGS NOTICES DCC DCCMSGS HILIGHT";
   };
+  "perl/core/scripts" = { awl_display_key = "$Q%K|%n$H$C$S"; };
 };
 
-hilights = (
-  { text = "tungd"; nick = "yes"; word = "yes"; }
-);
+hilights = ( { text = "tungd"; nick = "yes"; word = "yes"; } );
 
 keyboard = (
   { key = "meta-[M"; id = "command"; data = "mouse_xterm "; }
 );
 
 aliases = { mpd = "exec -o mpc | head -n 1"; };
+ignores = (
+  { level = "QUITS NICKS"; }
+);
