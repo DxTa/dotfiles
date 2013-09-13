@@ -1,0 +1,4 @@
+#!/bin/sh
+MPD_TRACK=$(cmus-remote -Q | grep 'tag title ' | sed 's/tag title //')
+MPD_ARTIST=$(cmus-remote -Q | grep 'tag artist ' | sed 's/tag artist //')
+echo '#[bg=colour137,fg=colour16,bold] ♫' $MPD_TRACK '#[nobold]-#[bold]' $MPD_ARTIST '#[fg=colour254,bg=colour137,nobold]'
