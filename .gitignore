@@ -4,3 +4,10 @@ vim/bundle/
 vim/ftbundle/
 emacs/elpa/
 emacs/data
+cmus/cache
+cmus/command-history
+cmus/lib.pl
+cmus/playlist.pl
+cmus/search-history
+cmus/socket
+irssi/config.autosave

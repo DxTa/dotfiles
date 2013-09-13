@@ -6,9 +6,10 @@
 (unless (display-graphic-p) (menu-bar-mode -1))
 
 (fringe-mode '(16 . 8))
-(set-face-attribute 'default nil :family "M+ 1m" :height 140)
-(set-frame-size (selected-frame) 120 35)
-(set-frame-position (selected-frame) 500 22)
+(when (display-graphic-p)
+  (set-face-attribute 'default nil :family "M+ 1m" :height 140)
+  (set-frame-size (selected-frame) 120 35)
+  (set-frame-position (selected-frame) 500 22))
 
 ;;;; packages
 (require 'package)
@@ -252,7 +253,7 @@
   (set-display-table-slot display-table 'truncation ?¬)
   (set-window-display-table (selected-window) display-table))
 
-(color-theme-approximate-on)
+;; (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
 (load-theme 'graham t)
 
@@ -385,16 +386,6 @@
     '((prefix . "^\s*\\(.+\\)")
       (candidates . current-buffer-line-candidates)))
 
-  (defun nodejs-repl-ac-candidates ()
-    (let* ((input (buffer-substring (comint-line-beginning-position) (point)))
-           (token (nodejs-repl--get-last-token input))
-           (candidates (nodejs-repl-get-candidates token)))
-      candidates))
-
-  (ac-define-source nodejs-repl
-    '((prefix . (comint-line-beginning-position))
-      (candidates . nodejs-repl-ac-candidates)))
-
   (td-bind td-completion-map
            "s" #'ac-complete-yasnippet
            "f" #'ac-complete-filename
@@ -439,6 +430,10 @@
   (global-auto-complete-mode))
 
 ;;;; ido
+(after 'smex-autoloads
+  (smex-initialize)
+  (td-bind "M-m" #'smex))
+
 (ido-mode t)
 
 (after 'ido
@@ -489,6 +484,9 @@
 
 (after 'ido-ubiquitous-autoloads
   (ido-ubiquitous-mode t))
+
+(after 'ido-ubiquitous
+  (setq ido-ubiquitous-enable-old-style-default nil))
 
 (after 'ido-vertical-mode-autoloads
   (ido-vertical-mode t))
@@ -597,40 +595,53 @@
   (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
   (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
 
-;;;; diff-hl
-(after 'diff-hl-autoloads
-  (global-diff-hl-mode))
+;;;; git-gutter
+;; (after 'git-gutter-fringe-autoloads
+;;   (when (display-graphic-p)
+;;     (require 'git-gutter-fringe)))
 
-(after 'diff-hl
-  (setq diff-hl-draw-borders nil
-        diff-hl-fringe-bmp-function #'td-diff-hl-bmp)
+;; This is test for new line
+(after 'git-gutter-autoloads
+  (global-git-gutter-mode t))
 
-  (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
-  (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
-  (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
-  (set-face-attribute 'diff-hl-unknown nil :inherit nil :foreground "#81af34")
-  (add-hook 'after-make-frame-functions
-            (lambda (&rest args)
-              (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")))
+(after 'git-gutter
+  (setq git-gutter:lighter nil
+        git-gutter:modified-sign "| "
+        git-gutter:added-sign "| "
+        git-gutter:deleted-sign "| ")
 
-  ;; (define-fringe-bitmap 'diff-hl-bmp-insert
-  ;;   [0 24 24 126 126 24 24 0])
-  ;; (define-fringe-bitmap 'diff-hl-bmp-delete
-  ;;   [0 0 0 126 126 0 0 0])
-  ;; (define-fringe-bitmap 'diff-hl-bmp-change
-  ;;   [0 60 126 126 126 126 60 0]
-  ;;   [0 0 24 60 60 24 0 0])
+  (set-face-attribute 'git-gutter:added nil
+                      :foreground "#81af34" :background "unspecified")
+  (set-face-attribute 'git-gutter:deleted nil
+                      :foreground "#ff0000" :background "unspecified")
+  (set-face-attribute 'git-gutter:modified nil
+                      :foreground "#deae3e" :background "unspecified")
+  (set-face-attribute 'git-gutter:unchanged nil
+                      :background "unspecified"))
 
-  (define-fringe-bitmap 'td-diff-hl-bmp [57344] 1 16 '(top t))
-  (defun td-diff-hl-bmp (type pos) 'td-diff-hl-bmp)
+(after 'git-gutter-fringe
+  (set-face-attribute 'git-gutter-fr:added nil
+                      :foreground "#81af34" :background "unspecified")
+  (set-face-attribute 'git-gutter-fr:deleted nil
+                      :foreground "#ff0000" :background "unspecified")
+  (set-face-attribute 'git-gutter-fr:modified nil
+                      :foreground "#deae3e" :background "unspecified")
 
-  (defadvice magit-quit-session
-    (after update-diff-hl activate)
-    (mapc (lambda (buffer)
-            (with-current-buffer buffer (diff-hl-update)))
-          (buffer-list)))
-  (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
-    "Markers disappear and reapear is kind of annoying to me."))
+  (define-fringe-bitmap 'git-gutter-fr:added [57344] 1 16 '(top t))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [57344] 1 16 '(top t))
+  (define-fringe-bitmap 'git-gutter-fr:modified [57344] 1 16 '(top t)))
+
+;; Remnant from my diff-hl config, reference some gitter bitmap
+;; (define-fringe-bitmap 'diff-hl-bmp-insert
+;;   [0 24 24 126 126 24 24 0])
+;; (define-fringe-bitmap 'diff-hl-bmp-delete
+;;   [0 0 0 126 126 0 0 0])
+;; (define-fringe-bitmap 'diff-hl-bmp-change
+;;   [0 60 126 126 126 126 60 0]
+;;   [0 0 24 60 60 24 0 0])
+
+;; (define-fringe-bitmap 'td-diff-hl-bmp [57344] 1 16 '(top t))
+;; (defun td-diff-hl-bmp (type pos) 'td-diff-hl-bmp)
 
 ;;;; undo-tree
 (after 'undo-tree-autoloads
@@ -698,8 +709,7 @@
            "C-:" #'eval-expression
            "C-e" #'end-of-line
            "z SPC" #'evil-toggle-fold
-           "SPC" #'evil-toggle-fold
-           "RET" #'evil-ex-nohighlight
+           "C-f" #'ace-jump-char-mode
            "gi" #'inline-variable
            ",," #'evil-buffer
            ",w" #'evil-write-all
@@ -716,7 +726,7 @@
            "ge" #'extract-variable
            "*" #'evil-visual-search)
   (td-bind evil-motion-state-map
-           "<tab>" #'evil-jump-item)
+           "TAB" #'evil-jump-item)
 
   (defadvice evil-ex-pattern-whole-line
     (after evil-global-defaults activate)
@@ -878,10 +888,6 @@
   ;; (td-bind emmet-mode-keymap
   ;;          "C-'" #'emmet-move-to-next-insert-point)
 
-  (defadvice emmet-expand-line
-    (after emmet-expand-line-move-cursor activate)
-    (emmet-move-to-next-insert-point))
-
   (defadvice emmet-preview
     (after emmet-preview-hide-tooltip activate)
     (overlay-put emmet-preview-output 'before-string nil))
@@ -928,6 +934,17 @@
              "C-x C-b" #'js-send-buffer))
 
   (add-hook 'js-mode-hook #'td-inf-js-setup))
+
+(after 'nodejs-repl
+  (defun nodejs-repl-ac-candidates ()
+    (let* ((input (buffer-substring (comint-line-beginning-position) (point)))
+           (token (nodejs-repl--get-last-token input))
+           (candidates (nodejs-repl-get-candidates token)))
+      candidates))
+
+  (ac-define-source nodejs-repl
+    '((prefix . (comint-line-beginning-position))
+      (candidates . nodejs-repl-ac-candidates))))
 
 ;;;; coffee
 (after 'coffee-mode-autoloads
@@ -1245,10 +1262,10 @@
   (around no-query-kill-emacs activate)
   (cl-labels ((process-list ())) ad-do-it))
 
-(defadvice switch-to-buffer
-  (before save-buffer-now activate)
-  (when (local-buffer? (current-buffer)) (save-buffer)))
+;; (defadvice switch-to-buffer
+;;   (before save-buffer-now activate)
+;;   (when (local-buffer? (current-buffer)) (save-buffer)))
 
-(defadvice other-window
-  (before save-buffer-now activate)
-  (when (local-buffer? (current-buffer)) (save-buffer)))
+;; (defadvice other-window
+;;   (before save-buffer-now activate)
+;;   (when (local-buffer? (current-buffer)) (save-buffer)))

@@ -12,7 +12,7 @@ if [ "$OS" = "darwin" ]; then
   alias pbp=pbpaste
   alias pbc=pbcopy
   alias vim='mvim -v'
-  alias vim='emacsclient -n -a "mvim -v"'
+  alias vim='emacsclient -a vim'
   alias emacs='Emacs'
 fi
 
@@ -65,8 +65,8 @@ function fr() {
 alias v=vim
 
 # Emacs
-alias e="emacsclient -c -n -a vim"
-alias ec="emacsclient -c -n -a vim"
+alias e="emacsclient -a vim"
+alias ec="emacsclient -c"
 es() {
   emacsclient -c -a vim "/sudo::$*"
 }
@@ -84,6 +84,7 @@ alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
 alias whois="whois -h whois-servers.net"
 alias sniff="sudo ngrep -d 'en1' -t '^(GET|POST) ' 'tcp and port 80'"
 alias httpdump="sudo tcpdump -i en1 -n -s 0 -w - | grep -a -o -E \"Host\: .*|GET \/.*\""
+alias cmus="tmux new-session -A -s cmus cmus"
 
 alias grd=gradle
 alias grt=grunt
