@@ -1,7 +1,6 @@
 #!/bin/sh
-# xrandr --output LVDS --mode 1366x768
-# xrandr --output CRT1 --mode 1280x1024
-xrandr --output CRT1 --right-of LVDS
 
-# xrandr --output VGA-0 --mode 1280x1024
-# xrandr --output VGA-0 --right-of LVDS
+xrandr --output LVDS --mode 1366x768
+xrandr --output VGA-0 --mode 1280x1024
+xrandr --output VGA-0 --right-of LVDS
+

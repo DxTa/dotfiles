@@ -27,7 +27,7 @@ theme.fg_minimize   = theme.fg_focus
 
 theme.border_width  = 1
 theme.border_normal = "#222222"
-theme.border_focus  = "orange"
+theme.border_focus  = "#ffcc00"
 theme.border_marked = theme.border_focus
 
 -- There are other variable sets
@@ -56,7 +56,7 @@ theme.menu_bg_focus = "#000000"
 theme.menu_fg_focus = "#ff7f00"
 theme.menu_border_width = 0
 
-theme.bar_height = 16
+theme.bar_height = 18
 
 -- You can add as many variables as
 -- you wish and access them by using

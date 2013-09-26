@@ -93,7 +93,7 @@ end
 
 -- {{{ Autostop
 function quit_session_cleanup ()
-  awful.util.spawn("emacsclient -e '(kill-emacs)'")
+  -- awful.util.spawn("emacsclient -e '(kill-emacs)'")
   awesome.quit()
 end
 -- }}}
@@ -195,7 +195,7 @@ for s = 1, screen.count() do
 
   -- Widgets that are aligned to the right
   local right_layout = wibox.layout.fixed.horizontal()
-  if s == 1 then right_layout:add(wibox.widget.systray()) end
+  if s == screen.count() then right_layout:add(wibox.widget.systray()) end
 
   right_layout:add(mytextclock)
   right_layout:add(mylayoutbox[s])

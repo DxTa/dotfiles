@@ -3,13 +3,20 @@
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (blink-cursor-mode -1)
-(unless (display-graphic-p) (menu-bar-mode -1))
-
 (fringe-mode '(16 . 8))
-(when (display-graphic-p)
-  (set-face-attribute 'default nil :family "M+ 1m" :height 140)
-  (set-frame-size (selected-frame) 120 35)
-  (set-frame-position (selected-frame) 500 22))
+
+;;;; platform specific
+(when (eq system-type 'darwin)
+  (exec-path-from-shell-initialize)
+  (setq mac-command-modifier 'meta
+        mac-option-modifier 'super)
+  (when (display-graphic-p)
+    (set-face-attribute 'default nil :family "M+ 1m" :height 110)
+    (set-frame-size (selected-frame) 120 35)
+    (set-frame-position (selected-frame) 500 22)))
+
+(when (eq system-type 'gnu/linux)
+  (menu-bar-mode -1))
 
 ;;;; packages
 (require 'package)
@@ -30,7 +37,6 @@
 
 (defmacro after (mode &rest body)
   (declare (indent defun))
-  (eval `(require ,mode))
   `(eval-after-load ,mode
      `(funcall (function ,(lambda () ,@body)))))
 
@@ -56,15 +62,6 @@
 ;;;; custom
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
-
-;;;; platform specific
-(when (eq system-type 'darwin)
-  (exec-path-from-shell-initialize)
-  (setq mac-command-modifier 'meta
-        mac-option-modifier 'super))
-
-(when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1))
 
 ;;;; startup
 (defun td-scratch-fortune ()
@@ -596,11 +593,10 @@
   (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
 
 ;;;; git-gutter
-;; (after 'git-gutter-fringe-autoloads
-;;   (when (display-graphic-p)
-;;     (require 'git-gutter-fringe)))
+(after 'git-gutter-fringe-autoloads
+  (when (display-graphic-p)
+    (require 'git-gutter-fringe)))
 
-;; This is test for new line
 (after 'git-gutter-autoloads
   (global-git-gutter-mode t))
 
@@ -724,21 +720,14 @@
            "Y" #'clipboard-kill-ring-save
            "C-a" #'align=
            "ge" #'extract-variable
-           "*" #'evil-visual-search)
+           "*" #'evil-visualstar/begin-search-forward
+           "#" #'evil-visualstar/begin-search-backward)
   (td-bind evil-motion-state-map
-           "TAB" #'evil-jump-item)
+           "<tab>" #'evil-jump-item)
 
   (defadvice evil-ex-pattern-whole-line
     (after evil-global-defaults activate)
-    (setq ad-return-value "g"))
-
-  (defun evil-visual-search (beg end)
-    (interactive "r")
-    (when (evil-visual-state-p)
-      (evil-exit-visual-state)
-      (setq isearch-forward t)
-      (evil-search
-       (regexp-quote (buffer-substring-no-properties beg end)) t t))))
+    (setq ad-return-value "g")))
 
 ;;;; magit
 (after 'magit-autoloads
@@ -849,7 +838,8 @@
     (flycheck-mode t))
 
   (add-hook 'go-mode-hook #'turn-on-flycheck)
-  (add-hook 'emacs-lisp-mode-hook #'turn-on-flycheck))
+  ;; (add-hook 'emacs-lisp-mode-hook #'turn-on-flycheck)
+  )
 
 (after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save))
@@ -1115,7 +1105,7 @@
     (let ((byte-compile-verbose nil))
       (byte-compile-file buffer-file-name))))
 
-(add-hook 'after-save-hook #'byte-recompile-config)
+;; (add-hook 'after-save-hook #'byte-recompile-config)
 
 (defun indent-defun ()
   "Indent the current defun."

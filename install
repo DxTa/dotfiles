@@ -38,16 +38,14 @@ else
   # misc.
   link $CLI/tmux.conf $HOME/.tmux.conf
   link $CLI/ctags $HOME/.ctags
-  link $CLI/ackrc $HOME/.ackrc
 
   if [ "$OS" = "darwin" ]; then
     cat $CLI/Custom.css > "$HOME/Library/Application Support/Google/Chrome/Default/User StyleSheets/Custom.css"
   fi
 
   if [ "$OS" = "linux" ]; then
-    link $CLI/linux/xmodmap $HOME/.xmodmap
     link $CLI/awesome $HOME/.config/awesome
-    link $CLI/x/xinitrc $HOME/.xinitrc
+    # link $CLI/x/xinitrc $HOME/.xinitrc
     link $CLI/x/xresources $HOME/.xresources
     link $CLI/x/xmodmap $HOME/.xmodmap
     link $CLI/x/terminalrc $HOME/.config/xfce4/terminal/terminalrc
