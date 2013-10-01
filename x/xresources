@@ -3,7 +3,9 @@ Xft.dpi:        96
 Xft.antialias:  true
 Xft.rgba:       rgb
 Xft.hinting:    true
-Xft.hintstyle:  hintslight
+Xft.autohint:   false
+Xft.lcdfilter:  lcddefault
+Xft.hintstyle:  hintfull
 
 Emacs*font: M+ 1m:pixelsize=14
 Emacs*toolbar: false

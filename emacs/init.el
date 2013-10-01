@@ -143,6 +143,7 @@
       history-length 256
       confirm-nonexistent-file-or-buffer nil
       comment-style 'multi-line
+      browse-url-browser-function #'td-browse-url
       require-final-newline t)
 
 (setq-default major-mode 'text-mode
@@ -345,10 +346,10 @@
 
   (add-hook 'ibuffer-mode-hook #'td-ibuffer-hook))
 
-
 ;;;; completion
 (define-prefix-command 'td-completion-map)
-(td-bind "C-;" 'td-completion-map)
+(td-bind "C-;" 'td-completion-map
+         "C-c ;" 'td-completion-map)
 
 (td-bind td-completion-map
          ";" #'end-with-semicolon
@@ -356,11 +357,13 @@
 
 ;;;; auto-complete
 (after 'auto-complete
-  (setq ac-auto-show-menu nil
+  (setq ac-auto-start nil
         ac-disable-inline t
-        ac-use-menu-map t
         ac-expand-on-auto-complete nil
-        ac-candidate-menu-min 0)
+        ac-ignore-case nil
+        ac-use-menu-map t)
+
+  (ac-set-trigger-key "TAB")
 
   (ac-linum-workaround)
   (ac-flyspell-workaround)
@@ -371,10 +374,6 @@
   (add-to-list 'ac-modes 'coffee-mode)
   (add-to-list 'ac-modes 'nrepl-mode)
   (add-to-list 'ac-modes 'nodejs-repl-mode)
-
-  (defun auto-complete-completion-at-point ()
-    (setq completion-at-point-functions '(auto-complete)))
-  (add-hook 'auto-complete-mode-hook #'auto-complete-completion-at-point)
 
   (defun current-buffer-line-candidates ()
     (-uniq (mapcar #'s-trim-left (current-buffer-lines))))
@@ -390,8 +389,7 @@
            "h" #'ac-last-quick-help
            "t" #'ac-complete-tern-completion)
 
-  (td-bind ac-completing-map
-           "C-s" #'ac-isearch
+  (td-bind ac-menu-map
            "C-n" #'ac-next
            "C-p" #'ac-previous
            "C-l" #'ac-expand-common))
@@ -592,52 +590,60 @@
   (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
   (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
 
-;;;; git-gutter
-(after 'git-gutter-fringe-autoloads
-  (when (display-graphic-p)
-    (require 'git-gutter-fringe)))
+;;;; diff-hl
+(after 'diff-hl-autoloads
+  (global-diff-hl-mode))
 
-(after 'git-gutter-autoloads
-  (global-git-gutter-mode t))
+(after 'diff-hl
+  (unless (display-graphic-p)
+    (diff-hl-margin-mode t))
 
-(after 'git-gutter
-  (setq git-gutter:lighter nil
-        git-gutter:modified-sign "| "
-        git-gutter:added-sign "| "
-        git-gutter:deleted-sign "| ")
+  (setq diff-hl-draw-borders nil
+        diff-hl-fringe-bmp-function #'td-diff-hl-bmp)
 
-  (set-face-attribute 'git-gutter:added nil
-                      :foreground "#81af34" :background "unspecified")
-  (set-face-attribute 'git-gutter:deleted nil
-                      :foreground "#ff0000" :background "unspecified")
-  (set-face-attribute 'git-gutter:modified nil
-                      :foreground "#deae3e" :background "unspecified")
-  (set-face-attribute 'git-gutter:unchanged nil
-                      :background "unspecified"))
+  (defun td-custom-diff-hl-faces (&optional args)
+    (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
+    (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
+    (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
+    (set-face-attribute 'diff-hl-unknown nil :inherit nil :foreground "#81af34"))
 
-(after 'git-gutter-fringe
-  (set-face-attribute 'git-gutter-fr:added nil
-                      :foreground "#81af34" :background "unspecified")
-  (set-face-attribute 'git-gutter-fr:deleted nil
-                      :foreground "#ff0000" :background "unspecified")
-  (set-face-attribute 'git-gutter-fr:modified nil
-                      :foreground "#deae3e" :background "unspecified")
+  (td-custom-diff-hl-faces)
+  (add-hook 'after-make-frame-functions #'td-custom-diff-hl-faces)
 
-  (define-fringe-bitmap 'git-gutter-fr:added [57344] 1 16 '(top t))
-  (define-fringe-bitmap 'git-gutter-fr:deleted [57344] 1 16 '(top t))
-  (define-fringe-bitmap 'git-gutter-fr:modified [57344] 1 16 '(top t)))
+  ;; (define-fringe-bitmap 'diff-hl-bmp-insert
+  ;;   [0 24 24 126 126 24 24 0])
+  ;; (define-fringe-bitmap 'diff-hl-bmp-delete
+  ;;   [0 0 0 126 126 0 0 0])
+  ;; (define-fringe-bitmap 'diff-hl-bmp-change
+  ;;   [0 60 126 126 126 126 60 0]
+  ;;   [0 0 24 60 60 24 0 0])
 
-;; Remnant from my diff-hl config, reference some gitter bitmap
-;; (define-fringe-bitmap 'diff-hl-bmp-insert
-;;   [0 24 24 126 126 24 24 0])
-;; (define-fringe-bitmap 'diff-hl-bmp-delete
-;;   [0 0 0 126 126 0 0 0])
-;; (define-fringe-bitmap 'diff-hl-bmp-change
-;;   [0 60 126 126 126 126 60 0]
-;;   [0 0 24 60 60 24 0 0])
+  (define-fringe-bitmap 'td-diff-hl-bmp [57344] 1 16 '(top t))
+  (defun td-diff-hl-bmp (type pos) 'td-diff-hl-bmp)
 
-;; (define-fringe-bitmap 'td-diff-hl-bmp [57344] 1 16 '(top t))
-;; (defun td-diff-hl-bmp (type pos) 'td-diff-hl-bmp)
+  (defadvice magit-quit-session
+    (after update-diff-hl activate)
+    (mapc (lambda (buffer)
+            (with-current-buffer buffer (diff-hl-update)))
+          (buffer-list)))
+
+  (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
+    "Markers disappear and reapear is kind of annoying to me."))
+
+(after 'diff-hl-margin
+  (defun td-make-diff-hl-margin-spec (type char)
+    (cons type
+          (propertize
+           " " 'display
+           `((margin left-margin)
+             ,(propertize char 'face
+                          (intern (format "diff-hl-%s" type)))))))
+  (setq diff-hl-margin-spec-cache
+        (list
+         (td-make-diff-hl-margin-spec 'insert "|")
+         (td-make-diff-hl-margin-spec 'delete "|")
+         (td-make-diff-hl-margin-spec 'change "|")
+         (td-make-diff-hl-margin-spec 'unknown "|"))))
 
 ;;;; undo-tree
 (after 'undo-tree-autoloads
@@ -670,7 +676,6 @@
   (evil-mode t)
   (setq-default mode-line-format
                 (cons '(evil-mode ("" evil-mode-line-tag)) mode-line-format)))
-;; (pending-delete-mode t)
 
 (after 'evil
   (when (boundp 'global-surround-mode)
@@ -852,14 +857,6 @@
          "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
          "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\|layouts\\)/.*\\.php$")
 
-;; (after 'web-mode
-;;   (defun td-web-mode-rescan-buffer ()
-;;     "Sometimes web-mode is out of sync."
-;;     (when (eq major-mode 'web-mode)
-;;       (run-with-idle-timer 0.1 nil #'web-mode-scan-buffer)))
-;;   (add-hook 'web-mode-hook #'td-web-mode-rescan-buffer)
-;;   (add-hook 'before-save-hook #'td-web-mode-rescan-buffer))
-
 (after 'emmet-mode-autoloads
   (add-hook 'sgml-mode-hook #'emmet-mode)
   (add-hook 'web-mode-hook #'emmet-mode)
@@ -869,14 +866,6 @@
   (setq emmet-indentation 2
         emmet-preview-default nil
         emmet-insert-flash-time 0.1)
-
-  (defun emmet-move-to-next-insert-point ()
-    (interactive)
-    (let ((markup (buffer-substring-no-properties (point) (point-max))))
-      (goto-char (+ (point) (emmet-html-next-insert-point markup)))))
-
-  ;; (td-bind emmet-mode-keymap
-  ;;          "C-'" #'emmet-move-to-next-insert-point)
 
   (defadvice emmet-preview
     (after emmet-preview-hide-tooltip activate)
@@ -889,21 +878,6 @@
   (setq js-indent-level 2
         js-expr-indent-offset 2
         js-flat-functions t))
-
-;; (after 'js2-mode-autoloads
-;;   (td-mode 'js2-mode "\\.js$")
-;;   (td-repl 'js2-mode "node")
-;;   (setq js2-basic-offset 2
-;;         js2-bounce-indent-p t
-;;         js2-language-version 180
-;;         js2-strict-missing-semi-warning nil
-;;         js2-global-externs '("jQuery" "Zepto" "$" "_"
-;;                              "Ember" "angular" "dojo"
-;;                              "require" "define")
-;;         js2-include-node-externs t))
-
-;; (after 'js2-mode
-;;   (td-bind js2-mode-map "M-j" nil))
 
 (after 'tern-autoloads
   (add-hook 'js-mode-hook (lambda () (tern-mode t))))
@@ -963,8 +937,11 @@
 
 ;;;; php
 (after 'php-mode
-  (setq php-template-compatibility nil)
+  (setq php-template-compatibility nil
+        php-manual-path "~/local/docs/php")
+
   (add-hook 'php-mode-hook #'php-enable-drupal-coding-style)
+
   (td-bind php-mode-map "C-c C-b" nil))
 
 ;;;; ruby
@@ -998,6 +975,8 @@
 ;;;; c
 
 ;;;; java
+(after 'javadoc-lookup
+  (javadoc-add-roots "~/local/docs/jdk/docs/api"))
 
 ;;;; clojure
 (after 'clojure-mode
@@ -1007,7 +986,8 @@
 
 (after 'nrepl
   (setq nrepl-hide-special-buffers t
-        nrepl-popup-stacktraces nil)
+        nrepl-popup-stacktraces nil
+        nrepl-popup-stacktraces-in-repl t)
 
   (defun td-setup-nrepl ()
     (ac-nrepl-setup)
@@ -1104,8 +1084,6 @@
   (when (string-match "init.el" buffer-file-name)
     (let ((byte-compile-verbose nil))
       (byte-compile-file buffer-file-name))))
-
-;; (add-hook 'after-save-hook #'byte-recompile-config)
 
 (defun indent-defun ()
   "Indent the current defun."
@@ -1247,15 +1225,17 @@
   (end-of-line)
   (insert ";"))
 
+(defun td-browse-url (url &optional new-session)
+  (if (find-if (lambda (path)
+                 (string-match path url))
+               (expand-file-name "~/local/docs"))
+      (let ((w3m-use-tab nil))
+        (if (one-window-p) (split-window-horizontally))
+        (other-window 1)
+        (w3m-browse-url url new-session))
+    (browse-url-default-browser url new-session)))
+
 ;;;; advices
 (defadvice save-buffers-kill-emacs
   (around no-query-kill-emacs activate)
   (cl-labels ((process-list ())) ad-do-it))
-
-;; (defadvice switch-to-buffer
-;;   (before save-buffer-now activate)
-;;   (when (local-buffer? (current-buffer)) (save-buffer)))
-
-;; (defadvice other-window
-;;   (before save-buffer-now activate)
-;;   (when (local-buffer? (current-buffer)) (save-buffer)))

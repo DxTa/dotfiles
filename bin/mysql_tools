@@ -1,0 +1,39 @@
+#!/bin/sh
+
+MYSQLDUMP="mysqldump"
+MYSQL="mysql -S /Applications/MAMP/tmp/mysql/mysql.sock"
+USER="root"
+PASSWORD="root"
+
+backup() {
+    databases=$($MYSQL --user=$USER --password=$PASSWORD -e "SHOW DATABASES;" | grep -Ev "(Database|mysql|information_schema|performance_schema)")
+    for db in $databases; do
+        echo $db
+        $MYSQLDUMP --force --opt --user=$USER --password=$PASSWORD --databases $db > "$db.sql"
+    done
+}
+
+restore() {
+    for $db in *.sql; do
+        echo $db
+        $MYSQL --user=$USER --password=$PASSWORD < $db
+    done
+}
+
+usage() {
+    echo "Usage: $(basename $0) backup | restore | help"
+    exit 2
+}
+
+if [ $# = 0 ]; then
+    usage
+else
+    case "$1" in
+        -b|--backup)
+            backup;;
+        -r|--restore)
+            restore;;
+        -h|--help)
+            usage;;
+    esac
+fi
