@@ -6,7 +6,7 @@ fi
 LOCAL=$HOME/local
 
 # Homebrew
-if [ -d $LOCAL/bin ]; then
+if [ -e $LOCAL/bin/brew ]; then
   export PATH=$LOCAL/bin:$PATH
   export PATH=$LOCAL/sbin:$PATH
   export PATH=$LOCAL/share/npm/bin:$PATH
@@ -36,10 +36,6 @@ export NODE_PATH=$LOCAL/lib/node_modules:$NODE_PATH
 if [ "$OS" = "linux" ]; then
   export JAVA_HOME='/usr/lib/jvm/java-6-sun'
   export PATH=$JAVA_HOME:$PATH
-fi
-
-if [ -d $LOCAL/jars ]; then
-  for jar in $LOCAL/jars/*.jar; do export CLASSPATH="$jar:$CLASSPATH"; done
 fi
 
 if [ -d $LOCAL/clojurescript ]; then
@@ -84,12 +80,10 @@ function c() {
 # Editor
 if [ "$OS" = "linux" ]; then
   export EDITOR=vim
-  export GIT_EDITOR=vim
   # Workaround for GVim iBus bug
   # gvim='gvim -f'
 else
   export EDITOR='mvim -v'
-  export GIT_EDITOR='mvim -v'
 fi
 
 # Vault

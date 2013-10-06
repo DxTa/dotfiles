@@ -5,7 +5,7 @@
 (blink-cursor-mode -1)
 (unless (display-graphic-p) (menu-bar-mode -1))
 
-(fringe-mode '(16 . 8))
+(fringe-mode '(16 . 0))
 (when (display-graphic-p)
   (set-face-attribute 'default nil :family "M+ 1m" :height 140)
   (set-frame-size (selected-frame) 120 35)
@@ -152,7 +152,6 @@
 (setq-default major-mode 'text-mode
               tab-width 2
               indicate-empty-lines nil
-              indicate-buffer-boundaries 'right
               indent-tabs-mode nil
               fill-column 90
               truncate-lines t)
@@ -376,6 +375,7 @@
   (add-to-list 'ac-modes 'web-mode)
   (add-to-list 'ac-modes 'coffee-mode)
   (add-to-list 'ac-modes 'nrepl-mode)
+  (add-to-list 'ac-modes 'typescript-mode)
   (add-to-list 'ac-modes 'nodejs-repl-mode)
 
   (defun current-buffer-line-candidates ()
@@ -728,21 +728,15 @@
            "Y" #'clipboard-kill-ring-save
            "C-a" #'align=
            "ge" #'extract-variable
-           "*" #'evil-visual-search)
+           "*" #'evil-visualstar/begin-search-forward
+           "#" #'evil-visualstar/begin-search-backward)
   (td-bind evil-motion-state-map
+           "TAB" #'evil-jump-item
            "<tab>" #'evil-jump-item)
 
   (defadvice evil-ex-pattern-whole-line
     (after evil-global-defaults activate)
-    (setq ad-return-value "g"))
-
-  (defun evil-visual-search (beg end)
-    (interactive "r")
-    (when (evil-visual-state-p)
-      (evil-exit-visual-state)
-      (setq isearch-forward t)
-      (evil-search
-       (regexp-quote (buffer-substring-no-properties beg end)) t t))))
+    (setq ad-return-value "g")))
 
 ;;;; magit
 (after 'magit-autoloads
@@ -750,16 +744,27 @@
 
 (after 'magit
   (set-face-attribute 'magit-item-highlight nil :background "#222")
+
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it
     (delete-other-windows))
+
   (defun magit-quit-session ()
     "Restores previous window configuration"
     (interactive)
     (kill-buffer)
     (jump-to-register :magit-fullscreen))
-  (td-bind magit-status-mode-map "q" #'magit-quit-session))
+
+  (defun magit-quick-amend ()
+    (interactive)
+    (save-window-excursion
+      (magit-with-refresh
+        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+
+  (td-bind magit-status-mode-map
+           "q" #'magit-quit-session
+           "C-c C-a" #'magit-quick-amend))
 
 (after 'git-commit-mode
   (setq magit-commit-all-when-nothing-staged t)
@@ -775,6 +780,7 @@
 
 ;;;; electric
 (electric-pair-mode t)
+
 (defun td-smart-brace ()
   (when (and (eq last-command-event ?\n)
              (looking-at "}"))
@@ -782,7 +788,6 @@
     (forward-line -1)
     (end-of-line)
     (newline-and-indent)))
-(add-hook 'post-self-insert-hook #'td-smart-brace t)
 
 (defun td-smart-parenthesis ()
   (when (and (eq last-command-event ?\s)
@@ -794,6 +799,8 @@
                       (looking-at "\\]"))))
     (insert " ")
     (backward-char 1)))
+
+(add-hook 'post-self-insert-hook #'td-smart-brace t)
 (add-hook 'post-self-insert-hook #'td-smart-parenthesis t)
 
 ;;;; hideshow
@@ -842,7 +849,8 @@
           1 font-lock-warning-face t)))
   (font-lock-add-keywords
    nil '(("%\\(?:[-+0-9\\$.]+\\)?[bdiuoxXDOUfeEgGcCsSpn]"
-          0 font-lock-preprocessor-face t))))
+          0 font-lock-preprocessor-face t)))
+  (number-font-lock-mode t))
 
 (add-hook 'prog-mode-hook 'td-custom-font-lock-hightlights)
 
@@ -918,6 +926,13 @@
   (ac-define-source nodejs-repl
     '((prefix . (comint-line-beginning-position))
       (candidates . nodejs-repl-ac-candidates))))
+
+;;;; typescript
+(after 'tss-autoloads
+  (td-mode 'typescript-mode "\\.ts$"))
+
+(after 'typescript
+  (tss-config-default))
 
 ;;;; coffee
 (after 'coffee-mode-autoloads
