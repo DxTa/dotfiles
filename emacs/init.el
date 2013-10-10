@@ -3,21 +3,9 @@
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (blink-cursor-mode -1)
-(fringe-mode '(16 . 8))
 
-(when (display-graphic-p)
-  (set-face-attribute 'default nil :family "M+ 1m" :height 105)
-  (set-frame-size (selected-frame) 120 35)
-  (set-frame-position (selected-frame) 500 22))
-
-;;;; platform specific
-(when (eq system-type 'darwin)
-  (exec-path-from-shell-initialize)
-  (setq mac-command-modifier 'meta
-        mac-option-modifier 'super))
-
-(when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1))
+(fringe-mode '(16 . 0))
+(set-face-attribute 'default nil :family "M+ 1m" :height (if (eq system-type 'darwin) 145 105))
 
 ;;;; packages
 (require 'package)
@@ -32,6 +20,18 @@
 (autoload '-filter "dash")
 (autoload '-uniq "dash")
 (autoload 's-trim-left "s")
+
+;;;; platform specific
+(when (eq system-type 'darwin)
+  (exec-path-from-shell-initialize)
+  (setq mac-command-modifier 'meta
+        mac-option-modifier 'super)
+  (when (display-graphic-p)
+    (set-frame-size (selected-frame) 120 35)
+    (set-frame-position (selected-frame) 500 22)))
+
+(when (eq system-type 'gnu/linux)
+  (menu-bar-mode -1))
 
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
@@ -150,7 +150,6 @@
 (setq-default major-mode 'text-mode
               tab-width 2
               indicate-empty-lines nil
-              indicate-buffer-boundaries 'right
               indent-tabs-mode nil
               fill-column 90
               truncate-lines t)
@@ -187,9 +186,7 @@
       kept-old-versions 2
       version-control t
       backup-directory-alist
-      `((".*" . ,(expand-file-name "backups" user-emacs-directory))
-        (".*-autoloads.el")
-        (,tramp-file-name-regexp . nil)))
+      (list (cons "." (expand-file-name "backups" user-emacs-directory))))
 
 (global-auto-revert-mode t)
 
@@ -374,6 +371,7 @@
   (add-to-list 'ac-modes 'web-mode)
   (add-to-list 'ac-modes 'coffee-mode)
   (add-to-list 'ac-modes 'nrepl-mode)
+  (add-to-list 'ac-modes 'typescript-mode)
   (add-to-list 'ac-modes 'nodejs-repl-mode)
 
   (defun current-buffer-line-candidates ()
@@ -657,7 +655,7 @@
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
         undo-tree-history-directory-alist
-        `((".*" . ,(expand-file-name "undos" user-emacs-directory))))
+        (list (cons "." (expand-file-name "undos" user-emacs-directory))))
 
   (defadvice undo-tree-make-history-save-file-name
     (after undo-tree activate)
@@ -729,6 +727,7 @@
            "*" #'evil-visualstar/begin-search-forward
            "#" #'evil-visualstar/begin-search-backward)
   (td-bind evil-motion-state-map
+           "TAB" #'evil-jump-item
            "<tab>" #'evil-jump-item)
 
   (defadvice evil-ex-pattern-whole-line
@@ -741,16 +740,27 @@
 
 (after 'magit
   (set-face-attribute 'magit-item-highlight nil :background "#222")
+
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it
     (delete-other-windows))
+
   (defun magit-quit-session ()
     "Restores previous window configuration"
     (interactive)
     (kill-buffer)
     (jump-to-register :magit-fullscreen))
-  (td-bind magit-status-mode-map "q" #'magit-quit-session))
+
+  (defun magit-quick-amend ()
+    (interactive)
+    (save-window-excursion
+      (magit-with-refresh
+        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+
+  (td-bind magit-status-mode-map
+           "q" #'magit-quit-session
+           "C-c C-a" #'magit-quick-amend))
 
 (after 'git-commit-mode
   (setq magit-commit-all-when-nothing-staged t)
@@ -766,6 +776,7 @@
 
 ;;;; electric
 (electric-pair-mode t)
+
 (defun td-smart-brace ()
   (when (and (eq last-command-event ?\n)
              (looking-at "}"))
@@ -773,7 +784,6 @@
     (forward-line -1)
     (end-of-line)
     (newline-and-indent)))
-(add-hook 'post-self-insert-hook #'td-smart-brace t)
 
 (defun td-smart-parenthesis ()
   (when (and (eq last-command-event ?\s)
@@ -785,6 +795,8 @@
                       (looking-at "\\]"))))
     (insert " ")
     (backward-char 1)))
+
+(add-hook 'post-self-insert-hook #'td-smart-brace t)
 (add-hook 'post-self-insert-hook #'td-smart-parenthesis t)
 
 ;;;; hideshow
@@ -833,7 +845,8 @@
           1 font-lock-warning-face t)))
   (font-lock-add-keywords
    nil '(("%\\(?:[-+0-9\\$.]+\\)?[bdiuoxXDOUfeEgGcCsSpn]"
-          0 font-lock-preprocessor-face t))))
+          0 font-lock-preprocessor-face t)))
+  (number-font-lock-mode t))
 
 (add-hook 'prog-mode-hook 'td-custom-font-lock-hightlights)
 
@@ -843,9 +856,12 @@
     (interactive)
     (flycheck-mode t))
 
+  (defun td-elisp-flycheck-may-turn-on ()
+    (unless (string-match "init.el" (or (buffer-file-name) ""))
+      (turn-on-flycheck)))
+
   (add-hook 'go-mode-hook #'turn-on-flycheck)
-  ;; (add-hook 'emacs-lisp-mode-hook #'turn-on-flycheck)
-  )
+  (add-hook 'emacs-lisp-mode-hook #'td-elisp-flycheck-may-turn-on))
 
 (after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save))
@@ -891,8 +907,8 @@
 
   (defun js-send-region-dwim (&optional args)
     (interactive "*P")
-    (with-current-region-or-line
-     (js-send-region (region-beginning) (region-end))))
+    (with-region-or-current-line
+      (js-send-region (region-beginning) (region-end))))
 
   (defun td-inf-js-setup ()
     (td-bind (current-local-map)
@@ -911,6 +927,13 @@
   (ac-define-source nodejs-repl
     '((prefix . (comint-line-beginning-position))
       (candidates . nodejs-repl-ac-candidates))))
+
+;;;; typescript
+(after 'tss-autoloads
+  (td-mode 'typescript-mode "\\.ts$"))
+
+(after 'typescript
+  (tss-config-default))
 
 ;;;; coffee
 (after 'coffee-mode-autoloads
@@ -1168,8 +1191,7 @@
   (interactive)
   (when (buffer-file-name)
     (start-file-process
-     "Make Executable" nil "/bin/bash"
-     (format "-c chmod u+x %s" (file-name-nondirectory buffer-file-name)))))
+     "Make Executable" nil "chmod" "u+x" (file-name-nondirectory buffer-file-name))))
 
 (defun align= (beg end)
   "Align region to equal signs"

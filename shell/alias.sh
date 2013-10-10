@@ -65,10 +65,9 @@ function fr() {
 alias v=vim
 
 # Emacs
-alias e="emacsclient -a vim"
-alias ec="emacsclient -c"
+alias e="emacsclient"
 es() {
-  emacsclient -c -a vim "/sudo::$*"
+  emacsclient -c -a "" "/sudo::$*"
 }
 
 # Mics.

@@ -5,6 +5,7 @@
   user = tungd
 [credential]
 	helper = osxkeychain
+	helper = gnome-keyring
 [core]
 	excludesfile = ~/.gitignore
 	whitespace = trailing-space,space-before-tab
