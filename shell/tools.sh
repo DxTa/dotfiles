@@ -33,10 +33,10 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 export NODE_PATH=$LOCAL/lib/node_modules:$NODE_PATH
 
 # Clojure
-if [ "$OS" = "linux" ]; then
-  export JAVA_HOME='/usr/lib/jvm/java-6-sun'
-  export PATH=$JAVA_HOME:$PATH
-fi
+# if [ -d "$OS" = "linux" ]; then
+#   export JAVA_HOME='/usr/lib/jvm/java-6-sun'
+#   export PATH=$JAVA_HOME:$PATH
+# fi
 
 if [ -d $LOCAL/clojurescript ]; then
   export CLOJURESCRIPT_HOME=$LOCAL/clojurescript

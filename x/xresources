@@ -3,20 +3,12 @@ Xft.dpi:        96
 Xft.antialias:  true
 Xft.rgba:       rgb
 Xft.hinting:    true
-Xft.hintstyle:  hintslight
+Xft.autohint:   false
+Xft.lcdfilter:  lcddefault
+Xft.hintstyle:  hintfull
 
-Emacs*font: Inconsolata:pixelsize=18
+Emacs*font: M+ 1m:pixelsize=14
 Emacs*toolbar: false
+Emacs*menubar: false
 Emacs*verticalScrollBars: false
 Emacs*horizontalScrollBars: false
-
-*urxvt*scrollBar: false
-*urxvt*font: xft:DejaVu Sans Mono:size=10
-
-URxvt.colorIT:      #87af5f
-URxvt.colorBD:      #d7d7d7
-URxvt.colorUL:      #87afd7
-XTerm*termName: xterm-256color
-
-! #include "/home/tung/cli/resources/fontforge.sky.xresources"
-#include "/home/tung/cli/resources/mahatman2.xresources"

@@ -3,11 +3,10 @@
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (blink-cursor-mode -1)
-(unless (display-graphic-p) (menu-bar-mode -1))
 
-(fringe-mode '(16 . 0))
 (when (display-graphic-p)
-  (set-face-attribute 'default nil :family "M+ 1m" :height 140)
+  (fringe-mode '(16 . 0))
+  (set-face-attribute 'default nil :family "M+ 1m" :height (if (eq system-type 'darwin) 145 105))
   (set-frame-size (selected-frame) 120 35)
   (set-frame-position (selected-frame) 500 22))
 
@@ -25,12 +24,20 @@
 (autoload '-uniq "dash")
 (autoload 's-trim-left "s")
 
+;;;; platform specific
+(when (eq system-type 'darwin)
+  (exec-path-from-shell-initialize)
+  (setq mac-command-modifier 'meta
+        mac-option-modifier 'super))
+
+(when (eq system-type 'gnu/linux)
+  (menu-bar-mode -1))
+
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
 
 (defmacro after (mode &rest body)
   (declare (indent defun))
-  (eval `(require ,mode))
   `(eval-after-load ,mode
      `(funcall (function ,(lambda () ,@body)))))
 
@@ -56,15 +63,6 @@
 ;;;; custom
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
-
-;;;; platform specific
-(when (eq system-type 'darwin)
-  (exec-path-from-shell-initialize)
-  (setq mac-command-modifier 'meta
-        mac-option-modifier 'super))
-
-(when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1))
 
 ;;;; startup
 (defun td-scratch-fortune ()
@@ -130,7 +128,7 @@
 
 (td-bind "C-c C-e" #'eval-and-replace)
 (td-bind "C-l" #'comment-or-uncomment-region-dwim)
-(td-bind "M-o" #'open-file-at-cursor)
+(td-bind "M-o" #'open-file-at-point)
 
 ;;;; inbox
 (td-bind "C-c j" (td-cmd (find-file "~/Dropbox/inbox.org")))
@@ -657,7 +655,7 @@
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
         undo-tree-history-directory-alist
-        `((".*" . ,(expand-file-name "undos" user-emacs-directory))))
+        (list (cons "." (expand-file-name "undos" user-emacs-directory))))
 
   (defadvice undo-tree-make-history-save-file-name
     (after undo-tree activate)
@@ -758,7 +756,7 @@
     (interactive)
     (save-window-excursion
       (magit-with-refresh
-        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+       (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
 
   (td-bind magit-status-mode-map
            "q" #'magit-quit-session
@@ -905,7 +903,8 @@
 
   (defun js-send-region-dwim (&optional args)
     (interactive "*P")
-    (do-on-region-or-line #'js-send-region))
+    (with-region-or-current-line
+      (js-send-region (region-beginning) (region-end))))
 
   (defun td-inf-js-setup ()
     (td-bind (current-local-map)
@@ -956,6 +955,10 @@
 
 (add-hook 'emacs-lisp-mode-hook #'td-elisp-imenu-expressions)
 (add-hook 'emacs-lisp-mode-hook #'turn-on-eldoc-mode)
+
+(after 'eldoc
+  (setq eldoc-idle-delay 0
+        eldoc-echo-area-use-multiline-p nil))
 
 ;;;; php
 (after 'php-mode
@@ -1065,17 +1068,22 @@
   (td-bind markdown-mode-map "C-c C-b" nil))
 
 ;;;; commands
-(defun do-on-region-or-line (op)
-  (if (region-active-p)
-      (funcall op (region-beginning) (region-end))
-    (funcall op (line-beginning-position) (line-end-position))))
+(defmacro with-region-or-current-line (&rest body)
+  (declare (indent defun) (debug t))
+  `(if (region-active-p) ,@body
+     (progn
+       (end-of-line)
+       (set-mark (line-beginning-position))
+       ,@body
+       (deactivate-mark))))
 
 (defun comment-or-uncomment-region-dwim (&optional args)
   (interactive "*P")
   (comment-normalize-vars)
-  (do-on-region-or-line #'comment-or-uncomment-region))
+  (with-region-or-current-line
+    (comment-or-uncomment-region (region-beginning) (region-end))))
 
-(defun open-file-at-cursor ()
+(defun open-file-at-point ()
   (interactive)
   (let ((path (if (region-active-p)
                   (buffer-substring-no-properties (region-beginning) (region-end))
