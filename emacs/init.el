@@ -188,9 +188,7 @@
       kept-old-versions 2
       version-control t
       backup-directory-alist
-      `((".*" . ,(expand-file-name "backups" user-emacs-directory))
-        (".*-autoloads.el")
-        (,tramp-file-name-regexp . nil)))
+      (list (cons "." (expand-file-name "backups" user-emacs-directory))))
 
 (global-auto-revert-mode t)
 
@@ -1181,8 +1179,7 @@
   (interactive)
   (when (buffer-file-name)
     (start-file-process
-     "Make Executable" nil "/bin/bash"
-     (format "-c chmod u+x %s" (file-name-nondirectory buffer-file-name)))))
+     "Make Executable" nil "chmod" "u+x" (file-name-nondirectory buffer-file-name))))
 
 (defun align= (beg end)
   "Align region to equal signs"
