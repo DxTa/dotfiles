@@ -385,7 +385,7 @@
            "s" #'ac-complete-yasnippet
            "f" #'ac-complete-filename
            "l" #'ac-complete-buffer-lines
-           "h" #'ac-last-quick-help
+           "h" #'ac-quick-help
            "t" #'ac-complete-tern-completion)
 
   (td-bind ac-menu-map
@@ -569,6 +569,12 @@
 
 ;;;; org
 (after 'org
+  (setq org-export-allow-bind-keywords t
+        org-export-latex-listings 'minted
+        org-src-fontify-natively t)
+
+  (add-to-list 'org-export-latex-packages-alist '("" "minted"))
+
   (set-face-attribute 'org-level-1 nil :height 1.3)
   (set-face-attribute 'org-level-2 nil :height 1.2)
   (set-face-attribute 'org-level-3 nil :height 1.1))
