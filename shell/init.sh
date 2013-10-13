@@ -6,7 +6,6 @@ export MACHINE=`uname -m | sed -e 's/  */-/g;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdef
 export PLATFORM="$MACHINE-$OS-$OSVERSION"
 
 export LANG="en_US.UTF-8"
-export LC_CTYPE="UTF-8"
 
 # TERM
 [ "$OS" = "linux" ] && export TERM=xterm-256color

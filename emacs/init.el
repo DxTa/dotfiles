@@ -4,11 +4,8 @@
 (scroll-bar-mode -1)
 (blink-cursor-mode -1)
 
-(when (display-graphic-p)
-  (fringe-mode '(16 . 0))
-  (set-face-attribute 'default nil :family "M+ 1m" :height (if (eq system-type 'darwin) 145 105))
-  (set-frame-size (selected-frame) 120 35)
-  (set-frame-position (selected-frame) 500 22))
+(fringe-mode '(16 . 0))
+(set-face-attribute 'default nil :family "M+ 1m" :height (if (eq system-type 'darwin) 145 105))
 
 ;;;; packages
 (require 'package)
@@ -28,7 +25,10 @@
 (when (eq system-type 'darwin)
   (exec-path-from-shell-initialize)
   (setq mac-command-modifier 'meta
-        mac-option-modifier 'super))
+        mac-option-modifier 'super)
+  (when (display-graphic-p)
+    (set-frame-size (selected-frame) 120 35)
+    (set-frame-position (selected-frame) 500 22)))
 
 (when (eq system-type 'gnu/linux)
   (menu-bar-mode -1))
@@ -762,7 +762,7 @@
     (interactive)
     (save-window-excursion
       (magit-with-refresh
-       (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
 
   (td-bind magit-status-mode-map
            "q" #'magit-quit-session
@@ -862,8 +862,12 @@
     (interactive)
     (flycheck-mode t))
 
+  (defun td-elisp-flycheck-may-turn-on ()
+    (unless (string-match "init.el" (or (buffer-file-name) ""))
+      (turn-on-flycheck)))
+
   (add-hook 'go-mode-hook #'turn-on-flycheck)
-  (add-hook 'emacs-lisp-mode-hook #'turn-on-flycheck))
+  (add-hook 'emacs-lisp-mode-hook #'td-elisp-flycheck-may-turn-on))
 
 (after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save))

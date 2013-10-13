@@ -30,5 +30,5 @@
 ;;;;
 (package-refresh-contents)
 
-(package-install "melpa")
+(package-install 'melpa)
 (mapc #'td-install-package td-packages)
