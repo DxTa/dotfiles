@@ -10,5 +10,15 @@ Installation:
 
     source ./install
 
-		vim-bundler
+    vim-bundler
+    emacs --batch --quick --load ~/.emacs.d/packages.el
 
+Config included:
+- Awesome WM
+- Bash
+- Cmus
+- Emacs
+- Irssi
+- Tmux
+- Vim
+- Zsh

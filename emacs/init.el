@@ -5,7 +5,6 @@
 (blink-cursor-mode -1)
 
 (fringe-mode '(16 . 0))
-(set-face-attribute 'default nil :family "M+ 1m" :height (if (eq system-type 'darwin) 145 105))
 
 ;;;; packages
 (require 'package)
@@ -27,6 +26,7 @@
   (setq mac-command-modifier 'meta
         mac-option-modifier 'super)
   (when (display-graphic-p)
+    (set-face-attribute 'default nil :family "M+ 1m" :height 105)
     (set-frame-size (selected-frame) 120 35)
     (set-frame-position (selected-frame) 500 22)))
 
@@ -607,10 +607,10 @@
         diff-hl-fringe-bmp-function #'td-diff-hl-bmp)
 
   (defun td-custom-diff-hl-faces (&optional args)
-    (set-face-attribute 'diff-hl-insert nil :inherit nil :foreground "#81af34")
-    (set-face-attribute 'diff-hl-delete nil :inherit nil :foreground "#ff0000")
-    (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
-    (set-face-attribute 'diff-hl-unknown nil :inherit nil :foreground "#81af34"))
+    (set-face-attribute 'diff-hl-insert nil :inherit nil :background "unspecified" :foreground "#81af34")
+    (set-face-attribute 'diff-hl-delete nil :inherit nil :background "unspecified" :foreground "#ff0000")
+    (set-face-attribute 'diff-hl-change nil :inherit nil :background "unspecified" :foreground "#deae3e")
+    (set-face-attribute 'diff-hl-unknown nil :inherit nil :background "unspecified" :foreground "#81af34"))
 
   (td-custom-diff-hl-faces)
   (add-hook 'after-make-frame-functions #'td-custom-diff-hl-faces)
@@ -637,7 +637,7 @@
 
 (after 'diff-hl-margin
   (defun td-make-diff-hl-margin-spec (type char)
-    (cons type
+    (cons (cons type 'left)
           (propertize
            " " 'display
            `((margin left-margin)
@@ -702,7 +702,7 @@
           magin-log-edit-mode
           nodejs-repl-mode))
 
-  (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
+  (evil-define-key 'normal org-mode-map (kbd "TAB") #'org-cycle)
 
   (td-bind evil-normal-state-map
            "''" (td-cmd (evil-goto-mark ?`))
@@ -711,7 +711,7 @@
            "j" #'evil-next-visual-line
            "k" #'evil-previous-visual-line
            "TAB" #'evil-jump-item
-           "gp" #'clipboard-yank
+           "gp" #'simpleclip-paste
            "C-:" #'eval-expression
            "C-e" #'end-of-line
            "z SPC" #'evil-toggle-fold
@@ -727,7 +727,7 @@
            "M-h" " => "
            "M-a" "@")
   (td-bind evil-visual-state-map
-           "Y" #'clipboard-kill-ring-save
+           "Y" #'simpleclip-copy
            "C-a" #'align=
            "ge" #'extract-variable
            "*" #'evil-visualstar/begin-search-forward
@@ -762,7 +762,7 @@
     (interactive)
     (save-window-excursion
       (magit-with-refresh
-        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+       (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
 
   (td-bind magit-status-mode-map
            "q" #'magit-quit-session
@@ -1265,9 +1265,8 @@
   (insert ";"))
 
 (defun td-browse-url (url &optional new-session)
-  (if (find-if (lambda (path)
-                 (string-match path url))
-               (expand-file-name "~/local/docs"))
+  (if (and (string-match "^file:\/\/" url)
+           (string-match (expand-file-name "~/local/docs") url))
       (let ((w3m-use-tab nil))
         (if (one-window-p) (split-window-horizontally))
         (other-window 1)

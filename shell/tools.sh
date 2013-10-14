@@ -3,7 +3,11 @@
 if [ -d $HOME/cli/bin ]; then
   export PATH=$HOME/cli/bin:$PATH
 fi
+
 LOCAL=$HOME/local
+if [ -d $LOCAL/bin ]; then
+  export PATH=$LOCAL/bin:$PATH
+fi
 
 # Homebrew
 if [ -e $LOCAL/bin/brew ]; then
@@ -33,19 +37,14 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 export NODE_PATH=$LOCAL/lib/node_modules:$NODE_PATH
 
 # Clojure
-# if [ -d "$OS" = "linux" ]; then
-#   export JAVA_HOME='/usr/lib/jvm/java-6-sun'
-#   export PATH=$JAVA_HOME:$PATH
-# fi
-
 if [ -d $LOCAL/clojurescript ]; then
   export CLOJURESCRIPT_HOME=$LOCAL/clojurescript
   export PATH=$CLOJURESCRIPT_HOME/bin:$PATH
 fi
 
 # Go
-if [ -d $HOME/build/go-learning ]; then
-  export GOPATH=$HOME/build/go-learning
+if [ -d $HOME/Projects/go ]; then
+  export GOPATH=$HOME/Projects/go
   export PATH=$GOPATH/bin:$PATH
 fi
 

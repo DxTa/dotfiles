@@ -14,8 +14,9 @@
              ido-vertical-mode inf-php inf-ruby javadoc-lookup js-comint log4e magit markdown-mode
              melpa multiple-cursors nodejs-repl nrepl number-font-lock-mode php-mode pkg-info popup
              projectile rainbow-delimiters rainbow-mode restclient ruby-dev rust-mode s scala-mode2
-             scss-mode smex solarized-theme sublime-themes surround tern tern-auto-complete tss
-             twilight-theme undo-tree w3m wgrep yaml-mode yasnippet yaxception)
+             scss-mode simpleclip smex solarized-theme sublime-themes surround tern
+             tern-auto-complete tss twilight-theme undo-tree w3m wgrep yaml-mode yasnippet
+             yaxception)
   "Packages that I used. Generated with: (reverse (mapcar #'car package-alist))")
 
 (defun td-install-package (pkg)

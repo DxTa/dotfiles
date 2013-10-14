@@ -47,7 +47,7 @@ beautiful.init(awful.util.getdir("config") .. "/themes/td/theme.lua")
 -- This is used later as the default terminal and editor to run.
 terminal = "xfce4-terminal"
 editor = "emacsclient -n -c"
-browser = "chromium --password-store=gnome --disable-gpu-sandbox"
+browser = "chromium"
 fileman = "thunar"
 
 -- Default modkey.
@@ -122,9 +122,10 @@ mytaglist.buttons = awful.util.table.join(
    awful.button({ }, 1, awful.tag.viewonly),
    awful.button({ modkey }, 1, awful.client.movetotag),
    awful.button({ }, 3, awful.tag.viewtoggle),
-   awful.button({ modkey }, 3, awful.client.toggletag),
-   awful.button({ }, 4, function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end),
-   awful.button({ }, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
+   awful.button({ modkey }, 3, awful.client.toggletag)
+   -- awful.button({ modkey }, 3, awful.client.toggletag),
+   -- awful.button({ }, 4, function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end),
+   -- awful.button({ }, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
 )
 mytasklist = {}
 mytasklist.buttons = awful.util.table.join(
@@ -151,14 +152,14 @@ mytasklist.buttons = awful.util.table.join(
                    else
                       instance = awful.menu.clients({ width=250 })
                    end
-   end),
-   awful.button({ }, 4, function ()
-                   awful.client.focus.byidx(1)
-                   if client.focus then client.focus:raise() end
-   end),
-   awful.button({ }, 5, function ()
-                   awful.client.focus.byidx(-1)
-                   if client.focus then client.focus:raise() end
+                   -- end),
+                   -- awful.button({ }, 4, function ()
+                   --                 awful.client.focus.byidx(1)
+                   --                 if client.focus then client.focus:raise() end
+                   -- end),
+                   -- awful.button({ }, 5, function ()
+                   --                 awful.client.focus.byidx(-1)
+                   --                 if client.focus then client.focus:raise() end
 end))
 
 for s = 1, screen.count() do
@@ -216,16 +217,16 @@ globalkeys = awful.util.table.join(
    awful.key({ modkey,           }, "Right",  awful.tag.viewnext       ),
    awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
 
-   awful.key({ modkey,           }, "j",
-             function ()
+   awful.key({ modkey,           }, "j", function ()
                 awful.client.focus.byidx( 1)
                 if client.focus then client.focus:raise() end
    end),
-   awful.key({ modkey,           }, "k",
-             function ()
+
+   awful.key({ modkey,           }, "k", function ()
                 awful.client.focus.byidx(-1)
                 if client.focus then client.focus:raise() end
    end),
+
    awful.key({ modkey,           }, "w", function () mymainmenu:show() end),
 
    -- Layout manipulation
@@ -234,8 +235,7 @@ globalkeys = awful.util.table.join(
    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end),
    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end),
    awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
-   awful.key({ modkey,           }, "Tab",
-             function ()
+   awful.key({ modkey,           }, "Tab", function ()
                 awful.client.focus.history.previous()
                 if client.focus then
                    client.focus:raise()
@@ -249,8 +249,8 @@ globalkeys = awful.util.table.join(
 
    awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)    end),
    awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)    end),
-   awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1)      end),
-   awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
+   -- awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1)      end),
+   -- awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1)      end),
    awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1)         end),
    awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1)         end),
    awful.key({ modkey,           }, "space", function () awful.layout.inc(layouts,  1) end),
@@ -259,7 +259,7 @@ globalkeys = awful.util.table.join(
    awful.key({ modkey, "Control" }, "n", awful.client.restore),
 
    -- Prompt
-   awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
+   -- awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
 
    awful.key({ modkey }, "x",
              function ()
@@ -268,8 +268,35 @@ globalkeys = awful.util.table.join(
                                  awful.util.eval, nil,
                                  awful.util.getdir("cache") .. "/history_eval")
    end),
+
    -- Menubar
-   awful.key({ modkey }, "p", function() menubar.show() end)
+   awful.key({ modkey }, "p", function() menubar.show() end),
+
+   -- Custom
+   awful.key({ }, "Print", function ()
+                awful.util.spawn("scrot -e 'mv $f ~/Pictures/ 2>/dev/null'")
+   end),
+
+   awful.key({ modkey, }, "r", function ()
+                awful.prompt.run({ prompt = "Run: " },
+                                 mypromptbox[mouse.screen].widget,
+                                 check_for_terminal, clean_for_completion,
+                                 awful.util.getdir("cache") .. "/history")
+   end),
+
+   -- Raise or run
+   awful.key({ modkey, "Shift" }, "e", function ()
+                run_or_raise(editor, { class = "Emacs" })
+   end),
+   awful.key({ modkey, "Shift" }, "c", function ()
+                run_or_raise(browser, { class = "Chromium" })
+   end),
+   awful.key({ modkey, "Shift" }, "f", function ()
+                run_or_raise(fileman, { class = "Thunar" })
+   end),
+   awful.key({ modkey, "Shift" }, "t", function ()
+                run_or_raise(terminal, { class = "Terminal" })
+   end)
 )
 
 clientkeys = awful.util.table.join(
@@ -279,17 +306,20 @@ clientkeys = awful.util.table.join(
    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
    awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ),
    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end),
-   awful.key({ modkey,           }, "n",
-             function (c)
+
+   awful.key({ modkey,           }, "n", function (c)
                 -- The client currently has the input focus, so it cannot be
                 -- minimized, since minimized clients can't have the focus.
                 c.minimized = true
    end),
-   awful.key({ modkey,           }, "m",
-             function (c)
+
+   awful.key({ modkey,           }, "m", function (c)
                 c.maximized_horizontal = not c.maximized_horizontal
                 c.maximized_vertical   = not c.maximized_vertical
-   end)
+   end),
+
+   awful.key({ modkey }, "Next",  function () awful.client.moveresize( 20,  20, -40, -40) end),
+   awful.key({ modkey }, "Prior", function () awful.client.moveresize(-20, -20,  40,  40) end)
 )
 
 -- Bind all key numbers to tags.
@@ -346,17 +376,28 @@ awful.rules.rules = {
                     border_color = beautiful.border_normal,
                     focus = awful.client.focus.filter,
                     keys = clientkeys,
-                    buttons = clientbuttons } },
+                    buttons = clientbuttons },
+     callback = function(c) c.icon = nil end },
    { rule = { class = "MPlayer" },
      properties = { floating = true } },
    { rule = { class = "pinentry" },
      properties = { floating = true } },
    { rule = { class = "gimp" },
      properties = { floating = true } },
-   -- Set Firefox to always map on tags number 2 of screen 1.
-   -- { rule = { class = "Firefox" },
-   --   properties = { tag = tags[1][2] } },
+
+   -- Flash player
+   { rule = { class = "Plugin-container" },
+     properties = { floating = true } },
+   { rule = { class = "Exe" },
+     properties = { floating = true } }
 }
+-- }}}
+
+-- {{{ Naughty
+naughty.config.defaults.width = 360
+naughty.config.defaults.height = nil
+naughty.config.defaults.icon_size = 24
+naughty.config.defaults.border_width = 1
 -- }}}
 
 -- {{{ Signals
@@ -430,4 +471,37 @@ end)
 
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+-- }}}
+
+-- {{{ Custom
+function run_or_raise(cmd, condition)
+  local matcher = function (c)
+    return awful.rules.match(c, condition)
+  end
+
+  awful.client.run_or_raise(cmd, matcher)
+end
+
+-- Functions to help launch run commands in a terminal using ":" keyword
+function check_for_terminal (command)
+   if command:sub(1,1) == ":" then
+      command = terminal .. ' -e "' .. command:sub(2) .. '"'
+   end
+   awful.util.spawn(command)
+end
+
+function clean_for_completion (command, cur_pos, ncomp, shell)
+   local term = false
+   if command:sub(1,1) == ":" then
+      term = true
+      command = command:sub(2)
+      cur_pos = cur_pos - 1
+   end
+   command, cur_pos =  awful.completion.shell(command, cur_pos,ncomp,shell)
+   if term == true then
+      command = ':' .. command
+      cur_pos = cur_pos + 1
+   end
+   return command, cur_pos
+end
 -- }}}

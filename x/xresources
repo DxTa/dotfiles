@@ -2,12 +2,12 @@
 Xft.dpi:        96
 Xft.antialias:  true
 Xft.rgba:       rgb
-Xft.hinting:    true
+Xft.hinting:    false
 Xft.autohint:   false
 Xft.lcdfilter:  lcddefault
 Xft.hintstyle:  hintfull
 
-Emacs*font: M+ 1m:pixelsize=14
+Emacs*font: M+ 1m:pixelsize=14:embolden=true
 Emacs*toolbar: false
 Emacs*menubar: false
 Emacs*verticalScrollBars: false
