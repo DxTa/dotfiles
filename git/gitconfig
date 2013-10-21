@@ -1,18 +1,18 @@
 [user]
-	name = Tung Dao
-	email = me@tungdao.com
+  name = Tung Dao
+  email = me@tungdao.com
 [github]
   user = tungd
 [credential]
-	helper = osxkeychain
-	helper = gnome-keyring
+  helper = osxkeychain
+  helper = gnome-keyring
 [core]
-	excludesfile = ~/.gitignore
-	whitespace = trailing-space,space-before-tab
+  excludesfile = ~/.gitignore
+  whitespace = trailing-space,space-before-tab
 [color]
   ui = auto
 [branch]
-	autosetupmerge = true
+  autosetupmerge = true
 [branch "master"]
   mergeoptions =--no-ff
 [branch "dev"]
@@ -20,17 +20,17 @@
 [branch "development"]
   mergeoptions =--no-ff
 [advice]
-	statusHints = false
+  statusHints = false
 [push]
-	default = tracking
+  default = tracking
 [merge]
-	stat = true
+  stat = true
 [rerere]
-	enabled = true
+  enabled = true
 [diff]
-	renames = copies
+  renames = copies
 [apply]
-	whitespace = nowarn
+  whitespace = nowarn
 [alias]
   st = status -sb
   ci = commit
@@ -71,8 +71,8 @@
 [url "git@code.tungdao.com:/tungd/"]
   insteadOf = tungd:
 [difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path =
+  cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+  path =
 [mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
+  cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+  trustExitCode = true

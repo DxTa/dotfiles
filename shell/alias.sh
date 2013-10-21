@@ -2,8 +2,8 @@
 # Platform specifics
 if [ "$OS" = "linux" ]; then
   alias open='xdg-open'
-  alias pbp='xclip -selection clipboard -o'
-  alias pbc='xclip -selection clipboard'
+  alias pbp='xsel -b'
+  alias pbc='xsel -b -i'
   alias mvim=vim
 fi
 
@@ -77,7 +77,7 @@ alias ducks="du -cksh * | sort -rn | head -11"
 alias t='grep -e "^-" $TODO | grep -ve "\(@someday\|@cancelled\|@done\)"'
 alias pp='pygmentize -O style=monokai -f console256 -g'
 alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
-alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
+alias remoteip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias localip="ipconfig getifaddr en1"
 alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
 alias whois="whois -h whois-servers.net"

@@ -60,6 +60,10 @@ if [ -d $LOCAL/adt ]; then
 fi
 
 # Emacs
+if [ -d $HOME/.cask ]; then
+  export PATH=$HOME/.cask/bin:$PATH
+fi
+
 if [[ "$OS" = "darwin" ]]; then
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS:$PATH
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS/bin:$PATH
