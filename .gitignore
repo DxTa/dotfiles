@@ -4,6 +4,7 @@ vim/bundle/
 vim/ftbundle/
 emacs/elpa/
 emacs/data
+emacs/.cask
 cmus/cache
 cmus/command-history
 cmus/lib.pl

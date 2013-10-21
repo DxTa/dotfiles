@@ -7,10 +7,8 @@
 (fringe-mode '(16 . 0))
 
 ;;;; packages
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
-(package-initialize)
+(require 'cask "~/.cask/cask.el")
+(cask-initialize)
 
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
@@ -144,7 +142,7 @@
       history-length 256
       confirm-nonexistent-file-or-buffer nil
       comment-style 'multi-line
-      browse-url-browser-function #'td-browse-url
+      browse-url-browser-function #'browse-url-default-browser
       require-final-newline t)
 
 (setq-default major-mode 'text-mode
@@ -233,7 +231,6 @@
 (setq save-place-file (expand-file-name "save-places" user-emacs-directory))
 
 ;;;; recentf
-(recentf-mode t)
 (after 'recentf
   (setq recentf-max-saved-items 100)
   (add-to-list 'recentf-exclude "ido.last")
@@ -255,9 +252,9 @@
 
 (set-face-attribute 'mode-line nil :box nil)
 (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
-(set-face-attribute 'font-lock-warning-face nil :background nil)
+(set-face-attribute 'font-lock-warning-face nil :background "unspecified")
 (set-face-attribute 'highlight nil :foreground nil)
-(set-face-attribute 'font-lock-comment-face nil :background nil)
+(set-face-attribute 'font-lock-comment-face nil :background "unspecified")
 
 (defadvice load-theme (before theme-dont-propagate activate)
   (mapc #'disable-theme custom-enabled-themes))
@@ -417,7 +414,9 @@
   (add-hook 'scss-mode-hook
             (lambda () (set-local-ac-sources '(ac-source-css-property))))
   (add-hook 'js-mode-hook
-            (lambda () (set-local-ac-sources '(ac-source-tern-completion)))))
+            (lambda () (set-local-ac-sources '(ac-source-tern-completion))))
+  (add-hook 'c-mode-hook
+            (lambda () (set-local-ac-sources '(ac-source-c-headers ac-source-c-header-symbols)))))
 
 (after 'auto-complete-autoloads
   (require 'auto-complete-config)
@@ -841,8 +840,8 @@
           space-before-tab space-after-tab))
   (setq whitespace-line-column fill-column)
 
-  (set-face-attribute 'whitespace-space nil :background nil)
-  (set-face-attribute 'whitespace-tab nil :background nil))
+  (set-face-attribute 'whitespace-space nil :background "unspecified")
+  (set-face-attribute 'whitespace-tab nil :background "unspecified"))
 
 ;; prog
 (defun td-custom-font-lock-hightlights ()
@@ -959,6 +958,8 @@
   (setq scss-compile-at-save nil))
 
 ;;;; emacs lisp
+(td-mode 'emacs-lisp-mode "Cask")
+
 (defun td-elisp-imenu-expressions ()
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '("Section" "^;;;; \\(.+\\)$" 1) t))
@@ -1255,6 +1256,8 @@
 (defun recentf-ido-find-file ()
   "Find a recent file using Ido."
   (interactive)
+  (unless (featurep 'recentf)
+    (recentf-mode t))
   (let ((file (ido-completing-read "Recent file: " recentf-list nil t)))
     (when file
       (find-file file))))
@@ -1264,14 +1267,14 @@
   (end-of-line)
   (insert ";"))
 
-(defun td-browse-url (url &optional new-session)
-  (if (and (string-match "^file:\/\/" url)
-           (string-match (expand-file-name "~/local/docs") url))
-      (let ((w3m-use-tab nil))
-        (if (one-window-p) (split-window-horizontally))
-        (other-window 1)
-        (w3m-browse-url url new-session))
-    (browse-url-default-browser url new-session)))
+;; (defun td-browse-url (url &optional new-session)
+;;   (if (and (string-match "^file:\/\/" url)
+;;            (string-match (expand-file-name "~/local/docs") url))
+;;       (let ((w3m-use-tab nil))
+;;         (if (one-window-p) (split-window-horizontally))
+;;         (other-window 1)
+;;         (w3m-browse-url url new-session))
+;;     (browse-url-default-browser url new-session)))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
