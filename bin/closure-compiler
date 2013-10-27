@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Closure Compiler wrapper script using `drip` for faster JVM launch
+#
+# Enale `locate` on Mac OS X:
+#  sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
+#  sudo /usr/libexec/locate.updatedb
+#
+# `locate` caused a small delay, but much better than hardcoding
+# the jar path, and far better than the JVM launch.
+#
+set -e
+
+COMPILER=$(locate compiler.jar | head -n 1)
+
+JAVA=java
+command -v mdfind >/dev/null 2>&1 && JAVA=drip
+
+# If no argument is given, run with `--help`
+if [ "$#" -eq 0 ]; then
+  ARGS="--help"
+else
+  ARGS="$@"
+fi
+
+DRIP_SHUTDOWN=30 $JAVA -cp $COMPILER com.google.javascript.jscomp.CommandLineRunner $ARGS

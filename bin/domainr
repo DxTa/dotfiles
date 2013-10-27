@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/sh
 # domainavailable
 #   Fast, domain name checker to use from the shell
 #   Use globs for real fun:

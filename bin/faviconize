@@ -1,4 +1,8 @@
 #!/bin/sh
+#
+# Generate favicon.ico with various sizes. Require imagemagick
+#
+set -e
 
 convert $1 -resize 16x16 favicon16.png
 convert $1 -resize 32x32 favicon32.png

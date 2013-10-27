@@ -1,22 +1,25 @@
-#!/bin/bash
-# data-uri
+#!/bin/sh
+#
+# Generate base64 encode string with proper data type
+#
 ext=${1#*.}
 if [ $ext == "" ]; then
-    ext=otect-stream
+  ext=otect-stream
 fi
+
 case $ext in
-    png|jpg|gif|jpeg)
-        type="image/$ext"
-        ;;
-    css|html)
-        type="text/$ext"
-        ;;
-    js)
-        type="text/javascript"
-        ;;
-    *)
-        type="data/$ext"
-        ;;
+  png|jpg|gif|jpeg|svg)
+    type="image/$ext"
+    ;;
+  css|html)
+    type="text/$ext"
+    ;;
+  js)
+    type="text/javascript"
+    ;;
+  *)
+    type="data/$ext"
+    ;;
 esac
 
 data=$(openssl base64 -in $1 | tr -d "\n")
