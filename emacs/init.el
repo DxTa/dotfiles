@@ -136,7 +136,7 @@
       history-length 256
       confirm-nonexistent-file-or-buffer nil
       comment-style 'multi-line
-      browse-url-browser-function #'browse-url-default-browser
+      browse-url-browser-function #'td-browse-url
       require-final-newline t)
 
 (setq-default major-mode 'text-mode
@@ -491,8 +491,7 @@
            "C-c a" #'projectile-ack))
 
 (td-after 'projectile
-  (setq projectile-tags-command "~/local/bin/ctags -Re %s %s")
-  (push "build.gradle" projectile-project-root-files))
+  (setq projectile-tags-command "ctags -Re %s %s"))
 
 ;;;; diff
 (td-after 'ediff
@@ -995,9 +994,6 @@
 (td-after 'ruby-dev-autoloads
   (add-hook 'ruby-mode-hook #'turn-on-ruby-dev))
 
-(td-after 'ruby-dev
-  (setq ruby-dev-ruby-executable "~/local/var/rbenv/shims/ruby"))
-
 ;;;; python
 (td-after 'python
   (defun setup-python-mode ()
@@ -1008,8 +1004,8 @@
 ;;;; c
 
 ;;;; java
-;; (td-after 'javadoc-lookup
-;;   (javadoc-add-roots "~/local/docs/jdk/docs/api"))
+(td-after 'javadoc-lookup
+  (javadoc-add-roots "~/local/docs/jdk/docs/api"))
 
 ;;;; clojure
 (td-after 'clojure-mode
@@ -1032,10 +1028,10 @@
     (nrepl-eval "(set! *print-level* 5)"))
 
   (add-hook 'nrepl-mode-hook #'ac-nrepl-setup)
-  (add-hook 'nrepl-mode-hook #'nrepl-turn-on-eldoc-mode)
+  (add-hook 'nrepl-mode-hook #'cider-turn-on-eldoc-mode)
 
   (add-hook 'nrepl-interaction-mode-hook #'td-setup-nrepl)
-  (add-hook 'nrepl-interaction-mode-hook #'nrepl-turn-on-eldoc-mode))
+  (add-hook 'nrepl-interaction-mode-hook #'cider-turn-on-eldoc-mode))
 
 ;;;; go
 (td-after 'go-mode
@@ -1078,6 +1074,10 @@
 
   (td-bind markdown-mode-map "M-p" nil)
   (td-bind markdown-mode-map "C-c C-b" nil))
+
+;;;; sh
+(td-after 'sh-script
+  (setq sh-indentation 2))
 
 ;;;; commands
 (defmacro with-region-or-current-line (&rest body)
@@ -1268,14 +1268,14 @@
   (end-of-line)
   (insert ";"))
 
-;; (defun td-browse-url (url &optional new-session)
-;;   (if (and (string-match "^file:\/\/" url)
-;;            (string-match (expand-file-name "~/local/docs") url))
-;;       (let ((w3m-use-tab nil))
-;;         (if (one-window-p) (split-window-horizontally))
-;;         (other-window 1)
-;;         (w3m-browse-url url new-session))
-;;     (browse-url-default-browser url new-session)))
+(defun td-browse-url (url &optional new-session)
+  (if (and (string-match "^file:\/\/" url)
+           (string-match (expand-file-name "~/local/docs") url))
+      (let ((w3m-use-tab nil))
+        (if (one-window-p) (split-window-horizontally))
+        (other-window 1)
+        (w3m-browse-url url new-session))
+    (browse-url-default-browser url new-session)))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
