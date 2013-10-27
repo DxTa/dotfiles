@@ -67,9 +67,9 @@ local layouts = {
 
 -- {{{ Wallpaper
 if beautiful.wallpaper then
-   for s = 1, screen.count() do
-      gears.wallpaper.maximized(beautiful.wallpaper, s, true)
-   end
+   gears.wallpaper.maximized(beautiful.wallpaper)
+else
+   gears.wallpaper.maximized("/home/tung/Pictures/Wallpapers/wallpaper-2630370.jpg")
 end
 -- }}}
 
@@ -180,7 +180,7 @@ for s = 1, screen.count() do
    mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
 
    -- Create the wibox
-   mywibox[s] = awful.wibox({ position = "top", screen = s })
+   mywibox[s] = awful.wibox({ position = "top", height = 20,  screen = s })
 
    -- Widgets that are aligned to the left
    local left_layout = wibox.layout.fixed.horizontal()
@@ -376,7 +376,8 @@ awful.rules.rules = {
                     border_color = beautiful.border_normal,
                     focus = awful.client.focus.filter,
                     keys = clientkeys,
-                    buttons = clientbuttons },
+                    buttons = clientbuttons,
+                    size_hints_honor = false },
      callback = function(c) c.icon = nil end },
    { rule = { class = "MPlayer" },
      properties = { floating = true } },
@@ -396,7 +397,7 @@ awful.rules.rules = {
 -- {{{ Naughty
 naughty.config.defaults.width = 360
 naughty.config.defaults.height = nil
-naughty.config.defaults.icon_size = 24
+naughty.config.defaults.icon_size = 36
 naughty.config.defaults.border_width = 1
 -- }}}
 

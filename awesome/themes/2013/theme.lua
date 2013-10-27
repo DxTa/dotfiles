@@ -50,13 +50,13 @@ theme.taglist_squares_unsel = config_dir("square.png")
 -- menu_[bg|fg]_[normal|focus]
 -- menu_[border_color|border_width]
 theme.menu_submenu_icon = "/usr/share/awesome/themes/default/submenu.png"
-theme.menu_height = 20
+theme.menu_height = 18
 theme.menu_width  = 100
 theme.menu_bg_focus = "#000000"
 theme.menu_fg_focus = "#ff7f00"
 theme.menu_border_width = 0
 
-theme.bar_height = 18
+theme.bar_height = 20
 
 -- You can add as many variables as
 -- you wish and access them by using
