@@ -1,12 +1,15 @@
 #!/bin/sh
 # Clojure wrapper script.
 # With no arguments runs Clojure's REPL.
+set -e
 
-# Put the Clojure jar from the cellar and the current folder in the classpath.
-CLOJURE=$CLASSPATH:#{prefix}/#{jar}:${PWD}
+CLOJURE=$(locate clojure.jar | head -n 1)
+
+JAVA=java
+command -v drip >/dev/null 2>&1 && JAVA=drip
 
 if [ "$#" -eq 0 ]; then
-  java -cp "$CLOJURE" clojure.main --repl
+  $JAVA -cp "$CLOJURE" clojure.main --repl
 else
-  java -cp "$CLOJURE" clojure.main "$@"
+  $JAVA -cp "$CLOJURE" clojure.main "$@"
 fi

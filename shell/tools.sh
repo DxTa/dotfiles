@@ -26,10 +26,6 @@ if [ -e "/usr/libexec/java_home" ]; then
   export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
 fi
 
-if [ -d $LOCAL/jars ]; then
-  for jar in $LOCAL/jars/*.jar; do export CLASSPATH="$jar:$CLASSPATH"; done
-fi
-
 # Ruby
 if [ -d $HOME/.rbenv ]; then
   export PATH=$HOME/.rbenv/bin:$PATH

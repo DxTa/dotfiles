@@ -14,7 +14,7 @@ set -e
 COMPILER=$(locate compiler.jar | head -n 1)
 
 JAVA=java
-command -v mdfind >/dev/null 2>&1 && JAVA=drip
+command -v drip >/dev/null 2>&1 && JAVA=drip
 
 # If no argument is given, run with `--help`
 if [ "$#" -eq 0 ]; then
