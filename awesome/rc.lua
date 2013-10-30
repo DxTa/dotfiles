@@ -45,10 +45,10 @@ end
 beautiful.init(awful.util.getdir("config") .. "/themes/td/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "xfce4-terminal"
+terminal = "gnome-terminal"
 editor = "emacsclient -n -c"
 browser = "chromium"
-fileman = "thunar"
+fileman = "nautilus"
 
 -- Default modkey.
 -- Usually, Mod4 is the key with a logo between Control and Alt.
@@ -97,7 +97,7 @@ mymainmenu = awful.menu(
          { "Browser"      , browser      } ,
          { "Editor"       , editor       } ,
          { "File Manager" , fileman      } ,
-         { "Logout"       , "xfce4-session-logout" } ,
+         { "Logout"       , awesome.quit } ,
          { "Suspend"      , "systemctl suspend" } ,
          { "Hibernate"    , "systemctl hibernate" } ,
          { "Reboot"       , "systemctl reboot" } ,

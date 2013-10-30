@@ -1,74 +1,95 @@
 (source gnu)
 (source melpa)
-(source org)
 
+;;;; Auto complete
 (depends-on ac-c-headers)
 (depends-on ac-nrepl)
-(depends-on ace-jump-mode)
-(depends-on ack-and-a-half)
-(depends-on alert)
 (depends-on auto-complete)
-(depends-on cider)
-(depends-on clojure-mode)
-(depends-on coffee-mode)
-(depends-on color-theme-approximate)
-(depends-on dash)
-(depends-on diff-hl)
-(depends-on diminish)
-(depends-on emmet-mode)
-(depends-on epl)
-(depends-on evil)
-(depends-on evil-visualstar)
-(depends-on exec-path-from-shell)
-(depends-on expand-region)
-(depends-on f)
-(depends-on flx)
-(depends-on flx-ido)
-(depends-on flycheck)
-(depends-on fringe-helper)
-(depends-on git-commit-mode)
-(depends-on git-rebase-mode)
 (depends-on go-autocomplete)
-(depends-on go-eldoc)
-(depends-on go-mode)
-(depends-on groovy-mode)
-(depends-on ibuffer-vc)
+
+(depends-on smex)
 (depends-on ido-ubiquitous)
 (depends-on ido-vertical-mode)
-(depends-on inf-php)
-(depends-on inf-ruby)
-(depends-on javadoc-lookup)
-(depends-on js-comint)
-(depends-on json-mode)
-(depends-on log4e)
-(depends-on lua-mode)
-(depends-on magit)
-(depends-on markdown-mode)
+
+;;;; Editing
+(depends-on ace-jump-mode)
+
+(depends-on undo-tree)
+
+(depends-on evil)
+(depends-on evil-visualstar)
+(depends-on surround)
+
+(depends-on expand-region)
 (depends-on multiple-cursors)
-(depends-on nodejs-repl)
-(depends-on number-font-lock-mode)
-(depends-on php-mode)
-(depends-on pkg-info)
-(depends-on popup)
+(depends-on yasnippet)
+
+;;;; Project
 (depends-on projectile)
+
+(depends-on ag)
+(depends-on wgrep-ag)
+
+(depends-on magit)
+(depends-on diff-hl)
+(depends-on ibuffer-vc)
+
+;;;; UI
+(depends-on diminish)
+(depends-on color-theme-approximate)
+(depends-on number-font-lock-mode)
 (depends-on rainbow-delimiters)
 (depends-on rainbow-mode)
-(depends-on restclient)
-(depends-on ruby-dev)
-(depends-on rust-mode)
-(depends-on s)
-(depends-on scala-mode2)
-(depends-on scss-mode)
-(depends-on simpleclip)
-(depends-on smex)
+
 (depends-on sublime-themes)
-(depends-on surround)
+(depends-on soft-morning-theme)
+(depends-on solarized-theme)
+(depends-on twilight-theme)
+
+;;;; Programming
+(depends-on flycheck)
+(depends-on emmet-mode)
+(depends-on restclient)
+
+(depends-on mmm-mode)
+
+(depends-on go-eldoc)
+(depends-on go-mode)
+
+(depends-on clojure-mode)
+(depends-on cider)
+
+(depends-on javadoc-lookup)
+(depends-on groovy-mode)
+
+(depends-on lua-mode)
+
+(depends-on php-mode)
+(depends-on inf-php)
+
+(depends-on robe)
+(depends-on inf-ruby)
+
 (depends-on tern)
 (depends-on tern-auto-complete)
 (depends-on tss)
-(depends-on undo-tree)
-(depends-on w3m)
-(depends-on wgrep)
+(depends-on nodejs-repl)
+(depends-on json-mode)
+(depends-on coffee-mode)
+
+(depends-on markdown-mode)
+
+(depends-on rust-mode)
+
+(depends-on scala-mode2)
+
+(depends-on scss-mode)
+
 (depends-on yaml-mode)
-(depends-on yasnippet)
-(depends-on yaxception)
+
+;;;; Utils
+(depends-on dash)
+(depends-on s)
+(depends-on exec-path-from-shell)
+(depends-on simpleclip)
+(depends-on grizzl)

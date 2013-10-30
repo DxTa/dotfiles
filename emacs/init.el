@@ -24,7 +24,7 @@
   (setq mac-command-modifier 'meta
         mac-option-modifier 'super)
   (when (display-graphic-p)
-    (set-face-attribute 'default nil :family "M+ 1m" :height 105)
+    (set-face-attribute 'default nil :family "Fira Mono OT" :height 140)
     (set-frame-size (selected-frame) 120 35)
     (set-frame-position (selected-frame) 500 22)))
 
@@ -45,7 +45,7 @@
 (defmacro td-cmd (&rest body)
   `(lambda () (interactive) ,@body))
 
-(defmacro td-with-hook (hook &rest body)
+(defmacro td-on (hook &rest body)
   (declare (indent 1))
   `(add-hook ,hook (function (lambda () ,@body))))
 
@@ -63,6 +63,12 @@
              (cmd (pop mappings)))
         (define-key keymap (kbd key) cmd)))))
 
+(defun td-tab ()
+  (if (display-graphic-p) "<tab>" "TAB"))
+
+(defun td-data-file (f)
+  (expand-file-name f user-emacs-directory))
+
 ;;;; custom
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file :no-error :no-message)
@@ -74,7 +80,7 @@
 (setq inhibit-startup-message t
       initial-scratch-message (td-scratch-fortune))
 
-(td-with-hook 'emacs-startup-hook
+(td-on 'emacs-startup-hook
   (message "Time needed to load: %s seconds." (emacs-uptime "%s")))
 
 ;;;; random seed
@@ -94,8 +100,6 @@
 (td-bind "C-M-f" #'td-toggle-fullscreen)
 (td-bind "M-m" #'execute-extended-command)
 
-(td-bind "M-z" #'zap-up-to-char)
-(td-bind "M-Z" #'zap-to-char)
 (td-bind "RET" #'newline-and-indent)
 
 (td-bind "M-=" #'cleanup-buffer)
@@ -143,18 +147,13 @@
               tab-width 2
               indicate-empty-lines nil
               indent-tabs-mode nil
-              fill-column 90
-              truncate-lines t)
+              fill-column 80
+              truncate-lines nil)
 
 (td-after 'imenu
   (setq imenu-auto-rescan t))
 
-(td-after 'linum
-  (setq linum-format " %4d "))
-
-(column-number-mode t)
 (visual-line-mode -1)
-(global-hl-line-mode t)
 (which-function-mode t)
 (savehist-mode t)
 
@@ -178,17 +177,11 @@
       kept-old-versions 2
       version-control t
       backup-directory-alist
-      (list (cons "." (expand-file-name "backups" user-emacs-directory))))
-
-(global-auto-revert-mode t)
-
-(td-after 'autorevert
-  (setq global-auto-revert-non-file-buffers t
-        auto-revert-verbose nil))
+      (list (cons "." (td-data-file "backups"))))
 
 (setq auto-save-default nil
       auto-save-list-file-prefix
-      (expand-file-name "auto-saves" user-emacs-directory))
+      (td-data-file "auto-saves"))
 
 ;;;; tramp
 (td-after 'tramp
@@ -222,13 +215,17 @@
 ;;;; saveplace
 (require 'saveplace)
 (setq-default save-place t)
-(setq save-place-file (expand-file-name "save-places" user-emacs-directory))
+(setq save-place-file (td-data-file "save-places"))
 
 ;;;; recentf
 (td-after 'recentf
-  (setq recentf-max-saved-items 100)
-  (add-to-list 'recentf-exclude "ido.last")
+  (add-to-list 'recentf-exclude "*ido*")
+  (add-to-list 'recentf-exclude "*elpa*")
+  (add-to-list 'recentf-exclude "*cache*")
   (add-hook 'server-visit-hook #'recentf-save-list))
+
+(setq recentf-max-saved-items 256
+      recentf-save-file (td-data-file "recentf"))
 
 ;;;; display
 (setcdr
@@ -242,24 +239,30 @@
 
 ;; (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme 'graham t)
+(load-theme (if (display-graphic-p) 'solarized-dark 'graham) t)
 
 (set-face-attribute 'mode-line nil :box nil)
 (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
-(set-face-attribute 'font-lock-warning-face nil :background "unspecified")
-(set-face-attribute 'highlight nil :foreground nil)
-(set-face-attribute 'font-lock-comment-face nil :background "unspecified")
 
 (defadvice load-theme (before theme-dont-propagate activate)
   (mapc #'disable-theme custom-enabled-themes))
 
+;;;; linum
+(column-number-mode t)
+
+(td-after 'linum
+  (setq linum-format " %4d "))
+
 ;;;; hl-line
+(global-hl-line-mode t)
+
 (td-after 'hl-line
-  (set-face-attribute 'hl-line nil :bold nil :underline nil))
+  (set-face-attribute 'hl-line nil :inherit nil :underline nil))
 
 ;;;; show-paren-mode
 (td-after 'paren
   (setq show-paren-delay 0))
+
 (show-paren-mode t)
 
 ;;;; diminish
@@ -359,10 +362,9 @@
 
   (add-to-list 'ac-modes 'scss-mode)
   (add-to-list 'ac-modes 'html-mode)
-  (add-to-list 'ac-modes 'web-mode)
   (add-to-list 'ac-modes 'coffee-mode)
-  (add-to-list 'ac-modes 'nrepl-mode)
   (add-to-list 'ac-modes 'typescript-mode)
+  (add-to-list 'ac-modes 'cider-mode)
   (add-to-list 'ac-modes 'nodejs-repl-mode)
 
   (defun current-buffer-line-candidates ()
@@ -386,31 +388,35 @@
 
 (td-after 'auto-complete-config
   ;; (ac-config-default)
-  (defun make-ac-sources (&optional sources)
-    (append '(ac-source-yasnippet
-              ac-source-imenu
-              ac-source-words-in-same-mode-buffers)
-            sources
-            '(ac-source-dictionary)))
+  (setq-default ac-sources '(ac-source-yasnippet
+                             ac-source-imenu
+                             ac-source-words-in-same-mode-buffers
+                             ac-source-dictionary))
 
-  (defun set-local-ac-sources (sources)
-    (set (make-local-variable 'ac-sources)
-         (make-ac-sources sources)))
+  (require 'ac-c-headers)
 
-  (setq-default ac-sources (make-ac-sources))
+  (defvar td-local-ac-sources
+    '((emacs-lisp-mode . (ac-source-symbols
+                          ac-source-functions
+                          ac-source-variables
+                          ac-source-features))
+      (css-mode . (ac-source-css-property))
+      (scss-mode . (ac-source-css-property))
+      (js-mode . (ac-source-tern-completion))
+      (c-mode . (ac-source-c-headers
+                 ac-source-c-header-symbols))))
 
-  (td-with-hook 'emacs-lisp-mode-hook
-    (set-local-ac-sources
-     '(ac-source-symbols ac-source-functions ac-source-variables ac-source-features)))
-  (td-with-hook 'css-mode-hook
-    (set-local-ac-sources '(ac-source-css-property)))
-  (td-with-hook 'scss-mode-hook
-    (set-local-ac-sources '(ac-source-css-property)))
-  (td-with-hook 'js-mode-hook
-    (set-local-ac-sources '(ac-source-tern-completion)))
-  (td-with-hook 'c-mode-hook
-    (require 'ac-c-headers)
-    (set-local-ac-sources '(ac-source-c-headers ac-source-c-header-symbols))))
+  (defun td-set-local-ac-sources ()
+    (let ((sources (cdr (assoc major-mode td-local-ac-sources))))
+      (when sources
+        (set (make-local-variable 'ac-sources)
+             (append '(ac-source-yasnippet
+                       ac-source-imenu
+                       ac-source-words-in-same-mode-buffers)
+                     sources
+                     '(ac-source-dictionary))))))
+
+  (add-hook 'after-change-major-mode-hook #'td-set-local-ac-sources))
 
 (td-after 'auto-complete-autoloads
   (require 'auto-complete-config)
@@ -418,6 +424,7 @@
 
 ;;;; ido
 (td-after 'smex-autoloads
+  (setq smex-save-file (td-data-file "smex"))
   (smex-initialize)
   (td-bind "M-m" #'smex))
 
@@ -426,17 +433,18 @@
 (td-after 'ido
   (setq ido-enable-prefix nil
         ido-enable-dot-prefix t
-        ido-use-virtual-buffers nil
+        ido-use-virtual-buffers t
         ido-auto-merge-work-directories-length -1
         ido-create-new-buffer 'always
         ido-use-url-at-point nil
         ido-use-filename-at-point nil
         ido-ignore-extensions t
-        ido-save-directory-list-file (expand-file-name "ido.last" user-emacs-directory)
+        ido-save-directory-list-file (td-data-file "ido.last")
         ido-everywhere t
         ido-ignore-buffers '("\\` ")
         ido-ignore-files '("ido.last" ".*-autoloads.el")
-        ido-file-extension-order '(".rb" ".php" ".clj" ".py" ".js" ".scss" ".el" ".css" ".html"))
+        ido-file-extensions-order '(".rb" ".py" ".clj" ".cljs" ".el"
+                                    ".coffee" ".js" ".scss" ".css" ".php" ".html"))
 
   ;; (setq ido-decorations
   ;;       '("\n>> " "" "\n   " "\n   ..." "[" "]"
@@ -478,20 +486,15 @@
 (td-after 'ido-vertical-mode-autoloads
   (ido-vertical-mode t))
 
-(td-after 'flx-autoloads
-  (flx-ido-mode t)
-  (setq ido-use-faces nil
-        gc-cons-threshold 20000000)
-  (set-face-attribute 'flx-highlight-face nil :bold nil :underline nil :foreground "#FFA927"))
-
 ;;;; projectile
 (td-after 'projectile-autoloads
   (projectile-global-mode)
   (td-bind "M-p" #'projectile-find-file
-           "C-c a" #'projectile-ack))
+           "C-c a" #'projectile-ag))
 
 (td-after 'projectile
-  (setq projectile-tags-command "ctags -Re %s %s"))
+  (setq projectile-tags-command "ctags -Re %s %s"
+        projectile-completion-system 'ido))
 
 ;;;; diff
 (td-after 'ediff
@@ -589,7 +592,7 @@
   (set-face-attribute 'rainbow-delimiters-depth-5-face nil :foreground "#11535F")
   (set-face-attribute 'rainbow-delimiters-depth-6-face nil :foreground "#00959e")
   (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
-  (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120"))
+  (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120" :underline t))
 
 ;;;; diff-hl
 (td-after 'diff-hl-autoloads
@@ -603,10 +606,10 @@
         diff-hl-fringe-bmp-function #'td-diff-hl-bmp)
 
   (defun td-custom-diff-hl-faces (&optional args)
-    (set-face-attribute 'diff-hl-insert nil :inherit nil :background "unspecified" :foreground "#81af34")
-    (set-face-attribute 'diff-hl-delete nil :inherit nil :background "unspecified" :foreground "#ff0000")
-    (set-face-attribute 'diff-hl-change nil :inherit nil :background "unspecified" :foreground "#deae3e")
-    (set-face-attribute 'diff-hl-unknown nil :inherit nil :background "unspecified" :foreground "#81af34"))
+    (set-face-attribute 'diff-hl-insert nil :inherit nil :background nil :foreground "#81af34")
+    (set-face-attribute 'diff-hl-delete nil :inherit nil :background nil :foreground "#ff0000")
+    (set-face-attribute 'diff-hl-change nil :inherit nil :background nil :foreground "#deae3e")
+    (set-face-attribute 'diff-hl-unknown nil :inherit nil :background nil :foreground "#81af34"))
 
   (td-custom-diff-hl-faces)
   (add-hook 'after-make-frame-functions #'td-custom-diff-hl-faces)
@@ -618,11 +621,14 @@
   ;; (define-fringe-bitmap 'diff-hl-bmp-change
   ;;   [0 60 126 126 126 126 60 0]
   ;;   [0 0 24 60 60 24 0 0])
+  ;;
+  ;; (+ (expt 2 15) (expt 2 14) (expt 2 13) (expt 2 12))
+  ;;
 
-  (define-fringe-bitmap 'td-diff-hl-bmp [57344] 1 16 '(top t))
+  (define-fringe-bitmap 'td-diff-hl-bmp [61440] 1 16 '(top t))
   (defun td-diff-hl-bmp (type pos) 'td-diff-hl-bmp)
 
-  (defadvice magit-quit-session
+  (defadvice magit-mode-quit-window
     (after update-diff-hl activate)
     (mapc (lambda (buffer)
             (with-current-buffer buffer (diff-hl-update)))
@@ -657,20 +663,15 @@
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
         undo-tree-history-directory-alist
-        (list (cons "." (expand-file-name "undos" user-emacs-directory))))
+        (list (cons "." (td-data-file "undos"))))
 
   (defadvice undo-tree-make-history-save-file-name
     (after undo-tree activate)
-    (setq ad-return-value (concat ad-return-value ".gz")))
-
-  (add-hook 'before-save-hook 'undo-tree-save-history-hook))
+    (setq ad-return-value (concat ad-return-value ".gz"))))
 
 ;;;; ace-jump-mode
 (td-after 'ace-jump-mode-autoloads
   (td-bind "C-'" #'ace-jump-mode))
-
-(td-after 'ace-jump-mode
-  (setq ace-jump-word-mode-use-query-char nil))
 
 ;;;; evil
 (td-after 'evil-autoloads
@@ -687,17 +688,18 @@
         evil-cross-lines t
         evil-emacs-state-cursor '("orange"))
 
-  (mapc (lambda (mode) (evil-set-initial-state mode 'emacs))
+  (mapc (lambda (mode)
+          (evil-set-initial-state mode 'emacs))
         '(nrepl-popup-buffer-mode
-          ack-mode
           undo-tree-visualizer-mode
           epa-key-list-mode))
 
-  (mapc (lambda (mode) (evil-set-initial-state mode 'insert))
+  (mapc (lambda (mode)
+          (evil-set-initial-state mode 'insert))
         '(magin-log-edit-mode
           nodejs-repl-mode))
 
-  (evil-define-key 'normal org-mode-map (kbd "TAB") #'org-cycle)
+  (evil-define-key 'normal org-mode-map (kbd (td-tab)) #'org-cycle)
 
   (td-bind evil-normal-state-map
            "''" (td-cmd (evil-goto-mark ?`))
@@ -728,8 +730,7 @@
            "*" #'evil-visualstar/begin-search-forward
            "#" #'evil-visualstar/begin-search-backward)
   (td-bind evil-motion-state-map
-           "TAB" #'evil-jump-item
-           "<tab>" #'evil-jump-item)
+           (td-tab) #'evil-jump-item)
 
   (defadvice evil-ex-pattern-whole-line
     (after evil-global-defaults activate)
@@ -740,47 +741,29 @@
   (td-bind "C-c g" #'magit-status))
 
 (td-after 'magit
-  (set-face-attribute 'magit-item-highlight nil :background "#222")
+  (setq magit-restore-window-configuration t
+        magit-save-some-buffers t)
 
-  (defadvice magit-status (around magit-fullscreen activate)
-    (window-configuration-to-register :magit-fullscreen)
-    ad-do-it
-    (delete-other-windows))
-
-  (defun magit-quit-session ()
-    "Restores previous window configuration"
-    (interactive)
-    (kill-buffer)
-    (jump-to-register :magit-fullscreen))
+  (add-hook 'magit-status-mode-hook #'delete-other-windows)
 
   (defun magit-quick-amend ()
     (interactive)
     (save-window-excursion
       (magit-with-refresh
-       (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
 
   (td-bind magit-status-mode-map
-           "q" #'magit-quit-session
            "C-c C-a" #'magit-quick-amend))
 
 (td-after 'git-commit-mode
-  (setq magit-commit-all-when-nothing-staged t)
-
-  (defadvice git-commit-commit
-    (after delete-window activate)
-    (delete-window))
-  (defun magit-exit-commit-mode ()
-    (interactive)
-    (kill-buffer)
-    (delete-window))
-  (td-bind git-commit-mode-map "C-c C-k" #'magit-exit-commit-mode))
+  (setq magit-commit-all-when-nothing-staged t))
 
 ;;;; electric
 (electric-pair-mode t)
 
 (defun td-smart-brace ()
   (when (and (eq last-command-event ?\n)
-             (looking-at "}"))
+             (looking-at "[<}]"))
     (indent-according-to-mode)
     (forward-line -1)
     (end-of-line)
@@ -836,8 +819,8 @@
           space-before-tab space-after-tab))
   (setq whitespace-line-column fill-column)
 
-  (set-face-attribute 'whitespace-space nil :background "unspecified")
-  (set-face-attribute 'whitespace-tab nil :background "unspecified"))
+  (set-face-attribute 'whitespace-space nil :background nil)
+  (set-face-attribute 'whitespace-tab nil :background nil))
 
 ;; prog
 (defun td-custom-font-lock-hightlights ()
@@ -873,7 +856,48 @@
 ;;;; web
 (td-mode 'html-mode
          "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
-         "\\.ctp$" "\\.tpl$" "/\\(views\\|html\\|templates\\|layouts\\)/.*\\.php$")
+         "\\.ctp$" "\\.tpl$" "/\\(html\\|view\\|template\\|layout\\)/.*\\.php$")
+
+(td-after 'mmm-mode-autoloads
+  (setq mmm-global-mode 'auto
+        mmm-submode-decoration-level 0
+        mmm-parse-when-idle t
+        mmm-mode-prefix-key (kbd "C-c m"))
+
+  (require 'mmm-auto)
+  (require 'mmm-sample)
+
+  (mmm-add-mode-ext-class 'html-mode nil 'html-js)
+  (mmm-add-mode-ext-class 'html-mode nil 'html-css)
+  (mmm-add-mode-ext-class 'html-mode "\\.ejs\\'" 'ejs)
+  (mmm-add-mode-ext-class 'html-mode "\\.\\(erb\\|rhtml\\)\\'" 'erb)
+  (mmm-add-mode-ext-class 'html-mode "\\.\\(html\\|html\\.php\\|tmpl\\|ctp\\|tpl\\)\\'" 'html-php)
+  (mmm-add-mode-ext-class 'html-mode "/\\(html\\|view\\|template\\|layout\\)/.*\\.php\\'" 'html-php)
+  (mmm-add-mode-ext-class 'sh-mode nil 'here-doc)
+  (mmm-add-mode-ext-class 'php-mode nil 'here-doc)
+  (mmm-add-mode-ext-class 'ruby-mode nil 'here-doc)
+
+  (defun td-mmm-yaml-front-matter-verify ()
+    (eq (line-beginning-position) (point-min)))
+
+  (mmm-add-group
+   'markdown-extensions
+   '((markdown-code-block
+      :front "^\\([`~]\\{3,\\}\\)\\([a-zA-Z0-9_-]+\\)$"
+      :front-offset (end-of-line 1)
+      :save-matches 1
+      :back "^~1$"
+      :match-submode mmm-here-doc-get-mode
+      :insert ((?c markdown-code-block
+                   "Code Block Name: " @ "```" str _ "\n" @ "\n" @ "```" "\n" @)))
+     (markdown-yaml-front-matter
+      :front "^\\(-\\{3,\\}\\)$"
+      :front-verify td-mmm-yaml-front-matter-verify
+      :front-offset (end-of-line 1)
+      :save-matches 1
+      :back "^~1$"
+      :submode yaml-mode)))
+  (mmm-add-mode-ext-class 'markdown-mode nil 'markdown-extensions))
 
 (td-after 'emmet-mode-autoloads
   (add-hook 'sgml-mode-hook #'emmet-mode)
@@ -956,12 +980,13 @@
 ;;;; emacs lisp
 (td-mode 'emacs-lisp-mode "Cask")
 
-(defun td-elisp-imenu-expressions ()
-  (setq imenu-prev-index-position-function nil)
-  (add-to-list 'imenu-generic-expression '("Section" "^;;;; \\(.+\\)$" 1) t))
+(td-after 'lisp-mode
+  (defun td-elisp-imenu-expressions ()
+    (setq imenu-prev-index-position-function nil)
+    (add-to-list 'imenu-generic-expression '("Section" "^;;;; \\(.+\\)$" 1) t))
 
-(add-hook 'emacs-lisp-mode-hook #'td-elisp-imenu-expressions)
-(add-hook 'emacs-lisp-mode-hook #'turn-on-eldoc-mode)
+  (add-hook 'emacs-lisp-mode-hook #'td-elisp-imenu-expressions)
+  (add-hook 'emacs-lisp-mode-hook #'turn-on-eldoc-mode))
 
 (td-after 'eldoc
   (setq eldoc-idle-delay 0
@@ -977,7 +1002,9 @@
   (td-bind php-mode-map "C-c C-b" nil))
 
 ;;;; ruby
-(td-mode 'ruby-mode "Rakefile" "Guardfile" "Gemfile" "Vagrantfile" "\\.ru$" "\\.rake$")
+(td-mode 'ruby-mode
+         "\\.rb$" "\\.ru$" "\\.rake$"
+         "Rakefile" "Guardfile" "Gemfile" "Vagrantfile")
 
 (td-after 'ruby-mode
   (setq ruby-deep-arglist nil
@@ -990,9 +1017,6 @@
                '(ruby-mode
                  "\\(def\\|do\\|{\\)" "\\(end\\|end\\|}\\)" "#"
                  (lambda (arg) (ruby-end-of-block)) nil)))
-
-(td-after 'ruby-dev-autoloads
-  (add-hook 'ruby-mode-hook #'turn-on-ruby-dev))
 
 ;;;; python
 (td-after 'python
@@ -1011,27 +1035,27 @@
 (td-after 'clojure-mode
   (define-clojure-indent
     (defroutes 'defun) (context 2)
-    (GET 2) (POST 2) (PUT 2) (DELETE 2) (HEAD 2) (ANY 2)))
+    (GET 2) (POST 2) (PUT 2) (DELETE 2) (HEAD 2) (ANY 2)
+    (run 2) (run* 2) (fresh 'defun)))
 
 (td-after 'cider-interaction
-   (setq cider-popup-stacktraces nil))
+  (setq cider-popup-stacktraces nil
+        cider-auto-select-error-buffer t))
+
+(td-after 'cider-mode
+  (add-hook 'cider-mode-hook #'ac-nrepl-setup)
+  (add-hook 'cider-mode-hook #'cider-turn-on-eldoc-mode))
 
 (td-after 'cider-repl
-   (setq cider-repl-popup-stacktraces t))
-
-(td-after 'nrepl-client
-  (setq nrepl-hide-special-buffers t)
+  (setq cider-repl-popup-stacktraces t
+        cider-repl-pop-to-buffer-on-connect nil)
 
   (defun td-setup-nrepl ()
     (ac-nrepl-setup)
-    (nrepl-eval "(set! *print-length* 30)")
-    (nrepl-eval "(set! *print-level* 5)"))
+    (nrepl-eval-request "(set! *print-length* 30)")
+    (nrepl-eval-request "(set! *print-level* 5)"))
 
-  (add-hook 'nrepl-mode-hook #'ac-nrepl-setup)
-  (add-hook 'nrepl-mode-hook #'cider-turn-on-eldoc-mode)
-
-  (add-hook 'nrepl-interaction-mode-hook #'td-setup-nrepl)
-  (add-hook 'nrepl-interaction-mode-hook #'cider-turn-on-eldoc-mode))
+  (add-hook 'cider-repl-mode-hook #'td-setup-nrepl))
 
 ;;;; go
 (td-after 'go-mode
@@ -1048,7 +1072,7 @@
   (td-mode 'markdown-mode "\\.md$" "\\.mkd$" "\\.markdown$"))
 
 (td-after 'markdown-mode
-  (setq markdown-command "pandoc -s"
+  (setq markdown-command "redcarpet"
         markdown-enable-math t
         markdown-header-face '(:inherit font-lock-function-name-face :weight bold)
         markdown-header-face-1 '(:inherit markdown-header-face :height 2.0)
@@ -1057,20 +1081,7 @@
         markdown-header-face-4 '(:inherit markdown-header-face :height 1.2))
 
   (add-hook 'markdown-mode-hook #'turn-on-flyspell)
-
-  (defun markdown-export-docx ()
-    (interactive)
-    (let* ((parts (list markdown-command))
-           (format "docx")
-           (buf (buffer-name))
-           (output-file (replace-regexp-in-string
-                         (regexp-opt '("\.markdown" "\.md")) (concat "." format) buf)))
-      (push (concat "--data-dir=~/Dropbox/templates") parts)
-      (push (concat "-t " format) parts)
-      (push (concat "-o ~/Desktop/" output-file) parts)
-      (push (buffer-file-name) parts)
-      (when (= 0 (shell-command (mapconcat 'identity (nreverse parts) " ")))
-        (message (concat "Wrote " output-file)))))
+  (add-hook 'markdown-mode-hook #'turn-on-auto-fill)
 
   (td-bind markdown-mode-map "M-p" nil)
   (td-bind markdown-mode-map "C-c C-b" nil))
@@ -1248,16 +1259,16 @@
        (not (string-match tramp-file-name-regexp (buffer-file-name buffer)))))
 
 (defun current-buffer-lines (&optional buffer)
-  (unless buffer (setq buffer (current-buffer)))
-  (with-current-buffer buffer
-    (split-string
-     (buffer-substring-no-properties (point-min) (point-max))
-     "\n")))
+  (let ((buffer (or buffer (current-buffer))))
+    (with-current-buffer buffer
+      (split-string
+       (buffer-substring-no-properties (point-min) (point-max))
+       "\n"))))
 
 (defun recentf-ido-find-file ()
   "Find a recent file using Ido."
   (interactive)
-  (unless (featurep 'recentf)
+  (unless (recentf-enabled-p)
     (recentf-mode t))
   (let ((file (ido-completing-read "Recent file: " recentf-list nil t)))
     (when file
@@ -1267,15 +1278,6 @@
   (interactive)
   (end-of-line)
   (insert ";"))
-
-(defun td-browse-url (url &optional new-session)
-  (if (and (string-match "^file:\/\/" url)
-           (string-match (expand-file-name "~/local/docs") url))
-      (let ((w3m-use-tab nil))
-        (if (one-window-p) (split-window-horizontally))
-        (other-window 1)
-        (w3m-browse-url url new-session))
-    (browse-url-default-browser url new-session)))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs

@@ -27,3 +27,4 @@ repl-port
 .\#*
 *.rest
 routes.local
+.tern-port
