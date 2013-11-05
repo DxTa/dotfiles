@@ -24,7 +24,7 @@
   (setq mac-command-modifier 'meta
         mac-option-modifier 'super)
   (when (display-graphic-p)
-    (set-face-attribute 'default nil :family "Fira Mono OT" :height 140)
+    (set-face-attribute 'default nil :family "Meslo LG M" :height 140)
     (set-frame-size (selected-frame) 120 35)
     (set-frame-position (selected-frame) 500 22)))
 

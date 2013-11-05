@@ -7,7 +7,7 @@ Xft.autohint:   false
 Xft.lcdfilter:  lcddefault
 Xft.hintstyle:  hintfull
 
-Emacs*font: Fira Mono OT:pixelsize=14
+Emacs*font: Meslo LG L:pixelsize=13:embolden=true
 Emacs*toolbar: false
 Emacs*menubar: false
 Emacs*verticalScrollBars: false
