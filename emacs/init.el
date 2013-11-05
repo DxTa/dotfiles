@@ -69,6 +69,12 @@
 (defun td-data-file (f)
   (expand-file-name f user-emacs-directory))
 
+(defun td-set-local (&rest args)
+  (while args
+    (let* ((name (pop args))
+           (value (pop args)))
+      (set (make-local-variable name) value))))
+
 ;;;; custom
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file :no-error :no-message)
@@ -121,6 +127,7 @@
 (td-bind "C-c t" #'find-tag)
 (td-bind "C-c C-b" #'ibuffer)
 (td-bind "C-c w" #'whitespace-mode)
+(td-bind "C-c m" #'recompile)
 
 (td-bind "C-c C-e" #'eval-and-replace)
 (td-bind "C-l" #'comment-or-uncomment-region-dwim)
@@ -241,11 +248,11 @@
 (setq custom-theme-directory "~/.emacs.d/themes/")
 (load-theme (if (display-graphic-p) 'solarized-dark 'graham) t)
 
+(defadvice load-theme (before disable-other-theme activate)
+  (mapc #'disable-theme custom-enabled-themes))
+
 (set-face-attribute 'mode-line nil :box nil)
 (set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
-
-(defadvice load-theme (before theme-dont-propagate activate)
-  (mapc #'disable-theme custom-enabled-themes))
 
 ;;;; linum
 (column-number-mode t)
@@ -407,14 +414,14 @@
                  ac-source-c-header-symbols))))
 
   (defun td-set-local-ac-sources ()
-    (let ((sources (cdr (assoc major-mode td-local-ac-sources))))
-      (when sources
-        (set (make-local-variable 'ac-sources)
-             (append '(ac-source-yasnippet
+    (let* ((sources (cdr (assoc major-mode td-local-ac-sources)))
+           (prefixes '(ac-source-yasnippet
                        ac-source-imenu
-                       ac-source-words-in-same-mode-buffers)
-                     sources
-                     '(ac-source-dictionary))))))
+                       ac-source-words-in-same-mode-buffers))
+           (suffixes '(ac-source-dictionary))
+           (local-sources (append prefixes sources suffixes)))
+      (when sources
+        (td-set-local 'ac-sources local-sources))))
 
   (add-hook 'after-change-major-mode-hook #'td-set-local-ac-sources))
 
@@ -750,7 +757,7 @@
     (interactive)
     (save-window-excursion
       (magit-with-refresh
-        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+       (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
 
   (td-bind magit-status-mode-map
            "C-c C-a" #'magit-quick-amend))
@@ -862,7 +869,7 @@
   (setq mmm-global-mode 'auto
         mmm-submode-decoration-level 0
         mmm-parse-when-idle t
-        mmm-mode-prefix-key (kbd "C-c m"))
+        mmm-mode-prefix-key (kbd "C-c n"))
 
   (require 'mmm-auto)
   (require 'mmm-sample)
@@ -1026,6 +1033,17 @@
   (add-hook 'python-mode-hook #'setup-python-mode))
 
 ;;;; c
+
+
+;;;; vala
+(autoload 'vala-mode "vala-mode"
+  "Major mode for editing Vala files; updated for Emacs 24.")
+
+(td-mode 'vala-mode "\\.vala$")
+
+(td-after 'vala-mode
+  (td-on 'vala-mode-hook
+    (td-set-local c-basic-offset 4)))
 
 ;;;; java
 (td-after 'javadoc-lookup
