@@ -147,7 +147,6 @@
       history-length 256
       confirm-nonexistent-file-or-buffer nil
       comment-style 'multi-line
-      browse-url-browser-function #'td-browse-url
       require-final-newline t)
 
 (setq-default major-mode 'text-mode
@@ -697,13 +696,14 @@
 
   (mapc (lambda (mode)
           (evil-set-initial-state mode 'emacs))
-        '(nrepl-popup-buffer-mode
+        '(cider-popup-buffer-mode
           undo-tree-visualizer-mode
           epa-key-list-mode))
 
   (mapc (lambda (mode)
           (evil-set-initial-state mode 'insert))
-        '(magin-log-edit-mode
+        '(cider-repl-mode
+          magin-log-edit-mode
           nodejs-repl-mode))
 
   (evil-define-key 'normal org-mode-map (kbd (td-tab)) #'org-cycle)
@@ -757,7 +757,7 @@
     (interactive)
     (save-window-excursion
       (magit-with-refresh
-       (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
+        (shell-command "git --no-pager commit --amend --reuse-message=HEAD"))))
 
   (td-bind magit-status-mode-map
            "C-c C-a" #'magit-quick-amend))
@@ -828,6 +828,16 @@
 
   (set-face-attribute 'whitespace-space nil :background nil)
   (set-face-attribute 'whitespace-tab nil :background nil))
+
+;;;; popwin
+(autoload 'popwin-mode "popwin"
+  "Auto manage popup buffers")
+
+(popwin-mode t)
+
+(td-after 'popwin
+  (add-to-list 'popwin:special-display-config 'cider-popup-buffer-mode)
+  (add-to-list 'popwin:special-display-config "*cider-error*"))
 
 ;; prog
 (defun td-custom-font-lock-hightlights ()
@@ -1061,6 +1071,9 @@
         cider-auto-select-error-buffer t))
 
 (td-after 'cider-mode
+  (td-bind cider-mode-map
+           "C-c C-b" nil
+           "C-c C-g" 'cider-interrupt)
   (add-hook 'cider-mode-hook #'ac-nrepl-setup)
   (add-hook 'cider-mode-hook #'cider-turn-on-eldoc-mode))
 

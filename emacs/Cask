@@ -35,6 +35,7 @@
 (depends-on ibuffer-vc)
 
 ;;;; UI
+(depends-on popwin)
 (depends-on diminish)
 (depends-on color-theme-approximate)
 (depends-on number-font-lock-mode)
