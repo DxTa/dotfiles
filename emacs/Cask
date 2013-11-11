@@ -43,7 +43,6 @@
 (depends-on rainbow-mode)
 
 (depends-on sublime-themes)
-(depends-on soft-morning-theme)
 (depends-on solarized-theme)
 (depends-on twilight-theme)
 
@@ -93,4 +92,3 @@
 (depends-on s)
 (depends-on exec-path-from-shell)
 (depends-on simpleclip)
-(depends-on grizzl)

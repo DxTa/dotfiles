@@ -379,6 +379,8 @@ awful.rules.rules = {
                     buttons = clientbuttons,
                     size_hints_honor = false },
      callback = function(c) c.icon = nil end },
+   { rule = { class = "Synapse" },
+     properties = { border_width = 0, floating = true } },
    { rule = { class = "MPlayer" },
      properties = { floating = true } },
    { rule = { class = "pinentry" },

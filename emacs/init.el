@@ -16,6 +16,8 @@
 ;;;; autoloads
 (autoload '-filter "dash")
 (autoload '-uniq "dash")
+(autoload '-remove "dash")
+(autoload '-elem-index "dash")
 (autoload 's-trim-left "s")
 
 ;;;; platform specific
@@ -121,6 +123,7 @@
 (td-bind "C-c b" #'ido-switch-buffer)
 (td-bind "C-c f" #'find-file)
 (td-bind "C-c u" #'recentf-ido-find-file)
+(td-bind "C-c l" #'ido-goto-line)
 (td-bind "C-c t" #'find-tag)
 (td-bind "C-c C-b" #'ibuffer)
 (td-bind "C-c w" #'whitespace-mode)
@@ -132,7 +135,6 @@
 
 ;;;; inbox
 (td-bind "C-c j" (td-cmd (find-file "~/Dropbox/inbox.org")))
-(td-bind "C-c l" (td-cmd (find-file "~/.emacs.d/init.el")))
 
 ;;;; general
 (setq delete-by-moving-to-trash t
@@ -233,6 +235,8 @@
 (setq recentf-max-saved-items 256
       recentf-save-file (td-data-file "recentf"))
 
+(recentf-mode t)
+
 ;;;; display
 (setcdr
  (assoc 'truncation fringe-indicator-alist) nil)
@@ -245,7 +249,7 @@
 
 ;; (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme (if (display-graphic-p) 'solarized-dark 'graham) t)
+(load-theme 'graham t)
 
 (defadvice load-theme (before disable-other-theme activate)
   (mapc #'disable-theme custom-enabled-themes))
@@ -469,6 +473,15 @@
       (with-current-buffer (window-buffer (minibuffer-selected-window))
         (setq word (thing-at-point 'word)))
       (insert word)))
+
+  (defun ido-goto-line ()
+    (interactive)
+    (let* ((lines (current-buffer-lines))
+           (choices (-remove (lambda (l)
+                               (zerop (length l)))
+                             (current-buffer-lines)))
+           (line (ido-completing-read "Line: " choices)))
+      (goto-line (+ 1 (-elem-index line lines)))))
 
   (defun td-ido-hook ()
     (td-bind ido-completion-map
@@ -998,8 +1011,6 @@
   (setq scss-compile-at-save nil))
 
 ;;;; emacs lisp
-(td-mode 'emacs-lisp-mode "Cask")
-
 (td-after 'lisp-mode
   (defun td-elisp-imenu-expressions ()
     (setq imenu-prev-index-position-function nil)
@@ -1040,9 +1051,10 @@
 
 ;;;; python
 (td-after 'python
+  (setq python-indent-offset 4
+        python-indent-guess-indent-offset nil)
   (defun setup-python-mode ()
-    (setq tab-width 4
-          python-indent-offset 4))
+    (td-set-local tab-width 4))
   (add-hook 'python-mode-hook #'setup-python-mode))
 
 ;;;; c
@@ -1069,10 +1081,6 @@
     (GET 2) (POST 2) (PUT 2) (DELETE 2) (HEAD 2) (ANY 2)
     (run 2) (run* 2) (fresh 'defun)))
 
-(td-after 'cider-interaction
-  (setq cider-popup-stacktraces nil
-        cider-auto-select-error-buffer t))
-
 (td-after 'cider-mode
   (td-bind cider-mode-map
            "C-c C-b" nil
@@ -1082,14 +1090,7 @@
 
 (td-after 'cider-repl
   (setq cider-repl-popup-stacktraces t
-        cider-repl-pop-to-buffer-on-connect nil)
-
-  (defun td-setup-nrepl ()
-    (ac-nrepl-setup)
-    (nrepl-eval-request "(set! *print-length* 30)")
-    (nrepl-eval-request "(set! *print-level* 5)"))
-
-  (add-hook 'cider-repl-mode-hook #'td-setup-nrepl))
+        cider-repl-pop-to-buffer-on-connect nil))
 
 ;;;; go
 (td-after 'go-mode
@@ -1266,10 +1267,10 @@
 (defun imenu-flat ()
   (interactive)
   (let* ((symbols
-          (mapcar (lambda (index)
-                    (if (listp (cdr index)) (cdr index) (list index)))
-                  imenu--index-alist))
-         (symbols (apply #'append symbols))
+          (apply #'append
+                 (mapcar (lambda (index)
+                           (if (listp (cdr index)) (cdr index) (list index)))
+                         imenu--index-alist)))
          (index (completing-read "Symbol: " symbols)))
     (goto-char (cdr (assoc index symbols)))))
 
@@ -1302,8 +1303,6 @@
 (defun recentf-ido-find-file ()
   "Find a recent file using Ido."
   (interactive)
-  (unless (recentf-enabled-p)
-    (recentf-mode t))
   (let ((file (ido-completing-read "Recent file: " recentf-list nil t)))
     (when file
       (find-file file))))
