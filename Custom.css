@@ -10,13 +10,9 @@
   line-height: 1.5em;
   text-rendering: optimizeLegibility;
 }
-/* More reading room in Google Reader */
-#viewer-header-container,
-#nav #logo-section/*,
-#nav #lhn-add-subscription-section*/ {
-  display: none !important;
-}
-/* Better constrast in Pocket (Read It Later) */
-#content .reader_content_wrapper .reader_content {
-  color: #333 !important;
+
+/* truyenyy.com */
+#noidungtruyen {
+  max-width: 700px;
+  margin: 0 auto;
 }

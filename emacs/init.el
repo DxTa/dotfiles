@@ -63,9 +63,6 @@
              (cmd (pop mappings)))
         (define-key keymap (kbd key) cmd)))))
 
-(defun td-tab ()
-  (if (display-graphic-p) "<tab>" "TAB"))
-
 (defun td-data-file (f)
   (expand-file-name f user-emacs-directory))
 
@@ -175,6 +172,9 @@
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8-unix)
+
+;; Fallback font for Latin Extended Aditional (for support Vietnamese texts)
+(set-fontset-font nil '(#x1e00 . #x1eff) (font-spec :family "DejaVu Sans Mono"))
 
 ;;;; backup
 (setq backup-by-copying t
@@ -439,7 +439,7 @@
 (td-after 'ido
   (setq ido-enable-prefix nil
         ido-enable-dot-prefix t
-        ido-use-virtual-buffers t
+        ido-use-virtual-buffers nil
         ido-auto-merge-work-directories-length -1
         ido-create-new-buffer 'always
         ido-use-url-at-point nil
@@ -706,7 +706,8 @@
           magin-log-edit-mode
           nodejs-repl-mode))
 
-  (evil-define-key 'normal org-mode-map (kbd (td-tab)) #'org-cycle)
+  (evil-define-key 'normal org-mode-map "<tab>" #'org-cycle)
+  (evil-define-key 'normal org-mode-map "TAB" #'org-cycle)
 
   (td-bind evil-normal-state-map
            "''" (td-cmd (evil-goto-mark ?`))
@@ -737,7 +738,8 @@
            "*" #'evil-visualstar/begin-search-forward
            "#" #'evil-visualstar/begin-search-backward)
   (td-bind evil-motion-state-map
-           (td-tab) #'evil-jump-item)
+           "<tab>" #'evil-jump-item
+           "TAB" #'evil-jump-item)
 
   (defadvice evil-ex-pattern-whole-line
     (after evil-global-defaults activate)
@@ -837,7 +839,8 @@
 
 (td-after 'popwin
   (add-to-list 'popwin:special-display-config 'cider-popup-buffer-mode)
-  (add-to-list 'popwin:special-display-config "*cider-error*"))
+  (add-to-list 'popwin:special-display-config "*cider-error*")
+  (add-to-list 'popwin:special-display-config 'ag-mode))
 
 ;; prog
 (defun td-custom-font-lock-hightlights ()
