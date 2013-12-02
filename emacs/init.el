@@ -31,7 +31,8 @@
     (set-frame-position (selected-frame) 500 22)))
 
 (when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1))
+  (menu-bar-mode -1)
+  (set-face-attribute 'default nil :family "Meslo LG L" :height 110 :bold t))
 
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
@@ -175,8 +176,10 @@
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8-unix)
 
-;; Fallback font for Latin Extended Aditional (for support Vietnamese texts)
-(set-fontset-font nil '(#x1e00 . #x1eff) (font-spec :family "DejaVu Sans Mono"))
+
+(when (display-graphic-p)
+  ;; Fallback font for Latin Extended Aditional (support Vietnamese text)
+  (set-fontset-font nil '(#x1e00 . #x1eff) (font-spec :family "DejaVu Sans Mono")))
 
 ;;;; backup
 (setq backup-by-copying t
@@ -249,13 +252,15 @@
 
 ;; (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
-(load-theme 'graham t)
 
-(defadvice load-theme (before disable-other-theme activate)
+(defun td-clear-themes ()
+  (interactive)
+  "One time I decided that I don't want theme properties propagate, however I
+changed my mind and use one theme with my own custom theme now"
   (mapc #'disable-theme custom-enabled-themes))
 
-(set-face-attribute 'mode-line nil :box nil)
-(set-face-attribute 'mode-line-highlight nil :box '(:line-width 1))
+(load-theme 'solarized-dark t)
+(load-theme 'td-custom t)
 
 ;;;; linum
 (column-number-mode t)
@@ -265,9 +270,6 @@
 
 ;;;; hl-line
 (global-hl-line-mode t)
-
-(td-after 'hl-line
-  (set-face-attribute 'hl-line nil :inherit nil :underline nil))
 
 ;;;; show-paren-mode
 (td-after 'paren
@@ -454,7 +456,7 @@
         ido-ignore-buffers '("\\` ")
         ido-ignore-files '("ido.last" ".*-autoloads.el")
         ido-file-extensions-order '(".rb" ".py" ".clj" ".cljs" ".el"
-                                    ".coffee" ".js" ".scss" ".css" ".php" ".html"))
+                                    ".coffee" ".js" ".scss" ".css" ".php" ".html" ".db"))
 
   ;; (setq ido-decorations
   ;;       '("\n>> " "" "\n   " "\n   ..." "[" "]"
@@ -476,10 +478,10 @@
 
   (defun ido-goto-line ()
     (interactive)
-    (let* ((lines (current-buffer-lines))
+    (let* ((lines (split-string (buffer-string) "[\n\r]"))
            (choices (-remove (lambda (l)
                                (zerop (length l)))
-                             (current-buffer-lines)))
+                             lines))
            (line (ido-completing-read "Line: " choices)))
       (goto-line (+ 1 (-elem-index line lines)))))
 
@@ -591,27 +593,13 @@
         org-export-latex-listings 'minted
         org-src-fontify-natively t)
 
-  (add-to-list 'org-export-latex-packages-alist '("" "minted"))
-
-  (set-face-attribute 'org-level-1 nil :height 1.3)
-  (set-face-attribute 'org-level-2 nil :height 1.2)
-  (set-face-attribute 'org-level-3 nil :height 1.1))
+  (add-to-list 'org-export-latex-packages-alist '("" "minted")))
 
 ;;;; rainbow-delimiters
 (td-after 'rainbow-delimiters-autoloads
   (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
   (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable)
   (add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable))
-
-(td-after 'rainbow-delimiters
-  (set-face-attribute 'rainbow-delimiters-depth-1-face nil :foreground "#d97a35")
-  (set-face-attribute 'rainbow-delimiters-depth-2-face nil :foreground "#deae3e")
-  (set-face-attribute 'rainbow-delimiters-depth-3-face nil :foreground "#81af34")
-  (set-face-attribute 'rainbow-delimiters-depth-4-face nil :foreground "#4e9f75")
-  (set-face-attribute 'rainbow-delimiters-depth-5-face nil :foreground "#11535F")
-  (set-face-attribute 'rainbow-delimiters-depth-6-face nil :foreground "#00959e")
-  (set-face-attribute 'rainbow-delimiters-depth-7-face nil :foreground "#8700ff")
-  (set-face-attribute 'rainbow-delimiters-unmatched-face nil :background "#d13120" :underline t))
 
 ;;;; diff-hl
 (td-after 'diff-hl-autoloads
@@ -623,15 +611,6 @@
 
   (setq diff-hl-draw-borders nil
         diff-hl-fringe-bmp-function #'td-diff-hl-bmp)
-
-  (defun td-custom-diff-hl-faces (&optional args)
-    (set-face-attribute 'diff-hl-insert nil :inherit nil :background nil :foreground "#81af34")
-    (set-face-attribute 'diff-hl-delete nil :inherit nil :background nil :foreground "#ff0000")
-    (set-face-attribute 'diff-hl-change nil :inherit nil :background nil :foreground "#deae3e")
-    (set-face-attribute 'diff-hl-unknown nil :inherit nil :background nil :foreground "#81af34"))
-
-  (td-custom-diff-hl-faces)
-  (add-hook 'after-make-frame-functions #'td-custom-diff-hl-faces)
 
   ;; (define-fringe-bitmap 'diff-hl-bmp-insert
   ;;   [0 24 24 126 126 24 24 0])
@@ -719,8 +698,8 @@
           magin-log-edit-mode
           nodejs-repl-mode))
 
-  (evil-define-key 'normal org-mode-map "<tab>" #'org-cycle)
-  (evil-define-key 'normal org-mode-map "TAB" #'org-cycle)
+  (evil-define-key 'normal org-mode-map
+    "zz" #'org-cycle)
 
   (td-bind evil-normal-state-map
            "''" (td-cmd (evil-goto-mark ?`))
@@ -728,14 +707,14 @@
            "C-k" (td-cmd (evil-previous-visual-line 10))
            "j" #'evil-next-visual-line
            "k" #'evil-previous-visual-line
-           "TAB" #'evil-jump-item
+           "<tab>" #'evil-jump-item
            "gp" #'simpleclip-paste
            "C-:" #'eval-expression
-           "C-e" #'end-of-line
            "z SPC" #'evil-toggle-fold
            "C-f" #'ace-jump-char-mode
            "gi" #'inline-variable
            ",," #'evil-buffer
+           ",m" #'recompile
            ",w" #'evil-write-all
            ",e" #'ido-find-file)
   (td-bind evil-insert-state-map
@@ -746,11 +725,15 @@
            "M-a" "@")
   (td-bind evil-visual-state-map
            "Y" #'simpleclip-copy
-           "C-a" #'align=
+           "M-a" #'align=
+           "C-a" #'back-to-indentation
+           "C-e" #'end-of-line
            "ge" #'extract-variable
            "*" #'evil-visualstar/begin-search-forward
            "#" #'evil-visualstar/begin-search-backward)
   (td-bind evil-motion-state-map
+           "C-a" #'back-to-indentation
+           "C-e" #'end-of-line
            "<tab>" #'evil-jump-item
            "TAB" #'evil-jump-item)
 
@@ -839,10 +822,7 @@
           newline newline-mark
           trailing lines-tail
           space-before-tab space-after-tab))
-  (setq whitespace-line-column fill-column)
-
-  (set-face-attribute 'whitespace-space nil :background nil)
-  (set-face-attribute 'whitespace-tab nil :background nil))
+  (setq whitespace-line-column fill-column))
 
 ;;;; popwin
 (autoload 'popwin-mode "popwin"
@@ -944,9 +924,7 @@
 
   (defadvice emmet-preview
     (after emmet-preview-hide-tooltip activate)
-    (overlay-put emmet-preview-output 'before-string nil))
-
-  (set-face-attribute 'emmet-preview-input nil :box nil))
+    (overlay-put emmet-preview-output 'before-string nil)))
 
 ;;;; javascript
 (td-after 'js
@@ -1247,10 +1225,11 @@
     (start-file-process
      "Make Executable" nil "chmod" "u+x" (file-name-nondirectory buffer-file-name))))
 
-(defun align= (beg end)
-  "Align region to equal signs"
-  (interactive "r")
-  (align-regexp beg end "\\(\\s-*\\)[=|:]" 1 1))
+(defun align=: (&optional args)
+  "Align region to equal signs or colon"
+  (interactive)
+  (with-region-or-current-line
+    (align-regexp (region-beginning) (region-end) "\\(\\s-*\\)[=|:]" 1 1)))
 
 (defun what-face (pos)
   (interactive "d")
