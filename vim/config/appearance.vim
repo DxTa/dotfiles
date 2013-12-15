@@ -35,8 +35,8 @@ if has('gui_running')
   colorscheme badwolf
 
   if has("gui_gtk2")
-    " set guifont=DejaVu\ Sans\ Mono\ 11
-    set guifont=M+\ 2m\ 11
+    set guifont=DejaVu\ Sans\ Mono\ 11
+    " set guifont=M+\ 2m\ 11
   elseif has("gui_macvim") || has("gui_mac")
     set macmeta
     set guifont=M+\ 2m:h14

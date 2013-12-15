@@ -2,35 +2,27 @@
 
 source /etc/X11/xinit/xinitrc.d/30-dbus
 
-xrdb -merge $HOME/.xresources
-xrandr --output LVDS --set BACKLIGHT 7
-
-xfsettingsd
-xfce4-power-manager
-xfce4-volumed
-xcalib -d :0 $HOME/local/9CA4.icc
-#xflux -l 21.0 -g 105.8 -nofork &
-
 eval $(/usr/bin/gnome-keyring-daemon --start --components=gpg,pkcs11,ssh)
 export SSH_AUTH_SOCK
 export GPG_AGENT_INFO
 export GNOME_KEYRING_CONTROL
 export GNOME_KEYRING_PID
 
-systemd --user &
-
-# kupfer &
-dropboxd &
-thunar --daemon &
-$HOME/cli/bin/emacsd &
-$HOME/local/bin/rescuetime &
-# compton -e 1 &
-
+xfsettingsd
+xfce4-power-manager
+# xfce4-volumed
+xrdb -merge $HOME/.xresources
 xmodmap $HOME/.xmodmap
-# setxkbmap -option "terminate:ctrl_alt_bksp','caps:ctrl_modifier"
-xcape -e 'Control_R=Escape' &
+xflux -l 21.0 -g 105.8 &
+xinput set-prop 13 293 -107 -107
 
-source $HOME/.fehbg
+compton -e 1 &
+xautolock -time 15 -locker $HOME/cli/bin/i3lock-locker &
+TERM=xterm-256color emacs --daemon &
+workrave &
+clipit &
+dropboxd &
+# $HOME/local/bin/rescuetime &
 
 wmname LG3D
-exec awesome --no-argb
+exec dbus-launch awesome --no-argb

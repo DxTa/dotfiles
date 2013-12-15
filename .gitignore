@@ -13,3 +13,4 @@ cmus/search-history
 cmus/socket
 irssi/config.autosave
 emacs/custom.el
+.yas-compiled*

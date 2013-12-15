@@ -13,12 +13,15 @@
 
 ;;;; Editing
 (depends-on ace-jump-mode)
+(depends-on visual-regexp)
 
 (depends-on undo-tree)
 
-(depends-on evil)
-(depends-on evil-visualstar)
-(depends-on surround)
+;; (depends-on evil)
+;; (depends-on evil-visualstar)
+;; (depends-on surround)
+
+(depends-on smartparens)
 
 (depends-on expand-region)
 (depends-on multiple-cursors)
@@ -35,7 +38,6 @@
 (depends-on ibuffer-vc)
 
 ;;;; UI
-(depends-on popwin)
 (depends-on diminish)
 (depends-on color-theme-approximate)
 (depends-on number-font-lock-mode)
@@ -92,3 +94,5 @@
 (depends-on s)
 (depends-on exec-path-from-shell)
 (depends-on simpleclip)
+(depends-on fetch)
+(depends-on ignoramus)

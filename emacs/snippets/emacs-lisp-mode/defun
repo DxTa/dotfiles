@@ -3,4 +3,4 @@
 # --
 (defun $1 ()
   ${2:"${3:thisandthat.}"
-  }${4:defun$0})
+  }$0)

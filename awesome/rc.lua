@@ -45,7 +45,7 @@ end
 beautiful.init(awful.util.getdir("config") .. "/themes/td/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "gnome-terminal"
+terminal = "xfce4-terminal"
 editor = "emacsclient -n -c"
 browser = "chromium"
 fileman = "nautilus"
@@ -69,7 +69,7 @@ local layouts = {
 if beautiful.wallpaper then
    gears.wallpaper.maximized(beautiful.wallpaper)
 else
-   gears.wallpaper.maximized("/home/tung/Pictures/Wallpapers/wallpaper-2630370.jpg")
+   gears.wallpaper.maximized("/home/tung/Pictures/wall.jpg")
 end
 -- }}}
 
@@ -296,7 +296,9 @@ globalkeys = awful.util.table.join(
    end),
    awful.key({ modkey, "Shift" }, "t", function ()
                 run_or_raise(terminal, { class = "Terminal" })
-   end)
+   end),
+   awful.key({ }, "XF86AudioRaiseVolume", function () awful.util.spawn("amixer set Master 2+") end),
+   awful.key({ }, "XF86AudioLowerVolume", function () awful.util.spawn("amixer set Master 2-") end)
 )
 
 clientkeys = awful.util.table.join(
