@@ -3,6 +3,7 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        dabbrev-expand
         org-force-self-insert
         org-self-insert-command
         ))

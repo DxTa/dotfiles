@@ -713,7 +713,9 @@ changed my mind and use one theme with my own custom theme now"
 
   (defun magit-quick-amend ()
     (interactive)
-    (shell-command "git --no-pager commit --amend --reuse-message=HEAD")
+    (start-process-shell-command
+     "*magit-commit-amend*" nil
+     "git --no-pager commit --amend --reuse-message=HEAD")
     (magit-refresh))
 
   (td/bind magit-status-mode-map
@@ -746,6 +748,13 @@ changed my mind and use one theme with my own custom theme now"
 
 (add-hook 'post-self-insert-hook #'td/smart-brace t)
 (add-hook 'post-self-insert-hook #'td/smart-parenthesis t)
+
+;;;; typewriter-sound
+(autoload 'typewriter-mode
+  "typewriter-mode"
+  "Play typewriter sound effect when typing.")
+
+(typewriter-mode t)
 
 ;;;; hideshow
 (autoload 'hideshowvis-symbols

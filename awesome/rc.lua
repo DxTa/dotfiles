@@ -297,8 +297,8 @@ globalkeys = awful.util.table.join(
    awful.key({ modkey, "Shift" }, "t", function ()
                 run_or_raise(terminal, { class = "Terminal" })
    end),
-   awful.key({ }, "XF86AudioRaiseVolume", function () awful.util.spawn("amixer set Master 2+") end),
-   awful.key({ }, "XF86AudioLowerVolume", function () awful.util.spawn("amixer set Master 2-") end)
+   awful.key({ }, "XF86AudioRaiseVolume", function () awful.util.spawn("amixer set Master 1+") end),
+   awful.key({ }, "XF86AudioLowerVolume", function () awful.util.spawn("amixer set Master 1-") end)
 )
 
 clientkeys = awful.util.table.join(
