@@ -8,7 +8,7 @@ export PLATFORM="$MACHINE-$OS-$OSVERSION"
 export LANG="en_US.UTF-8"
 
 # TERM
-[ "$OS" = "linux" ] && export TERM=xterm-256color
+[ "$OS" = "linux" ] && export TERM=xterm-color
 [ -n "$TMUX" ] && export TERM=screen-256color
 
 # Handy variable

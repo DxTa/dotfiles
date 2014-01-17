@@ -13,27 +13,27 @@ def main():
 
     (filename, split_length) = parse_options()
     if split_length <= 0:
-        print "Split length can't be 0"
+        print("Split length can't be 0")
         raise SystemExit
 
     output = subprocess.Popen("ffmpeg -i '"+filename+"' 2>&1 | grep 'Duration'",
                             shell = True,
                             stdout = subprocess.PIPE
                             ).stdout.read()
-    print output
+    print(output)
     matches = re_length.search(output)
     if matches:
         video_length = int(matches.group(1)) * 3600 + \
                         int(matches.group(2)) * 60 + \
                         int(matches.group(3))
-        print "Video length in seconds: "+str(video_length)
+        print("Video length in seconds: "+str(video_length))
     else:
-        print "Can't determine video length."
+        print(("Can't determine video length."))
         raise SystemExit
 
     split_count = int(math.ceil(video_length/float(split_length)))
     if(split_count == 1):
-        print "Video length is less then the target split length."
+        print("Video length is less then the target split length.")
         raise SystemExit
 
     split_cmd = "ffmpeg -i '"+filename+"' -vcodec copy "
@@ -47,7 +47,7 @@ def main():
         split_str += " -ss "+str(split_start)+" -t "+str(split_length) + \
                     " '"+filename[:-4] + "-" + str(n) + "." + filename[-3:] + \
                     "'"
-        print "About to run: "+split_cmd+split_str
+        print("About to run: "+split_cmd+split_str)
         output = subprocess.Popen(split_cmd+split_str, shell = True, stdout =
                                subprocess.PIPE).stdout.read()
 
@@ -74,14 +74,13 @@ def parse_options():
         return (options.filename, options.split_size)
 
     else:
-        parser.print_help()
+        parser.print(_help())
         raise SystemExit
 
 if __name__ == '__main__':
 
     try:
         main()
-    except Exception, e:
-        print "Exception occured running main():"
-        print str(e)
-
+    except Exception as e:
+        print("Exception occured running main():")
+        print(str(e))

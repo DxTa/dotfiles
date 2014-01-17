@@ -261,9 +261,9 @@ FIXME: refactor"
 
 ;;;; recentf
 (td/after 'recentf
-  (add-to-list 'recentf-exclude "*ido*")
-  (add-to-list 'recentf-exclude "*elpa*")
-  (add-to-list 'recentf-exclude "*cache*")
+  (add-to-list 'recentf-exclude "ido")
+  (add-to-list 'recentf-exclude "elpa")
+  (add-to-list 'recentf-exclude "cache")
   (add-hook 'server-visit-hook #'recentf-save-list))
 
 (setq recentf-max-saved-items 256
@@ -543,6 +543,9 @@ changed my mind and use one theme with my own custom theme now"
 ;;;; projectile
 (td/after 'projectile-autoloads
   (projectile-global-mode)
+
+  (add-to-list 'projectile-globally-ignored-directories "node_modules")
+
   (td/bind "M-p" #'projectile-find-file
            "C-c C-p" #'projectile-find-file
            "C-c a" #'projectile-ag))

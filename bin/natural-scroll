@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+dev_id = `xinput list`
+  .each_line.find{|dev| dev =~ /Synaptics TouchPad/ }
+  .match(/id=(?<id>\d+)/)['id']
+
+prop_id = `xinput list-props #{dev_id}`
+  .each_line.find{|prop| prop =~ /Synaptics Scrolling Distance/ }
+  .match(/\((?<id>\d+)\):/)['id']
+
+`xinput set-prop #{dev_id} #{prop_id} -80 -80`
