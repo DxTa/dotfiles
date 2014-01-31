@@ -19,6 +19,7 @@
 (autoload '-remove "dash")
 (autoload '-elem-index "dash")
 (autoload 's-trim-left "s")
+(autoload 'zap-up-to-char "misc" nil :interactive)
 
 ;;;; platform specific
 (when (eq system-type 'darwin)
@@ -31,7 +32,7 @@
 
 (when (eq system-type 'gnu/linux)
   (menu-bar-mode -1)
-  (set-face-attribute 'default nil :family "Meslo LG L" :height 110 :bold t))
+  (set-face-attribute 'default nil :family "Meslo LG L" :height 100 :bold t))
 
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
@@ -113,7 +114,6 @@
 (td/bind "C-=" #'indent-defun)
 
 (td/bind "M-j" #'other-window)
-(td/bind "M-k" (td/cmd (other-window -1)))
 (td/bind "M-`" #'other-frame)
 (td/bind "C-c q" #'delete-frame)
 (td/bind "C-c Q" #'delete-window)
@@ -131,10 +131,13 @@
          "C-c C-b" #'ibuffer)
 (td/bind "C-c w" #'whitespace-mode)
 (td/bind "C-c m" #'recompile)
+(td/bind "C-c SPC" (td/cmd (pop-mark)))
 
 (td/bind "C-c C-e" #'eval-and-replace)
-(td/bind "C-c C-j" (td/cmd (next-line) (join-line)))
+(td/bind "M-J" (td/cmd (join-line -1)))
 (td/bind "C-l" #'comment-or-uncomment-region-or-line)
+(td/bind "C-]" #'recenter-top-bottom)
+(td/bind "M-z" #'zap-up-to-char)
 (td/bind "M-o" #'open-file-at-point)
 
 (td/bind "C-w" #'kill-region-or-word
@@ -211,6 +214,10 @@ FIXME: refactor"
 (when (display-graphic-p)
   ;; Fallback font for Latin Extended Aditional (support Vietnamese text)
   (set-fontset-font nil '(#x1e00 . #x1eff) (font-spec :family "DejaVu Sans Mono")))
+
+
+;; Insert special character -- like a boss
+(setq read-quoted-char-radix 16)
 
 ;;;; backup
 (setq backup-by-copying t
@@ -516,6 +523,7 @@ changed my mind and use one theme with my own custom theme now"
                                (zerop (length l)))
                              lines))
            (line (ido-completing-read "Line: " choices)))
+      (push-mark)
       (goto-line (+ 1 (-elem-index line lines)))))
 
   (defun td/ido-hook ()
@@ -546,9 +554,7 @@ changed my mind and use one theme with my own custom theme now"
 
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
 
-  (td/bind "M-p" #'projectile-find-file
-           "C-c C-p" #'projectile-find-file
-           "C-c a" #'projectile-ag))
+  (td/bind "M-p" #'projectile-find-file))
 
 ;;;; diff
 (td/after 'ediff
@@ -612,13 +618,13 @@ changed my mind and use one theme with my own custom theme now"
   (add-hook 'css-mode-hook #'rainbow-mode))
 
 ;;;; expand-region
-(td/bind "C--" #'er/expand-region)
+(td/bind "M--" #'er/expand-region)
 
 ;;;; multiple-cursors
 (td/after 'multiple-cursors-autoloads
-  (td/bind "C-<" #'mc/mark-previous-like-this
-           "C->" #'mc/mark-next-like-this
-           "C-c C->" #'mc/mark-all-like-this))
+  (td/bind "M-(" #'mc/mark-previous-like-this
+           "M-)" #'mc/mark-next-like-this
+           "C-c a" #'mc/mark-all-like-this))
 
 ;;;; org
 (td/after 'org
@@ -702,7 +708,7 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; ace-jump-mode
 (td/after 'ace-jump-mode-autoloads
-  (td/bind "C-'" #'ace-jump-mode))
+  (td/bind "M-'" #'ace-jump-mode))
 
 ;;;; magit
 (td/after 'magit-autoloads
@@ -764,13 +770,17 @@ changed my mind and use one theme with my own custom theme now"
   "hideshowvis"
   "Will indicate regions foldable with hideshow in the fringe.")
 
+(td/after 'hideshow
+  (hideshowvis-symbols)
+  (td/bind "C-c C-SPC" #'hs-toggle-hiding))
+
 (td/after 'hideshowvis
   (defadvice display-code-line-counts
     (around hideshowvis-no-line-count activate)
     ad-do-it
     (overlay-put ov 'display " ...")))
 
-(hideshowvis-symbols)
+(add-hook 'prog-mode-hook (lambda () (hs-minor-mode t)))
 
 ;;;; figlet
 (defun figlet-region (beg end)
@@ -792,6 +802,24 @@ changed my mind and use one theme with my own custom theme now"
           trailing lines-tail
           space-before-tab space-after-tab))
   (setq whitespace-line-column fill-column))
+
+;; dired
+(td/after 'dired
+  (defun td/dired-back-to-top ()
+    (interactive)
+    (beginning-of-buffer)
+    (dired-next-line 4))
+
+  (define-key dired-mode-map
+    (vector 'remap 'beginning-of-buffer) 'td/dired-back-to-top)
+
+  (defun td/dired-jump-to-bottom ()
+    (interactive)
+    (end-of-buffer)
+    (dired-next-line -1))
+
+  (define-key dired-mode-map
+    (vector 'remap 'end-of-buffer) 'td/dired-jump-to-bottom))
 
 ;; prog
 (defun td/custom-font-lock-hightlights ()

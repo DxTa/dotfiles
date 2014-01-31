@@ -83,8 +83,6 @@
 
 (depends-on rust-mode)
 
-(depends-on scala-mode2)
-
 (depends-on scss-mode)
 
 (depends-on yaml-mode)

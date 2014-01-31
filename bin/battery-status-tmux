@@ -1,0 +1,7 @@
+#!/bin/sh
+
+BASE='/sys/class/power_supply'
+DEV=$(ls $BASE | grep BAT)
+MAX=$(cat $BASE/$DEV/charge_full_design)
+NOW=$(cat $BASE/$DEV/charge_now)
+expr $NOW \* 100 / $MAX

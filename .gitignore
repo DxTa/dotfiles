@@ -14,3 +14,6 @@ cmus/socket
 irssi/config.autosave
 emacs/custom.el
 .yas-compiled*
+mpd/mpd.db
+mpd/mpd.pid
+mpd/mpd.state
