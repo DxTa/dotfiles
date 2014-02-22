@@ -20,8 +20,8 @@ channels = (
   { name = "#ubuntu-vn"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#emacs"; chatnet = "freenode"; autojoin = "Yes"; },
   { name = "#clojure"; chatnet = "freenode"; autojoin = "Yes"; },
-  { name = "#ruby"; chatnet = "freenode"; autojoin = "Yes"; },
-  { name = "#angularjs"; chatnet = "freenode"; autojoin = "Yes"; }
+  { name = "#reactjs"; chatnet = "freenode"; autojoin = "Yes"; },
+  { name = "#ruby"; chatnet = "freenode"; autojoin = "Yes"; }
 );
 
 statusbar = {
@@ -62,7 +62,7 @@ settings = {
 
 hilights = ( { text = "tungd"; nick = "yes"; word = "yes"; } );
 
-keyboard = ( 
+keyboard = (
   { key = "meta-[M"; id = "command"; data = "mouse_xterm "; }
 );
 

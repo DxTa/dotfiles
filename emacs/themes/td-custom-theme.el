@@ -1,9 +1,11 @@
 
-(deftheme td-custom "My custom faces.")
+(deftheme td-custom
+  "My custom faces that fix some theme annoyances.")
 
 (custom-theme-set-faces
  'td-custom
- `(mode-line ((t :box nil)))
+ ;; Some theme define modeline with boxed border and small font :(
+ `(mode-line ((t :box nil :inherit 'unspecified :height ,(cdr (assoc :height (face-all-attributes 'default))))))
  `(mode-line-highlight ((t :box nil)))
 
  `(rainbow-delimiters-depth-1-face ((t :foreground "#d97a35")))
@@ -15,22 +17,21 @@
  `(rainbow-delimiters-depth-7-face ((t :foreground "#8700ff")))
  `(rainbow-delimiters-unmatched-face ((t :background "#d13120" :underline t)))
 
- `(diff-hl-insert ((t :inherit nil :background nil :foreground "#81af34")))
- `(diff-hl-delete ((t :inherit nil :background nil :foreground "#ff0000")))
- `(diff-hl-change ((t :inherit nil :background nil :foreground "#deae3e")))
- `(diff-hl-unknown ((t :inherit nil :background nil :foreground "#81af34")))
+ `(diff-hl-insert ((t :inherit 'unspecified :background "unspecified" :foreground "#81af34")))
+ `(diff-hl-delete ((t :inherit 'unspecified :background "unspecified" :foreground "#ff0000")))
+ `(diff-hl-change ((t :inherit 'unspecified :background "unspecified" :foreground "#deae3e")))
+ `(diff-hl-unknown ((t :inherit 'unspecified :background "unspecified" :foreground "#81af34")))
 
- `(whitespace-space ((t :background nil)))
- `(whitespace-tab ((t :background nil)))
+ `(whitespace-space ((t :background "unspecified")))
+ `(whitespace-tab ((t :background "unspecified")))
 
- `(emmet-preview-input ((t :box nil)))
+ `(emmet-preview-input ((t :box "unspecified")))
 
- `(hl-line ((t :inherit nil :underline nil)))
+ `(hl-line ((t :inherit 'unspecified :underline nil :foreground nil)))
 
  `(org-level-1 ((t :height 1.3)))
  `(org-level-2 ((t :height 1.2)))
  `(org-level-3 ((t :height 1.1)))
-
  )
 
 (provide-theme 'td-custom)

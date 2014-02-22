@@ -105,7 +105,7 @@ bindings.client.keys = awful.util.table.join(
              function (c) c.swap(awful.client.getmaster()) end),
    awful.key({ modkey }, "o", awful.client.movetoscreen),
 
-   awful.key({ modkey, "Shift" }, "c", function (c) c:kill() end))
+   awful.key({ modkey, "Control" }, "x", function (c) c:kill() end))
 
 
 return bindings

@@ -47,6 +47,7 @@ local notification = require("notification")
 
 naughty.config.defaults.icon_size = 36
 naughty.config.defaults.border_width = 1
+naughty.config.defaults.screen = screen.count()
 naughty.config.notify_callback = notification.log
 
 -- Menu
@@ -95,8 +96,12 @@ root.keys(
       awful.key({ modkey, "Shift" }, "t", function ()
                    run_or_raise(terminal, { class = "Xfce4-terminal" })
       end),
-      awful.key({ modkey }, "Return",
-                function () awful.util.spawn(terminal) end)
+      awful.key({ modkey }, "Return", function ()
+                   awful.util.spawn(terminal)
+      end),
+      awful.key({ }, "Print", function ()
+                   awful.util.spawn("scrot -e 'mv $f ~/Pictures/ 2>/dev/null'")
+      end)
 ))
 
 root.buttons(
@@ -166,7 +171,7 @@ for s = 1, screen.count() do
 end
 
 -- Helpers
-local function run_or_raise(cmd, condition)
+function run_or_raise(cmd, condition)
    local matcher = function (c)
       return awful.rules.match(c, condition)
    end

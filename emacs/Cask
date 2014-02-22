@@ -47,6 +47,7 @@
 (depends-on sublime-themes)
 (depends-on solarized-theme)
 (depends-on twilight-theme)
+(depends-on clues-theme)
 
 ;;;; Programming
 (depends-on flycheck)
@@ -69,7 +70,7 @@
 (depends-on php-mode)
 (depends-on inf-php)
 
-(depends-on robe)
+;; (depends-on robe)
 (depends-on inf-ruby)
 
 (depends-on tern)
@@ -84,8 +85,11 @@
 (depends-on rust-mode)
 
 (depends-on scss-mode)
+(depends-on less-css-mode)
 
 (depends-on yaml-mode)
+
+(depends-on graphviz-dot-mode)
 
 ;;;; Utils
 (depends-on dash)

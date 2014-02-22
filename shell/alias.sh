@@ -12,7 +12,7 @@ if [ "$OS" = "darwin" ]; then
   alias pbp=pbpaste
   alias pbc=pbcopy
   alias vim='mvim -v'
-  alias vim='emacsclient -a vim'
+  alias vim='emacsclient -a ""'
   alias emacs='Emacs'
 fi
 
@@ -32,7 +32,6 @@ alias rm="rm -i"
 # cd
 alias ..="cd .."
 alias ...="cd ../../"
-alias bd=". bd -s"
 md() {
   mkdir -p "$1" && cd "$1";
 }
@@ -47,11 +46,13 @@ alias gci='git commit'
 # grep
 alias grep="grep --color"
 
-# Rails
+# Ruby & Rails
 alias r=rails
 alias be='bundle exec'
 alias bi='bundle install'
-function fr() {
+alias rk=rake
+
+fr() {
   if [ -e "Procfile.local" ]; then
     echo "::DEVELOPMENT::"
     nf start --wrap --procfile Procfile.local
@@ -60,6 +61,10 @@ function fr() {
     nf start --wrap
   fi
 }
+
+# Node
+alias gl=gulp
+alias km='karma start karma.conf.js'
 
 # Vim
 alias v=vim
@@ -71,6 +76,9 @@ es() {
 }
 
 # Mics.
+alias mk=make
+alias gr=gradle
+
 alias h=history
 alias tm="tmux -2"
 alias ducks="du -cksh * | sort -rn | head -11"
@@ -83,11 +91,6 @@ alias ips="ifconfig -a | perl -nle'/(\d+\.\d+\.\d+\.\d+)/ && print $1'"
 alias whois="whois -h whois-servers.net"
 alias sniff="sudo ngrep -d 'en1' -t '^(GET|POST) ' 'tcp and port 80'"
 alias httpdump="sudo tcpdump -i en1 -n -s 0 -w - | grep -a -o -E \"Host\: .*|GET \/.*\""
-
-alias grd=gradle
-alias grt=grunt
-alias mk=make
-alias rk=rake
 
 f() {
   find . -name "$1"
@@ -112,4 +115,15 @@ extract() {
   else
     echo "'$1' is not a valid file"
   fi
+}
+
+man() {
+  env LESS_TERMCAP_mb=$'\E[01;31m' \
+    LESS_TERMCAP_md=$'\E[01;38;5;74m' \
+    LESS_TERMCAP_me=$'\E[0m' \
+    LESS_TERMCAP_se=$'\E[0m' \
+    LESS_TERMCAP_so=$'\E[38;5;246m' \
+    LESS_TERMCAP_ue=$'\E[0m' \
+    LESS_TERMCAP_us=$'\E[04;38;5;146m' \
+    man "$@"
 }

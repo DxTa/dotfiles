@@ -24,15 +24,21 @@
 ;;;; platform specific
 (when (eq system-type 'darwin)
   (setq mac-command-modifier 'meta
-        mac-option-modifier 'super)
-  (when (display-graphic-p)
-    (set-face-attribute 'default nil :family "Meslo LG M" :height 140)
-    (set-frame-size (selected-frame) 120 35)
-    (set-frame-position (selected-frame) 500 22)))
+        mac-option-modifier 'super))
 
-(when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1)
-  (set-face-attribute 'default nil :family "Meslo LG L" :height 100 :bold t))
+(defun td/setup-frame ()
+  (when (eq system-type 'darwin)
+    (when (display-graphic-p)
+      (set-face-attribute 'default nil :family "Meslo LG M" :height 140)
+      (set-frame-size (selected-frame) 120 35)
+      (set-frame-position (selected-frame) 500 22)))
+  (when (eq system-type 'gnu/linux)
+    (menu-bar-mode -1)
+    (set-face-attribute 'default nil :family "Meslo LG L" :height 100)
+    (when (display-graphic-p)
+      (set-face-attribute 'default nil :bold t))))
+
+(add-hook 'after-make-frame-functions #'td/setup-frame)
 
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
@@ -106,7 +112,8 @@
 ;;;; keys
 (td/bind "C-M-f" #'td/toggle-fullscreen)
 (td/bind "M-m" #'execute-extended-command)
-(td/bind "C-S-SPC" #'set-rectangular-region-anchor)
+(td/bind "M-n" (td/cmd (next-line 10)))
+(td/bind "M-p" (td/cmd (previous-line 10)))
 
 (td/bind "RET" #'newline-and-indent)
 
@@ -131,7 +138,7 @@
          "C-c C-b" #'ibuffer)
 (td/bind "C-c w" #'whitespace-mode)
 (td/bind "C-c m" #'recompile)
-(td/bind "C-c SPC" (td/cmd (pop-mark)))
+(td/bind "C-c SPC" #'set-rectangular-region-anchor)
 
 (td/bind "C-c C-e" #'eval-and-replace)
 (td/bind "M-J" (td/cmd (join-line -1)))
@@ -297,7 +304,8 @@ FIXME: refactor"
 changed my mind and use one theme with my own custom theme now"
   (mapc #'disable-theme custom-enabled-themes))
 
-(load-theme 'solarized-dark t)
+(color-theme-approximate-on)
+(load-theme 'graham t)
 (load-theme 'td-custom t)
 
 ;;;; linum
@@ -390,7 +398,7 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; completion
 (define-prefix-command 'td/completion-map)
-(td/bind "C-;" 'td/completion-map
+(td/bind "M-;" 'td/completion-map
          "C-c ;" 'td/completion-map)
 
 (td/bind td/completion-map
@@ -554,7 +562,7 @@ changed my mind and use one theme with my own custom theme now"
 
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
 
-  (td/bind "M-p" #'projectile-find-file))
+  (td/bind "M-l" #'projectile-find-file))
 
 ;;;; diff
 (td/after 'ediff
@@ -839,12 +847,15 @@ changed my mind and use one theme with my own custom theme now"
     (interactive)
     (flycheck-mode t))
 
-  (defun td/elisp-flycheck-may-turn-on ()
-    (unless (string-match "init.el" (or (buffer-file-name) ""))
-      (turn-on-flycheck)))
-
-  (add-hook 'go-mode-hook #'turn-on-flycheck)
-  (add-hook 'emacs-lisp-mode-hook #'td/elisp-flycheck-may-turn-on))
+  (mapc (lambda (hook)
+          (add-hook hook #'turn-on-flycheck))
+        '(go-mode-hook
+          emacs-lisp-mode-hook
+          js-mode-hook
+          coffee-mode-hook
+          ruby-mode-hook
+          rust-mode-hook
+          sh-mode-hook)))
 
 (td/after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save))
@@ -1102,7 +1113,8 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; sh
 (td/after 'sh-script
-  (setq sh-indentation 2))
+  (setq sh-basic-offset 2
+        sh-indentation 2))
 
 ;;;; commands
 (defmacro with-region-or-current-line (&rest body)

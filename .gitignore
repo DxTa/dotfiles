@@ -17,3 +17,4 @@ emacs/custom.el
 mpd/mpd.db
 mpd/mpd.pid
 mpd/mpd.state
+mpd/playlists

@@ -99,7 +99,7 @@ end
 -- Clock
 local function display_calendar()
    local today = os.date("%d")
-   local process = io.popen("cal --color=always --julian", "r")
+   local process = io.popen("cal --color=always", "r")
    local text = process:read("*all"):gsub(today.." ",
                                           "<span color='red'>"..today.."</span>")
    process:close()

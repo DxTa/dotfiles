@@ -4,7 +4,7 @@ Xft.antialias: true
 Xft.rgba: rgb
 Xft.autohint: false
 Xft.hinting: true
-Xft.hintstyle: hintslight
+Xft.hintstyle: hintfull
 Xft.lcdfilter: lcddefault
 
 ! Emacs*font: Meslo LG M:pixelsize=14:style=bold

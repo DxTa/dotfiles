@@ -1,8 +1,0 @@
---type-add
-clojure=.cljs
---type-add
-html=.haml,twig
---type-add
-php=.tpl
---type-add
-css=.sass,.scss

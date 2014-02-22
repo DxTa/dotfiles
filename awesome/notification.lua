@@ -5,7 +5,7 @@ local notification = {}
 
 notification.log = function(n)
    local log = io.open(awful.util.getdir("cache").."/notifications", "a")
-   log:write(n.text)
+   log:write(n.text .. "\n")
    log:close()
 
    n.screen = mouse.screen
