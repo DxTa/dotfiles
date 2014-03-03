@@ -26,19 +26,21 @@
   (setq mac-command-modifier 'meta
         mac-option-modifier 'super))
 
-(defun td/setup-frame ()
+(defun td/setup-frame (frame)
+  (interactive)
   (when (eq system-type 'darwin)
     (when (display-graphic-p)
-      (set-face-attribute 'default nil :family "Meslo LG M" :height 140)
-      (set-frame-size (selected-frame) 120 35)
-      (set-frame-position (selected-frame) 500 22)))
+      (set-face-attribute 'default frame :family "Meslo LG M" :height 140)
+      (set-frame-size frame 120 35)
+      (set-frame-position frame 500 22)))
   (when (eq system-type 'gnu/linux)
     (menu-bar-mode -1)
-    (set-face-attribute 'default nil :family "Meslo LG L" :height 100)
-    (when (display-graphic-p)
-      (set-face-attribute 'default nil :bold t))))
+    (set-face-attribute 'default frame :family "Meslo LG L" :height 100
+                        :bold (display-graphic-p)))
+  (unless (display-graphic-p)
+    (diff-hl-margin-mode t)))
 
-(add-hook 'after-make-frame-functions #'td/setup-frame)
+(add-hook 'after-make-frame-functions #'td/setup-frame t)
 
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
@@ -305,7 +307,7 @@ changed my mind and use one theme with my own custom theme now"
   (mapc #'disable-theme custom-enabled-themes))
 
 (color-theme-approximate-on)
-(load-theme 'graham t)
+(load-theme 'ujelly t)
 (load-theme 'td-custom t)
 
 ;;;; linum
@@ -527,9 +529,7 @@ changed my mind and use one theme with my own custom theme now"
   (defun ido-goto-line ()
     (interactive)
     (let* ((lines (split-string (buffer-string) "[\n\r]"))
-           (choices (-remove (lambda (l)
-                               (zerop (length l)))
-                             lines))
+           (choices (-remove (lambda (l) (zerop (length l))) lines))
            (line (ido-completing-read "Line: " choices)))
       (push-mark)
       (goto-line (+ 1 (-elem-index line lines)))))
@@ -651,10 +651,6 @@ changed my mind and use one theme with my own custom theme now"
 ;;;; diff-hl
 (td/after 'diff-hl-autoloads
   (global-diff-hl-mode))
-
-(td/after 'diff-hl
-  ;; (unless (display-graphic-p)
-  ;;   (diff-hl-margin-mode t))
 
   (setq diff-hl-draw-borders nil
         diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
@@ -796,7 +792,7 @@ changed my mind and use one theme with my own custom theme now"
   (let ((message (buffer-substring-no-properties beg end)))
     (kill-region beg end)
     (insert (shell-command-to-string
-             (format "figlet -f%s \"%s\"" "chunky" message)))))
+             (format "figlet -f%s \"%s\"" "graffiti" message)))))
 
 ;;;; whitespace
 (td/after 'whitespace

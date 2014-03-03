@@ -25,7 +25,7 @@
  `(whitespace-space ((t :background "unspecified")))
  `(whitespace-tab ((t :background "unspecified")))
 
- `(emmet-preview-input ((t :box "unspecified")))
+ `(emmet-preview-input ((t :box nil)))
 
  `(hl-line ((t :inherit 'unspecified :underline nil :foreground nil)))
 

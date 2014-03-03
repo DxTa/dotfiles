@@ -41,6 +41,7 @@
 (depends-on diminish)
 (depends-on color-theme-approximate)
 (depends-on number-font-lock-mode)
+(depends-on fill-column-indicator)
 (depends-on rainbow-delimiters)
 (depends-on rainbow-mode)
 
@@ -48,6 +49,7 @@
 (depends-on solarized-theme)
 (depends-on twilight-theme)
 (depends-on clues-theme)
+(depends-on ujelly-theme)
 
 ;;;; Programming
 (depends-on flycheck)
