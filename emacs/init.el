@@ -676,7 +676,7 @@ changed my mind and use one theme with my own custom theme now"
           (buffer-list)))
 
   (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
-    "Markers disappear and reapear is kind of annoying to me."))
+    "Markers disappear and reapear is kind of annoying to me.")
 
 (td/after 'diff-hl-margin
   (defun td/make-diff-hl-margin-spec (type char)

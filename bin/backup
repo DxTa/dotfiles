@@ -1,29 +1,29 @@
 #!/usr/bin/sh
 
 # attic init --encryption=keyfile $REPOSITORY
-# segment: 2147483648
+# segment: 2147483648 (2GB)
 # segment per directory: 1024
 
 REPOSITORY=/run/media/tung/Data/Backup/Linux.attic
 LOG=/tmp/attic.log
 BACKUP="`hostname`-`date +%Y-%m-%d`"
+ERROR_MSG="Backup failed. Destination not found '$REPOSITORY'"
 
 if [ ! -d "$REPOSITORY" ]; then
-  notify-send --expire-time=0 "Backup aborted. Destination not found '$REPOSITORY'"
-  exit
+  notify-send --expire-time=0 $ERROR_MSG
+  echo $ERROR_MSG
+  exit 1
 fi
 
 notify-send --expire-time=0 "Backup running"
 echo "Backing up: $BACKUP" > "$LOG"
 
-attic create --stats       \
-  $REPOSITORY::$BACKUP     \
-  $HOME                    \
-  --exclude /home/*/.cache \
-  --exclude *.pyc          \
-  --exclude *.class        \
+nice -n 19                                                   \
+  attic create --stats                                       \
+  $REPOSITORY::$BACKUP $HOME                                 \
+  --exclude /home/*/.cache --exclude *.pyc --exclude *.class \
   > "$LOG"
 
-attic prune --verbose $REPOSITORY --daily=7 --weekly=4 --monthly=6 >> "$LOG"
+nice -n 19 attic prune --verbose $REPOSITORY --daily=7 --weekly=4 --monthly=6 >> "$LOG"
 
 notify-send --expire-time=0 "Backup done!" "`cat $LOG`"
