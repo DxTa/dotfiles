@@ -652,6 +652,7 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'diff-hl-autoloads
   (global-diff-hl-mode))
 
+(td/after 'diff-hl
   (setq diff-hl-draw-borders nil
         diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
 
@@ -676,7 +677,7 @@ changed my mind and use one theme with my own custom theme now"
           (buffer-list)))
 
   (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
-    "Markers disappear and reapear is kind of annoying to me.")
+    "Markers disappear and reapear is kind of annoying to me."))
 
 (td/after 'diff-hl-margin
   (defun td/make-diff-hl-margin-spec (type char)
@@ -1305,6 +1306,13 @@ changed my mind and use one theme with my own custom theme now"
   (interactive)
   (end-of-line)
   (insert ";"))
+
+(defun multi-occur-same-mode-buffers ()
+  "Show all lines matching pattern in buffers with the same major mode."
+  (interactive)
+  (multi-occur
+   (same-mode-buffers)
+   (car (occur-read-primary-args))))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
