@@ -16,7 +16,7 @@ require("signals")
 modkey = "Mod4"
 terminal = "xfce4-terminal"
 editor = "emacsclient -n -c"
-browser = "chromium"
+browser = "chromium --remote-debugging-port=9222"
 filemanager = "nautilus"
 hostname = awful.util.pread('uname -n'):gsub('\n', '')
 

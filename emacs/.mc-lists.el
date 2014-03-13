@@ -4,6 +4,7 @@
 (setq mc/cmds-to-run-for-all
       '(
         dabbrev-expand
+        kill-region-or-word
         org-force-self-insert
         org-self-insert-command
         ))

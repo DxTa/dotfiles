@@ -26,22 +26,6 @@
   (setq mac-command-modifier 'meta
         mac-option-modifier 'super))
 
-(defun td/setup-frame (frame)
-  (interactive)
-  (when (eq system-type 'darwin)
-    (when (display-graphic-p)
-      (set-face-attribute 'default frame :family "Meslo LG M" :height 140)
-      (set-frame-size frame 120 35)
-      (set-frame-position frame 500 22)))
-  (when (eq system-type 'gnu/linux)
-    (menu-bar-mode -1)
-    (set-face-attribute 'default frame :family "Meslo LG L" :height 100
-                        :bold (display-graphic-p)))
-  (unless (display-graphic-p)
-    (diff-hl-margin-mode t)))
-
-(add-hook 'after-make-frame-functions #'td/setup-frame t)
-
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
 
@@ -64,6 +48,14 @@
   (mapc (lambda (pattern)
           (add-to-list 'auto-mode-alist (cons pattern mode)))
         patterns))
+
+(defmacro td/key-group (name prefix &rest mappings)
+  (let ((name (intern (format "%s-map" name))))
+    `(progn
+       (defvar ,name nil ,(format "Prefix command for '%s'." name))
+       (define-prefix-command ',name)
+       (td/bind ,prefix ,name)
+       (td/bind ,name ,@mappings))))
 
 (defun td/bind (&rest mappings)
   (let ((keymap (if (eq 1 (mod (length mappings) 2))
@@ -98,11 +90,26 @@
 (td/on 'emacs-startup-hook
   (message "Time needed to load: %s seconds." (emacs-uptime "%s")))
 
+(defun td/setup-frame (frame)
+  (interactive)
+  (message "%s" (display-graphic-p))
+  (when (eq system-type 'darwin)
+    (when (display-graphic-p)
+      (set-face-attribute 'default frame :family "Meslo LG M" :height 140)
+      (set-frame-size frame 120 35)
+      (set-frame-position frame 500 22)))
+  (when (eq system-type 'gnu/linux)
+    (menu-bar-mode -1)
+    (set-face-attribute 'default frame :family "M+ 2m" :height 110)))
+
+(add-hook 'after-make-frame-functions #'td/setup-frame)
+
 ;;;; random seed
 (random t)
 
 ;;;; server
 (require 'server)
+
 (td/after 'server
   (unless (server-running-p) (server-start nil)))
 
@@ -129,7 +136,7 @@
 (td/bind "C-c k" #'kill-buffer-and-window)
 
 (td/bind "C-c c" #'server-edit)
-(td/bind "C-c o" #'imenu-flat)
+(td/bind "C-c n" #'imenu-flat)
 (td/bind "C-c i" #'imenu)
 (td/bind "C-c b" #'ido-switch-buffer)
 (td/bind "C-c f" #'find-file)
@@ -146,8 +153,9 @@
 (td/bind "M-J" (td/cmd (join-line -1)))
 (td/bind "C-l" #'comment-or-uncomment-region-or-line)
 (td/bind "C-]" #'recenter-top-bottom)
+(td/bind "M-." #'find-tag-at-point)
 (td/bind "M-z" #'zap-up-to-char)
-(td/bind "M-o" #'open-file-at-point)
+(td/bind "M-o" #'open-thing-at-point)
 
 (td/bind "C-w" #'kill-region-or-word
          "C-c r" #'vr/query-replace
@@ -254,13 +262,21 @@ FIXME: refactor"
 ;;                       (nth 2 (file-attributes buffer-file-name)))))
 ;;     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
-(defun before-save-make-directories ()
+(defun td/before-save-make-directories ()
   (let ((dir (file-name-directory buffer-file-name)))
     (when (and buffer-file-name (not (file-exists-p dir)))
       (make-directory dir t))))
 
-(add-hook 'before-save-hook #'before-save-make-directories)
+(add-hook 'before-save-hook #'td/before-save-make-directories)
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
+
+(defun td/after-save-auto-chmod ()
+  (when (string-equal "#!" (buffer-substring-no-properties 1 4))
+    (shell-command
+     (format "chmod u+x %s"
+             (shell-quote-argument (buffer-file-name))))))
+
+(add-hook 'after-save-hook #'td/after-save-auto-chmod)
 
 ;;;; uniquify
 (require 'uniquify)
@@ -297,7 +313,6 @@ FIXME: refactor"
   (set-display-table-slot display-table 'truncation ?¬)
   (set-window-display-table (selected-window) display-table))
 
-;; (color-theme-approximate-on)
 (setq custom-theme-directory "~/.emacs.d/themes/")
 
 (defun td/clear-themes ()
@@ -306,8 +321,8 @@ FIXME: refactor"
 changed my mind and use one theme with my own custom theme now"
   (mapc #'disable-theme custom-enabled-themes))
 
-(color-theme-approximate-on)
-(load-theme 'ujelly t)
+;; (color-theme-approximate-on)
+(load-theme 'junio t)
 (load-theme 'td-custom t)
 
 ;;;; linum
@@ -399,13 +414,9 @@ changed my mind and use one theme with my own custom theme now"
   (add-hook 'ibuffer-mode-hook #'td/ibuffer-hook))
 
 ;;;; completion
-(define-prefix-command 'td/completion-map)
-(td/bind "M-;" 'td/completion-map
-         "C-c ;" 'td/completion-map)
-
-(td/bind td/completion-map
-         ";" #'end-with-semicolon
-         "C-;" #'end-with-semicolon)
+(td/key-group td/completion "M-;"
+              ";" #'end-with-semicolon
+              "M-;" #'end-with-semicolon)
 
 ;;;; auto-complete
 (td/after 'auto-complete
@@ -642,6 +653,11 @@ changed my mind and use one theme with my own custom theme now"
 
   (add-to-list 'org-export-latex-packages-alist '("" "minted")))
 
+(td/key-group td/org "C-c o"
+              "l" #'org-store-link
+              "c" #'org-capture
+              "a" #'org-agenda)
+
 ;;;; rainbow-delimiters
 (td/after 'rainbow-delimiters-autoloads
   (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
@@ -683,16 +699,16 @@ changed my mind and use one theme with my own custom theme now"
   (defun td/make-diff-hl-margin-spec (type char)
     (cons (cons type 'left)
           (propertize
-           " " 'display
+           "  " 'display
            `((margin left-margin)
              ,(propertize char 'face
                           (intern (format "diff-hl-%s" type)))))))
   (setq diff-hl-margin-spec-cache
         (list
-         (td/make-diff-hl-margin-spec 'insert "|")
-         (td/make-diff-hl-margin-spec 'delete "|")
-         (td/make-diff-hl-margin-spec 'change "|")
-         (td/make-diff-hl-margin-spec 'unknown "|"))))
+         (td/make-diff-hl-margin-spec 'insert "| ")
+         (td/make-diff-hl-margin-spec 'delete "| ")
+         (td/make-diff-hl-margin-spec 'change "| ")
+         (td/make-diff-hl-margin-spec 'unknown "| "))))
 
 ;;;; undo-tree
 (td/after 'undo-tree-autoloads
@@ -738,6 +754,9 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'git-commit-mode
   (setq magit-commit-all-when-nothing-staged t))
 
+(td/after 'vc-hooks
+  (setq vc-follow-symlinks t))
+
 ;;;; electric
 (electric-pair-mode t)
 
@@ -769,6 +788,13 @@ changed my mind and use one theme with my own custom theme now"
   "Play typewriter sound effect when typing.")
 
 (typewriter-mode t)
+
+;;;; copy-as-html-for-paste
+(autoload 'copy-as-html-for-paste
+  "copy-as-html-for-paste"
+  "Copy region or buffer as rich HTML text for pasting.")
+
+(td/bind "C-c h" #'copy-as-html-for-paste)
 
 ;;;; hideshow
 (autoload 'hideshowvis-symbols
@@ -812,7 +838,7 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'dired
   (defun td/dired-back-to-top ()
     (interactive)
-    (beginning-of-buffer)
+    (goto-char (point-min))
     (dired-next-line 4))
 
   (define-key dired-mode-map
@@ -820,7 +846,7 @@ changed my mind and use one theme with my own custom theme now"
 
   (defun td/dired-jump-to-bottom ()
     (interactive)
-    (end-of-buffer)
+    (goto-char (point-max))
     (dired-next-line -1))
 
   (define-key dired-mode-map
@@ -1135,20 +1161,19 @@ changed my mind and use one theme with my own custom theme now"
   (with-region-or-current-line
     (comment-or-uncomment-region (region-beginning) (region-end))))
 
-(defun open-file-at-point ()
+(defun open-thing-at-point ()
   (interactive)
-  (let ((path (if (region-active-p)
-                  (buffer-substring-no-properties (region-beginning) (region-end))
-                (thing-at-point 'filename))))
-    (if (string-match-p "\\`https*://" path)
-        (browse-url path)
-      (progn
-        (if (file-exists-p path)
-            (find-file path)
-          (if (file-exists-p (concat path ".el"))
-              (find-file (concat path ".el"))
-            (when (y-or-n-p (format "Creat %s?" path))
-              (find-file path))))))))
+  (-when-let (url (thing-at-point 'url))
+    (browse-url url))
+  (-when-let (email (thing-at-point 'email))
+    (browse-url (format "mailto:%s" email)))
+  (-when-let (path (thing-at-point 'filename))
+    (if (file-exists-p path)
+        (find-file path)
+      (if (file-exists-p (concat path ".el"))
+          (find-file (concat path ".el"))
+        (when (y-or-n-p (format "Creat %s?" path))
+          (find-file path))))))
 
 (defun finder ()
   "Open the current working directory in finder."
@@ -1313,6 +1338,10 @@ changed my mind and use one theme with my own custom theme now"
   (multi-occur
    (same-mode-buffers)
    (car (occur-read-primary-args))))
+
+(defun find-tag-at-point ()
+  (interactive)
+  (find-tag (thing-at-point 'symbol)))
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs

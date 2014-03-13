@@ -56,9 +56,6 @@ local function prompt (input)
    elseif input:sub(1, 1) == "?" then
       -- Among the installed dictionaries, this one is the least verbose
       input = io.popen("sdcv -n -u 'WordNet' "..input:sub(2))
-      repeat
-         tmp = input:read()
-      until tmp == ""
       naughty.notify({ text = input:read('*all'), timeout = 10 })
       input:close()
       return
@@ -89,7 +86,8 @@ widgets.promptboxes.run = function()
    awful.prompt.run(
       { prompt = "Run: " },
       widgets.promptboxes[mouse.screen].widget,
-      prompt, prompt_completion)
+      prompt, prompt_completion,
+      awful.util.getdir("cache").."/prompt")
 end
 
 for s = 1, screen.count() do
@@ -100,8 +98,8 @@ end
 local function display_calendar()
    local today = os.date("%d")
    local process = io.popen("cal --color=always", "r")
-   local text = process:read("*all"):gsub(today.." ",
-                                          "<span color='red'>"..today.."</span>")
+   local text = process:read("*all"):gsub(
+      today.." ", "<span color='red'>"..today.."</span>")
    process:close()
    naughty.notify({ text = text })
 end

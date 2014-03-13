@@ -50,10 +50,12 @@
 (depends-on twilight-theme)
 (depends-on clues-theme)
 (depends-on ujelly-theme)
+(depends-on htmlize)
 
 ;;;; Programming
 (depends-on flycheck)
 (depends-on emmet-mode)
+(depends-on websocket)
 (depends-on restclient)
 
 (depends-on mmm-mode)
