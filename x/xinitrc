@@ -29,7 +29,6 @@ xautolock -time 15 -locker $HOME/cli/bin/i3lock-locker &
 TERM=xterm-256color emacs --daemon &
 clipit &
 dropboxd &
-$HOME/local/bin/crashplan start
 
 wmname LG3D
 exec awesome --no-argb
