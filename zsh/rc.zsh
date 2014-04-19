@@ -74,6 +74,10 @@ if [ "$TERM_PROGRAM" = "Apple_Terminal" ] || [ "$TERM_PROGRAM" = "iTerm.app" ]; 
 fi
 
 
+# Emacs
+[[ $EMACS = t ]] && unsetopt zle
+
+
 # Options
 setopt NONOMATCH
 setopt NO_BG_NICE

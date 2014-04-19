@@ -7,9 +7,11 @@
         kill-region-or-word
         org-force-self-insert
         org-self-insert-command
+        yas-expand
         ))
 
 (setq mc/cmds-to-run-once
       '(
+        forward-sentence
         org-shiftcontroldown
         ))

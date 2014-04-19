@@ -15,7 +15,7 @@ require("signals")
 -- Global configurations
 modkey = "Mod4"
 terminal = "xfce4-terminal"
-editor = "emacsclient -n -c"
+editor = "emacsclient -n -c -a ''"
 browser = "chromium --remote-debugging-port=9222"
 filemanager = "nautilus"
 hostname = awful.util.pread('uname -n'):gsub('\n', '')
@@ -130,6 +130,8 @@ awful.rules.rules = {
    { rule = { class = "pinentry" },
      properties = { floating = true } },
    { rule = { class = "gimp" },
+     properties = { floating = true } },
+   { rule = { class = "Corebird" },
      properties = { floating = true } },
 
    -- Flash

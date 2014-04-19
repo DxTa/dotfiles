@@ -32,6 +32,18 @@
  `(org-level-1 ((t :height 1.3)))
  `(org-level-2 ((t :height 1.2)))
  `(org-level-3 ((t :height 1.1)))
+
+ `(company-tooltip ((t :background "lightgray" :foreground "black")))
+ `(company-tooltip-selection ((t :background "steelblue" :foreground "white")))
+ `(company-tooltip-mouse ((t :background "blue" :foreground "white")))
+ `(company-tooltip-common ((t :background "lightgray" :foreground "black")))
+ `(company-tooltip-common-selection ((t t :background "lightgray" :foreground "black")))
+ ;; `(company-tooltip-annotation ((t :background "" :foreground "")))
+ `(company-scrollbar-fg ((t :background "black")))
+ `(company-scrollbar-bg ((t :background "gray")))
+ `(company-preview ((t :background nil :foreround "darkgray")))
+ `(company-preview-common ((t :background nil :foreround "darkgray")))
+ ;; `(company-preview-search ((t :background "" :foreground "")))
  )
 
 (provide-theme 'td-custom)

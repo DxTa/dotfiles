@@ -18,7 +18,7 @@
 (autoload '-uniq "dash")
 (autoload '-remove "dash")
 (autoload '-elem-index "dash")
-(autoload 's-trim-left "s")
+(autoload 's-trim "s")
 (autoload 'zap-up-to-char "misc" nil :interactive)
 
 ;;;; platform specific
@@ -80,6 +80,13 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file :no-error :no-message)
 
+(defun td/from-git-config (key)
+  (s-trim (shell-command-to-string
+           (format "git config --global --get %s" key))))
+
+(setq user-full-name (td/from-git-config "user.name")
+      user-mail-address (td/from-git-config "user.email"))
+
 ;;;; startup
 (defun td/scratch-fortune ()
   (shell-command-to-string "fortune -a | sed -e 's/^/;; /'"))
@@ -100,7 +107,7 @@
       (set-frame-position frame 500 22)))
   (when (eq system-type 'gnu/linux)
     (menu-bar-mode -1)
-    (set-face-attribute 'default frame :family "M+ 2m" :height 110)))
+    (set-face-attribute 'default frame :family "M+ 1mn" :height 110)))
 
 (add-hook 'after-make-frame-functions #'td/setup-frame)
 
@@ -189,6 +196,7 @@
 
 (visual-line-mode -1)
 (which-function-mode t)
+(global-auto-revert-mode t)
 (savehist-mode t)
 (pending-delete-mode t)
 
@@ -219,9 +227,9 @@ FIXME: refactor"
                     "yỳýỵỷỹYỲÝỴỶỸ"))
         (table (standard-case-table))
         (canon (copy-sequence (standard-case-table))))
-    (mapcar (lambda (s)
-              (mapcar (lambda (c) (aset canon c (aref s 0))) s))
-            eqv-list)
+    (mapc (lambda (s)
+            (mapc (lambda (c) (aset canon c (aref s 0))) s))
+          eqv-list)
     (set-char-table-extra-slot table 1 canon)
     (set-char-table-extra-slot table 2 nil)
     (set-standard-case-table table)))
@@ -268,7 +276,6 @@ FIXME: refactor"
       (make-directory dir t))))
 
 (add-hook 'before-save-hook #'td/before-save-make-directories)
-(add-hook 'before-save-hook #'delete-trailing-whitespace)
 
 (defun td/after-save-auto-chmod ()
   (when (string-equal "#!" (buffer-substring-no-properties 1 4))
@@ -348,7 +355,8 @@ changed my mind and use one theme with my own custom theme now"
 
   (mapc (lambda (args)
           (apply #'td/compact-mode-line args))
-        '(("yasnippet" 'yas-minor-mode "Y")
+        '(("company" 'company-mode "CP")
+          ("yasnippet" 'yas-minor-mode "Y")
           ("eldoc" 'eldoc-mode "Doc")
           ("flycheck" 'flycheck-mode "Chk")
           ("projectile" 'projectile-mode "Proj")
@@ -418,80 +426,64 @@ changed my mind and use one theme with my own custom theme now"
               ";" #'end-with-semicolon
               "M-;" #'end-with-semicolon)
 
-;;;; auto-complete
-(td/after 'auto-complete
-  (setq ac-auto-start nil
-        ac-disable-inline t
-        ac-expand-on-auto-complete nil
-        ac-ignore-case nil
-        ac-use-menu-map t)
+;;;; company
+(td/after 'company-autoloads
+  (global-company-mode t)
 
-  (ac-set-trigger-key "TAB")
+  (setq tab-always-indent 'complete
+        completion-cycle-threshold 5)
 
-  (ac-linum-workaround)
-  (ac-flyspell-workaround)
+  (add-to-list 'completion-styles 'initial)
 
-  (add-to-list 'ac-modes 'scss-mode)
-  (add-to-list 'ac-modes 'html-mode)
-  (add-to-list 'ac-modes 'coffee-mode)
-  (add-to-list 'ac-modes 'typescript-mode)
-  (add-to-list 'ac-modes 'cider-mode)
-  (add-to-list 'ac-modes 'nodejs-repl-mode)
+  (defun td/setup-company-completion-at-point ()
+    (setq completion-at-point-functions '(company-complete-common)))
 
-  (defun current-buffer-line-candidates ()
-    (-uniq (mapcar #'s-trim-left (current-buffer-lines))))
+  (add-hook 'prog-mode-hook #'td/setup-company-completion-at-point))
 
-  (ac-define-source buffer-lines
-    '((prefix . "^\s*\\(.+\\)")
-      (candidates . current-buffer-line-candidates)))
+(td/after 'company
+  (setq company-idle-delay nil
+        company-auto-complete t
+        company-selectionn-wrap-around t
+        company-echo-delay 0
+        company-tooltip-align-annotations t
+        company-show-numbers t
+
+        company-auto-complete-chars
+        '(?\ ?\( ?\) ?. ?\" ?$ ?\' ?< ?> ?| ?!)
+
+        company-transformers
+        '(company-sort-by-occurrence)
+
+        company-frontends
+        '(company-pseudo-tooltip-unless-just-one-frontend
+          company-echo-metadata-frontend
+          company-preview-frontend)
+
+        company-backends
+        '((company-yasnippet
+           company-dabbrev-code company-keywords
+           company-cider
+           company-tern
+           company-go
+           company-elisp
+           company-css
+           company-php-reflection
+           company-clang)))
 
   (td/bind td/completion-map
-           "s" #'ac-complete-yasnippet
-           "f" #'ac-complete-filename
-           "l" #'ac-complete-buffer-lines
-           "h" #'ac-quick-help
-           "t" #'ac-complete-tern-completion)
+           "s" #'company-yasnippet
+           "f" #'company-files
+           "l" #'company-lines)
 
-  (td/bind ac-menu-map
-           "C-n" #'ac-next
-           "C-p" #'ac-previous
-           "C-l" #'ac-expand-common))
-
-(td/after 'auto-complete-config
-  ;; (ac-config-default)
-  (setq-default ac-sources '(ac-source-yasnippet
-                             ac-source-imenu
-                             ac-source-words-in-same-mode-buffers
-                             ac-source-dictionary))
-
-  (require 'ac-c-headers)
-
-  (defvar td/local-ac-sources
-    '((emacs-lisp-mode . (ac-source-symbols
-                          ac-source-functions
-                          ac-source-variables
-                          ac-source-features))
-      (css-mode . (ac-source-css-property))
-      (scss-mode . (ac-source-css-property))
-      (js-mode . (ac-source-tern-completion))
-      (c-mode . (ac-source-c-headers
-                 ac-source-c-header-symbols))))
-
-  (defun td/set-local-ac-sources ()
-    (let* ((sources (cdr (assoc major-mode td/local-ac-sources)))
-           (prefixes '(ac-source-yasnippet
-                       ac-source-imenu
-                       ac-source-words-in-same-mode-buffers))
-           (suffixes '(ac-source-dictionary))
-           (local-sources (append prefixes sources suffixes)))
-      (when sources
-        (td/set-local 'ac-sources local-sources))))
-
-  (add-hook 'after-change-major-mode-hook #'td/set-local-ac-sources))
-
-(td/after 'auto-complete-autoloads
-  (require 'auto-complete-config)
-  (global-auto-complete-mode))
+  (td/bind company-active-map
+           "<tab>" #'company-select-next
+           "<backtab>" #'company-select-previous
+           "C-n" #'company-select-next
+           "C-p" #'company-select-previous
+           "C-s" #'company-filter-candidates
+           "C-l" #'company-show-location
+           "C-j" #'company-complete-common
+           "C-w" nil))
 
 ;;;; ido
 (td/after 'smex-autoloads
@@ -630,7 +622,8 @@ changed my mind and use one theme with my own custom theme now"
   (yas-global-mode t))
 
 (td/after 'yasnippet
-  (setq yas-prompt-functions '(yas-ido-prompt yas-completing-prompt yas-no-prompt)))
+  (setq yas-prompt-functions
+        '(yas-ido-prompt yas-completing-prompt yas-no-prompt)))
 
 ;;;; rainbow-mode
 (td/after 'rainbow-mode-autoloads
@@ -651,7 +644,25 @@ changed my mind and use one theme with my own custom theme now"
         org-export-latex-listings 'minted
         org-src-fontify-natively t)
 
-  (add-to-list 'org-export-latex-packages-alist '("" "minted")))
+  (add-to-list 'org-export-latex-packages-alist '("" "minted"))
+
+  (setq org-agenda-files
+        '("~/Dropbox/gtd.org" "~/Dropbox/archives.org"))
+
+  (setq org-agenda-custom-commands
+        '(("w" todo "WAITING" nil)
+          ("n" todo "TODO" nil)
+          ("d" "Agenda + Next Actions" ((agenda) (todo "TODO")))
+          ("r" "Weekly Review"
+           ((agenda "" ((org-agenda-ndays 7)))
+            ;; type "l" in the agenda to review logged items
+            (stuck "")
+            (todo "PROJECT")
+            (todo "MAYBE")
+            (todo "WAITING")))))
+
+  (setq org-refile-targets '(("gtd.org" :level . 1)
+                             ("archives.org" :level . 1))))
 
 (td/key-group td/org "C-c o"
               "l" #'org-store-link
@@ -671,17 +682,6 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'diff-hl
   (setq diff-hl-draw-borders nil
         diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
-
-  ;; (define-fringe-bitmap 'diff-hl-bmp-insert
-  ;;   [0 24 24 126 126 24 24 0])
-  ;; (define-fringe-bitmap 'diff-hl-bmp-delete
-  ;;   [0 0 0 126 126 0 0 0])
-  ;; (define-fringe-bitmap 'diff-hl-bmp-change
-  ;;   [0 60 126 126 126 126 60 0]
-  ;;   [0 0 24 60 60 24 0 0])
-  ;;
-  ;; (+ (expt 2 15) (expt 2 14) (expt 2 13) (expt 2 12))
-  ;;
 
   (define-fringe-bitmap 'td/diff-hl-bmp [61440] 1 16 '(top t))
   (defun td/diff-hl-bmp (type pos) 'td/diff-hl-bmp)
@@ -721,11 +721,7 @@ changed my mind and use one theme with my own custom theme now"
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
         undo-tree-history-directory-alist
-        (list (cons "." (td/data-file "undos"))))
-
-  (defadvice undo-tree-make-history-save-file-name
-    (after undo-tree activate)
-    (setq ad-return-value (concat ad-return-value ".gz"))))
+        (list (cons "." (td/data-file "undos")))))
 
 ;;;; ace-jump-mode
 (td/after 'ace-jump-mode-autoloads
@@ -787,8 +783,6 @@ changed my mind and use one theme with my own custom theme now"
   "typewriter-mode"
   "Play typewriter sound effect when typing.")
 
-(typewriter-mode t)
-
 ;;;; copy-as-html-for-paste
 (autoload 'copy-as-html-for-paste
   "copy-as-html-for-paste"
@@ -831,11 +825,16 @@ changed my mind and use one theme with my own custom theme now"
           spaces space-mark
           newline newline-mark
           trailing lines-tail
-          space-before-tab space-after-tab))
-  (setq whitespace-line-column fill-column))
+          space-before-tab space-after-tab)
+        whitespace-line-column fill-column)
+
+  (add-hook 'before-save-hook #'whitespace-cleanup)
+  (add-hook 'before-save-hook #'delete-trailing-whitespace))
 
 ;; dired
 (td/after 'dired
+  (setq dired-listing-switches "-alh")
+
   (defun td/dired-back-to-top ()
     (interactive)
     (goto-char (point-min))
@@ -961,35 +960,6 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'tern-autoloads
   (add-hook 'js-mode-hook (lambda () (tern-mode t))))
 
-(td/after 'tern-auto-complete-autoloads
-  (add-hook 'js-mode-hook #'tern-ac-setup))
-
-(td/after 'nodejs-repl-autoloads
-  (defalias 'run-js 'nodejs-repl)
-
-  (defun js-send-region-dwim (&optional args)
-    (interactive "*P")
-    (with-region-or-current-line
-      (js-send-region (region-beginning) (region-end))))
-
-  (defun td/inf-js-setup ()
-    (td/bind (current-local-map)
-             "C-x C-e" #'js-send-region-dwim
-             "C-x C-b" #'js-send-buffer))
-
-  (add-hook 'js-mode-hook #'td/inf-js-setup))
-
-(td/after 'nodejs-repl
-  (defun nodejs-repl-ac-candidates ()
-    (let* ((input (buffer-substring (comint-line-beginning-position) (point)))
-           (token (nodejs-repl--get-last-token input))
-           (candidates (nodejs-repl-get-candidates token)))
-      candidates))
-
-  (ac-define-source nodejs-repl
-    '((prefix . (comint-line-beginning-position))
-      (candidates . nodejs-repl-ac-candidates))))
-
 ;;;; typescript
 (td/after 'tss-autoloads
   (td/mode 'typescript-mode "\\.ts$"))
@@ -1032,7 +1002,12 @@ changed my mind and use one theme with my own custom theme now"
   (setq php-template-compatibility nil
         php-manual-path "~/local/docs/php")
 
+  (defun td/setup-php-mode ()
+    (td/set-local 'eldoc-documentation-function #'company-php-eldoc)
+    (eldoc-mode))
+
   (add-hook 'php-mode-hook #'php-enable-drupal-coding-style)
+  (add-hook 'php-mode-hook #'td/setup-php-mode)
 
   (td/bind php-mode-map "C-c C-b" nil))
 
@@ -1060,9 +1035,11 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'python
   (setq python-indent-offset 4
         python-indent-guess-indent-offset nil)
-  (defun setup-python-mode ()
+
+  (defun td/setup-python-mode ()
     (td/set-local tab-width 4))
-  (add-hook 'python-mode-hook #'setup-python-mode))
+
+  (add-hook 'python-mode-hook #'td/setup-python-mode))
 
 ;;;; c
 
@@ -1098,7 +1075,6 @@ changed my mind and use one theme with my own custom theme now"
   (td/bind cider-mode-map
            "C-c C-b" nil
            "C-c C-g" 'cider-interrupt)
-  (add-hook 'cider-mode-hook #'ac-nrepl-setup)
   (add-hook 'cider-mode-hook #'cider-turn-on-eldoc-mode))
 
 (td/after 'cider-repl
@@ -1108,7 +1084,6 @@ changed my mind and use one theme with my own custom theme now"
 ;;;; go
 (td/after 'go-mode
   (exec-path-from-shell-copy-env "GOPATH")
-  (require 'go-autocomplete)
   (add-hook 'go-mode-hook #'go-eldoc-setup))
 
 ;;;; rust
@@ -1131,13 +1106,33 @@ changed my mind and use one theme with my own custom theme now"
   (add-hook 'markdown-mode-hook #'turn-on-flyspell)
   (add-hook 'markdown-mode-hook #'turn-on-auto-fill)
 
-  (td/bind markdown-mode-map "M-p" nil)
-  (td/bind markdown-mode-map "C-c C-b" nil))
+  (td/bind markdown-mode-map
+           "M-p" nil
+           "M-n" nil
+           "C-c C-b" nil))
 
 ;;;; sh
 (td/after 'sh-script
   (setq sh-basic-offset 2
         sh-indentation 2))
+
+;;;; popup shell
+;; shamlessly copy from http://tsdh.wordpress.com/2011/10/12/a-quick-pop-up-shell-for-emacs/
+(defun td/shell-popup ()
+  "Toggle a shell popup buffer with the current file's directory as cwd."
+  (interactive)
+  (unless (get-buffer "*Popup Shell*")
+    (save-window-excursion (shell "*Popup Shell*")))
+  (let* ((popup-buffer (get-buffer "*Popup Shell*"))
+         (win (get-buffer-window popup-buffer))
+         (dir (file-name-directory
+               (or (buffer-file-name) dired-directory "~/"))))
+    (if win
+        (quit-window nil win)
+      (pop-to-buffer popup-buffer nil t)
+      (comint-send-string nil (concat "cd " dir "\n")))))
+
+(td/bind "<f12>" #'td/shell-popup)
 
 ;;;; commands
 (defmacro with-region-or-current-line (&rest body)

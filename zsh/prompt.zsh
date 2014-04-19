@@ -27,7 +27,7 @@ function git_prompt_info() {
 }
 
 if [[ $CLICOLOR == 1 ]]; then
-  export PROMPT=$'\n%{$fg[red]%}%n%{$reset_color%}@%{$fg[yellow]%}%m%{$reset_color%} in %{$fg[green]%}%~/%{$reset_color%}\n%{$fg[normal]%}›%{$reset_color%} '
+  export PROMPT=$'\n%{$fg[red]%}%n%{$reset_color%}@%{$fg[yellow]%}%m%{$reset_color%} in %{$fg[green]%}%~/%{$reset_color%}\n› '
   set_prompt () {
     export RPROMPT="$(git_prompt_info)%{$fg[cyan]%}$(todop)%{$reset_color%}"
   }
@@ -42,4 +42,3 @@ precmd() {
   vcs_info
   set_prompt
 }
-
