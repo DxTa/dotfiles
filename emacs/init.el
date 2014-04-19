@@ -20,6 +20,7 @@
 (autoload '-elem-index "dash")
 (autoload 's-trim "s")
 (autoload 'zap-up-to-char "misc" nil :interactive)
+(autoload 'zap-to-char "misc" nil :interactive)
 
 ;;;; platform specific
 (when (eq system-type 'darwin)
@@ -162,6 +163,7 @@
 (td/bind "C-]" #'recenter-top-bottom)
 (td/bind "M-." #'find-tag-at-point)
 (td/bind "M-z" #'zap-up-to-char)
+(td/bind "M-Z" #'zap-to-char)
 (td/bind "M-o" #'open-thing-at-point)
 
 (td/bind "C-w" #'kill-region-or-word
@@ -263,12 +265,14 @@ FIXME: refactor"
         tramp-default-method "ftp"))
 
 ;;;; file
-;; (defadvice ido-find-file
-;;   (td/after find-file-sudo activate)
-;;   (when (and buffer-file-name
-;;              (not (eq (user-uid)
-;;                       (nth 2 (file-attributes buffer-file-name)))))
-;;     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+(defun find-file-sudo (&optional arg)
+  (interactive "F")
+  (unless (and buffer-file-name
+               (file-writable-p buffer-file-name))
+    (find-alternate-file
+     (concat "/sudo:root@localhost:" buffer-file-name))))
+
+(add-hook 'find-file-hook #'find-file-sudo)
 
 (defun td/before-save-make-directories ()
   (let ((dir (file-name-directory buffer-file-name)))
@@ -623,7 +627,12 @@ changed my mind and use one theme with my own custom theme now"
 
 (td/after 'yasnippet
   (setq yas-prompt-functions
-        '(yas-ido-prompt yas-completing-prompt yas-no-prompt)))
+        '(yas-ido-prompt yas-completing-prompt yas-no-prompt))
+
+  (td/bind yas-minor-mode-map
+           "TAB" nil
+           "<tab>" nil
+           "SPC" #'yas-expand))
 
 ;;;; rainbow-mode
 (td/after 'rainbow-mode-autoloads
@@ -636,6 +645,8 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'multiple-cursors-autoloads
   (td/bind "M-(" #'mc/mark-previous-like-this
            "M-)" #'mc/mark-next-like-this
+           "M-9" #'mc/skip-to-previous-like-this
+           "M-0" #'mc/skip-to-next-like-this
            "C-c a" #'mc/mark-all-like-this))
 
 ;;;; org
