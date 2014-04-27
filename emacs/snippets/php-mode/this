@@ -2,4 +2,4 @@
 # name: this
 # key: th
 # --
-$this->$1
+$this->$0

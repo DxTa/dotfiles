@@ -65,7 +65,8 @@
     (while mappings
       (let* ((key (pop mappings))
              (cmd (pop mappings)))
-        (define-key keymap (kbd key) cmd)))))
+        (define-key keymap
+          (if (vectorp key) key (kbd key)) cmd)))))
 
 (defun td/data-file (f)
   (expand-file-name f user-emacs-directory))
@@ -170,6 +171,9 @@
          "C-c r" #'vr/query-replace
          "C-c y" #'simpleclip-paste
          "C-c C-y" #'simpleclip-copy)
+
+(td/bind "C-c +" #'increment-number-at-point
+         "C-c -" #'decrement-number-at-point)
 
 ;;;; general
 (exec-path-from-shell-initialize)
@@ -437,17 +441,12 @@ changed my mind and use one theme with my own custom theme now"
   (setq tab-always-indent 'complete
         completion-cycle-threshold 5)
 
-  (add-to-list 'completion-styles 'initial)
-
-  (defun td/setup-company-completion-at-point ()
-    (setq completion-at-point-functions '(company-complete-common)))
-
-  (add-hook 'prog-mode-hook #'td/setup-company-completion-at-point))
+  (add-to-list 'completion-styles 'initial))
 
 (td/after 'company
   (setq company-idle-delay nil
         company-auto-complete t
-        company-selectionn-wrap-around t
+        company-selection-wrap-around t
         company-echo-delay 0
         company-tooltip-align-annotations t
         company-show-numbers t
@@ -466,16 +465,17 @@ changed my mind and use one theme with my own custom theme now"
         company-backends
         '((company-yasnippet
            company-dabbrev-code company-keywords
-           company-cider
-           company-tern
+           company-capf
+           ;; company-cider
+           ;; company-tern
            company-go
-           company-elisp
+           ;; company-elisp
            company-css
-           company-php-reflection
+           ;; company-php-reflection
            company-clang)))
 
   (td/bind td/completion-map
-           "s" #'company-yasnippet
+           "s" #'company-ispell
            "f" #'company-files
            "l" #'company-lines)
 
@@ -487,7 +487,25 @@ changed my mind and use one theme with my own custom theme now"
            "C-s" #'company-filter-candidates
            "C-l" #'company-show-location
            "C-j" #'company-complete-common
-           "C-w" nil))
+           "C-w" nil)
+
+  ;; Use company for `completion-at-point' -- by @dgutov
+  ;; https://github.com/company-mode/company-mode/issues/94#issuecomment-40884387
+  ;; TODO: `company-complete-common-or-next'
+  (td/bind company-mode-map
+           [remap indent-for-tab-command] #'company-indent-for-tab-command)
+
+  (defvar completion-at-point-functions-saved nil)
+
+  (defun company-indent-for-tab-command (&optional arg)
+    (interactive "P")
+    (let ((completion-at-point-functions-saved completion-at-point-functions)
+          (completion-at-point-functions '(company-complete-common-wrapper)))
+      (indent-for-tab-command arg)))
+
+  (defun company-complete-common-wrapper ()
+    (let ((completion-at-point-functions completion-at-point-functions-saved))
+      (company-complete-common))))
 
 ;;;; ido
 (td/after 'smex-autoloads
@@ -513,7 +531,8 @@ changed my mind and use one theme with my own custom theme now"
         ido-ignore-buffers '("\\` ")
         ido-ignore-files '("ido.last" ".*-autoloads.el")
         ido-file-extensions-order '(".rb" ".py" ".clj" ".cljs" ".el"
-                                    ".coffee" ".js" ".scss" ".css" ".php" ".html" t))
+                                    ".coffee" ".js" ".scss" ".css" ".php" ".html" t)
+        ido-default-buffer-method 'samewindow)
 
   ;; (setq ido-decorations
   ;;       '("\n>> " "" "\n   " "\n   ..." "[" "]"
@@ -535,7 +554,7 @@ changed my mind and use one theme with my own custom theme now"
 
   (defun ido-goto-line ()
     (interactive)
-    (let* ((lines (split-string (buffer-string) "[\n\r]"))
+    (let* ((lines (current-buffer-lines))
            (choices (-remove (lambda (l) (zerop (length l))) lines))
            (line (ido-completing-read "Line: " choices)))
       (push-mark)
@@ -577,10 +596,7 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; spell
 ;; (add-hook 'text-mode-hook #'turn-on-flyspell)
-;; (add-hook 'prog-mode-hook #'flyspell-prog-mode)
-
-(td/after 'flyspell
-  (td/bind flyspell-mode-map "C-;" nil))
+(add-hook 'prog-mode-hook #'flyspell-prog-mode)
 
 (td/after 'ispell
   (setq ispell-extra-args '("-C")))
@@ -604,21 +620,6 @@ changed my mind and use one theme with my own custom theme now"
         (insert select)))))
 
 (td/bind "C-c s" #'ido-ispell-word-at-point)
-
-(td/after 'hippie-exp
-  (defun try-ispell-expand (old)
-    (unless old
-      (he-init-string (he-dabbrev-beg) (point))
-      (setq he-expand-list (ispell-suggest-word he-search-string)))
-    (while (and he-expand-list
-                (he-string-member (car he-expand-list) he-tried-table))
-      (setq he-expand-list (cdr he-expand-list)))
-    (if (null he-expand-list)
-        (progn (he-reset-string) nil)
-      (he-substitute-string (car he-expand-list))
-      (setq he-tried-table (cons (car he-expand-list) (cdr he-tried-table)))
-      (setq he-expand-list (cdr he-expand-list))
-      t)))
 
 ;;;; yasnippets
 (td/after 'yasnippet-autoloads
@@ -654,6 +655,8 @@ changed my mind and use one theme with my own custom theme now"
   (setq org-export-allow-bind-keywords t
         org-export-latex-listings 'minted
         org-src-fontify-natively t)
+
+  (add-hook 'org-mode-hook #'turn-on-flyspell)
 
   (add-to-list 'org-export-latex-packages-alist '("" "minted"))
 
@@ -816,7 +819,8 @@ changed my mind and use one theme with my own custom theme now"
     ad-do-it
     (overlay-put ov 'display " ...")))
 
-(add-hook 'prog-mode-hook (lambda () (hs-minor-mode t)))
+(td/on 'prog-mode-hook
+  (hs-minor-mode t))
 
 ;;;; figlet
 (defun figlet-region (beg end)
@@ -859,8 +863,8 @@ changed my mind and use one theme with my own custom theme now"
     (goto-char (point-max))
     (dired-next-line -1))
 
-  (define-key dired-mode-map
-    (vector 'remap 'end-of-buffer) 'td/dired-jump-to-bottom))
+  (td/bind dired-mode-map
+           [remap end-of-buffer] #'td/dired-jump-to-bottom))
 
 ;; prog
 (defun td/custom-font-lock-hightlights ()
@@ -905,7 +909,7 @@ changed my mind and use one theme with my own custom theme now"
   (setq mmm-global-mode 'maybe
         mmm-submode-decoration-level 0
         mmm-parse-when-idle t
-        mmm-mode-prefix-key (kbd "C-c n"))
+        mmm-mode-prefix-key "C-c m")
 
   (require 'mmm-auto)
   (require 'mmm-sample)
@@ -992,8 +996,8 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; scss
 (td/after 'scss-mode
-  (add-hook 'scss-mode-hook #'td/css-imenu-expressions)
-  (setq scss-compile-at-save nil))
+  (setq scss-compile-at-save nil)
+  (add-hook 'scss-mode-hook #'td/css-imenu-expressions))
 
 ;;;; emacs lisp
 (td/after 'lisp-mode
@@ -1014,8 +1018,9 @@ changed my mind and use one theme with my own custom theme now"
         php-manual-path "~/local/docs/php")
 
   (defun td/setup-php-mode ()
-    (td/set-local 'eldoc-documentation-function #'company-php-eldoc)
-    (eldoc-mode))
+    ;; (td/set-local 'eldoc-documentation-function #'company-php-eldoc)
+    ;; (eldoc-mode)
+    )
 
   (add-hook 'php-mode-hook #'php-enable-drupal-coding-style)
   (add-hook 'php-mode-hook #'td/setup-php-mode)
@@ -1234,17 +1239,19 @@ changed my mind and use one theme with my own custom theme now"
 
 (defun increment-number-at-point ()
   (interactive)
-  (skip-chars-backward "0123456789")
-  (when (looking-at "[0123456789]+" )
-    (replace-match
-     (number-to-string (1+ (string-to-number (match-string 0)))))))
+  (save-excursion
+    (skip-chars-backward "0123456789")
+    (when (looking-at "[0123456789]+" )
+      (replace-match
+       (number-to-string (1+ (string-to-number (match-string 0))))))))
 
 (defun decrement-number-at-point ()
   (interactive)
-  (skip-chars-backward "0123456789")
-  (when (looking-at "[0123456789]+" )
-    (replace-match
-     (number-to-string (1- (string-to-number (match-string 0)))))))
+  (save-excursion
+    (skip-chars-backward "0123456789")
+    (when (looking-at "[0123456789]+" )
+      (replace-match
+       (number-to-string (1- (string-to-number (match-string 0))))))))
 
 (defun delete-current-buffer-file ()
   (interactive)
@@ -1265,12 +1272,6 @@ changed my mind and use one theme with my own custom theme now"
           (rename-buffer new-name)
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil))))))
-
-(defun make-executable ()
-  (interactive)
-  (when (buffer-file-name)
-    (start-file-process
-     "Make Executable" nil "chmod" "u+x" (file-name-nondirectory buffer-file-name))))
 
 (defun align=: (&optional args)
   "Align region to equal signs or colon"
@@ -1322,9 +1323,7 @@ changed my mind and use one theme with my own custom theme now"
 (defun current-buffer-lines (&optional buffer)
   (let ((buffer (or buffer (current-buffer))))
     (with-current-buffer buffer
-      (split-string
-       (buffer-substring-no-properties (point-min) (point-max))
-       "\n"))))
+      (split-string (buffer-string) "[\n\r]"))))
 
 (defun recentf-ido-find-file ()
   "Find a recent file using Ido."

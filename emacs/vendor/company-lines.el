@@ -5,9 +5,7 @@
   (let ((buffer (or buffer (current-buffer))))
     (with-current-buffer buffer
       (mapcar #'s-trim
-              (split-string
-               (buffer-substring-no-properties (point-min) (point-max))
-               "\n")))))
+              (split-string (buffer-string) "[\n\r]")))))
 
 ;;;###autoload
 (defun company-lines (command &optional arg &rest ignored)
