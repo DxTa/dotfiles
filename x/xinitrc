@@ -26,7 +26,6 @@ xflux -l 21.0 -g 105.8 &
 mpd
 mpdas &
 xautolock -time 15 -locker $HOME/cli/bin/i3lock-locker &
-TERM=xterm-256color emacs --daemon &
 clipit &
 dropboxd &
 

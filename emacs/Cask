@@ -10,8 +10,12 @@
 (depends-on ido-vertical-mode)
 
 ;;;; Editing
+(depends-on evil)
+(depends-on evil-visualstar)
+(depends-on surround)
 (depends-on ace-jump-mode)
-(depends-on visual-regexp)
+
+;; (depends-on visual-regexp)
 
 (depends-on undo-tree)
 
@@ -35,7 +39,7 @@
 (depends-on diminish)
 (depends-on color-theme-approximate)
 (depends-on number-font-lock-mode)
-(depends-on fill-column-indicator)
+;; (depends-on fill-column-indicator)
 (depends-on rainbow-delimiters)
 (depends-on rainbow-mode)
 
@@ -43,7 +47,10 @@
 (depends-on solarized-theme)
 
 ;;;; Programming
+;; (depends-on devdocs-lookup)
 (depends-on flycheck)
+(depends-on flycheck-cask)
+
 (depends-on emmet-mode)
 (depends-on websocket)
 (depends-on restclient)
@@ -54,7 +61,6 @@
 (depends-on go-mode)
 
 (depends-on clojure-mode)
-(depends-on clojure-snippets)
 (depends-on cider)
 
 (depends-on javadoc-lookup)
@@ -87,9 +93,9 @@
 ;;;; Utils
 (depends-on dash)
 (depends-on s)
+(depends-on popwin)
 (depends-on exec-path-from-shell)
 (depends-on simpleclip)
 (depends-on fetch)
 (depends-on ignoramus)
 (depends-on htmlize)
-

@@ -7,8 +7,10 @@
 (fringe-mode '(16 . 0))
 
 ;;;; packages
-(require 'cask "~/.cask/cask.el")
-(cask-initialize)
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.milkbox.net/packages/"))
+(package-initialize)
 
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
@@ -176,8 +178,6 @@
          "C-c -" #'decrement-number-at-point)
 
 ;;;; general
-(exec-path-from-shell-initialize)
-
 (setq delete-by-moving-to-trash t
       ring-bell-function 'ignore
       x-select-enable-clipboard nil
@@ -197,14 +197,13 @@
               fill-column 80
               truncate-lines nil)
 
-(td/after 'imenu
-  (setq imenu-auto-rescan t))
-
-(visual-line-mode -1)
-(which-function-mode t)
-(global-auto-revert-mode t)
-(savehist-mode t)
-(pending-delete-mode t)
+(td/on 'after-init-hook
+  (exec-path-from-shell-initialize)
+  (visual-line-mode -1)
+  (which-function-mode t)
+  (global-auto-revert-mode t)
+  (savehist-mode t)
+  (pending-delete-mode t))
 
 ;;;; encoding
 (setq eol-mnemonic-dos " dos "
@@ -219,36 +218,9 @@
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8-unix)
 
-(defun isearch-accents-fold-search ()
-  "Enable accents-folding for ISearch. Support only Vietnamese accents atm.
-Source: http://thread.gmane.org/gmane.emacs.devel/117003/focus=117959.
-FIXME: refactor"
-  (interactive)
-  (let ((eqv-list '("aàáạảãăằắặẳẵâầấậẩẫAÀÁẠẢÃĂẰẮẶẲẴÂẦẤẬẨẪ"
-                    "eèéẹẻẽêềếệểễEÈÉẸẺẼÊỀẾỆỂỄ"
-                    "dđDĐ"
-                    "iìíịỉĩIÌÍỊỈĨ"
-                    "oòóọỏõôồốộổỗơờớợởỡOÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ"
-                    "uùúụủũưừứựửữUÙÚỤỦŨƯỪỨỰỬỮ"
-                    "yỳýỵỷỹYỲÝỴỶỸ"))
-        (table (standard-case-table))
-        (canon (copy-sequence (standard-case-table))))
-    (mapc (lambda (s)
-            (mapc (lambda (c) (aset canon c (aref s 0))) s))
-          eqv-list)
-    (set-char-table-extra-slot table 1 canon)
-    (set-char-table-extra-slot table 2 nil)
-    (set-standard-case-table table)))
-
-(isearch-accents-fold-search)
-
 (when (display-graphic-p)
   ;; Fallback font for Latin Extended Aditional (support Vietnamese text)
   (set-fontset-font nil '(#x1e00 . #x1eff) (font-spec :family "DejaVu Sans Mono")))
-
-
-;; Insert special character -- like a boss
-(setq read-quoted-char-radix 16)
 
 ;;;; backup
 (setq backup-by-copying t
@@ -286,7 +258,8 @@ FIXME: refactor"
 (add-hook 'before-save-hook #'td/before-save-make-directories)
 
 (defun td/after-save-auto-chmod ()
-  (when (string-equal "#!" (buffer-substring-no-properties 1 4))
+  (when (and (> (length (buffer-string)) 5)
+             (string-equal "#!" (buffer-substring-no-properties 1 4)))
     (shell-command
      (format "chmod u+x %s"
              (shell-quote-argument (buffer-file-name))))))
@@ -294,17 +267,19 @@ FIXME: refactor"
 (add-hook 'after-save-hook #'td/after-save-auto-chmod)
 
 ;;;; uniquify
-(require 'uniquify)
-(td/after 'uniquify
-  (setq uniquify-buffer-name-style 'post-forward
-        uniquify-separator " - "
-        uniquify-after-kill-buffer-p t
-        uniquify-ignore-buffers-re "^\\*"))
+(td/on 'after-init-hook
+  (require 'uniquify)
+  (td/after 'uniquify
+    (setq uniquify-buffer-name-style 'post-forward
+          uniquify-separator " - "
+          uniquify-after-kill-buffer-p t
+          uniquify-ignore-buffers-re "^\\*")))
 
 ;;;; saveplace
-(require 'saveplace)
-(setq-default save-place t)
-(setq save-place-file (td/data-file "save-places"))
+(td/on 'after-init-hook
+  (require 'saveplace)
+  (setq-default save-place t)
+  (setq save-place-file (td/data-file "save-places")))
 
 ;;;; recentf
 (td/after 'recentf
@@ -316,7 +291,8 @@ FIXME: refactor"
 (setq recentf-max-saved-items 256
       recentf-save-file (td/data-file "recentf"))
 
-(recentf-mode t)
+(td/on 'after-init-hook
+  (recentf-mode t))
 
 ;;;; display
 (setcdr
@@ -341,19 +317,31 @@ changed my mind and use one theme with my own custom theme now"
 (load-theme 'td-custom t)
 
 ;;;; linum
-(column-number-mode t)
+(td/on 'after-init-hook
+  (column-number-mode t))
 
 (td/after 'linum
   (setq linum-format " %4d "))
 
 ;;;; hl-line
-(global-hl-line-mode t)
+(td/on 'after-init-hook
+  (global-hl-line-mode t))
+
+(td/after 'hl-line
+  (setq hl-line-sticky-flag nil))
 
 ;;;; show-paren-mode
+(td/on 'after-init-hook
+  (show-paren-mode t))
+
 (td/after 'paren
   (setq show-paren-delay 0))
 
-(show-paren-mode t)
+;;;; popwin
+(autoload 'popwin-mode "popwin")
+
+(td/after 'popwin-autoloads
+  (popwin-mode t))
 
 ;;;; diminish
 (td/after 'diminish-autoloads
@@ -384,8 +372,9 @@ changed my mind and use one theme with my own custom theme now"
     (cond
      ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
      ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-     (t (format "%8d" (buffer-size)))))
+     (t (format "%8d" (buffer-size))))))
 
+(td/after 'ibuf-ext
   (setq ibuffer-expert t
         ibuffer-show-empty-filter-groups nil
         ibuffer-saved-filter-groups
@@ -421,13 +410,13 @@ changed my mind and use one theme with my own custom theme now"
             (add-to-list 'ibuffer-filter-groups g))
           (ibuffer-vc-generate-filter-groups-by-vc-root)))
 
-  (defun td/ibuffer-hook ()
+  (defun td/setup-ibuffer ()
     (ibuffer-auto-mode 1)
     (ibuffer-switch-to-saved-filter-groups "Default")
     (ibuffer-vc-add-filter-groups)
     (ibuffer-do-sort-by-alphabetic))
 
-  (add-hook 'ibuffer-mode-hook #'td/ibuffer-hook))
+  (add-hook 'ibuffer-mode-hook #'td/setup-ibuffer))
 
 ;;;; completion
 (td/key-group td/completion "M-;"
@@ -435,13 +424,12 @@ changed my mind and use one theme with my own custom theme now"
               "M-;" #'end-with-semicolon)
 
 ;;;; company
+(autoload 'company-lines
+  "company-lines" nil :interactive)
+
 (td/after 'company-autoloads
   (global-company-mode t)
-
-  (setq tab-always-indent 'complete
-        completion-cycle-threshold 5)
-
-  (add-to-list 'completion-styles 'initial))
+  (setq completion-cycle-threshold 5))
 
 (td/after 'company
   (setq company-idle-delay nil
@@ -466,10 +454,7 @@ changed my mind and use one theme with my own custom theme now"
         '((company-yasnippet
            company-dabbrev-code company-keywords
            company-capf
-           ;; company-cider
-           ;; company-tern
            company-go
-           ;; company-elisp
            company-css
            ;; company-php-reflection
            company-clang)))
@@ -480,7 +465,8 @@ changed my mind and use one theme with my own custom theme now"
            "l" #'company-lines)
 
   (td/bind company-active-map
-           "<tab>" #'company-select-next
+           [escape] #'company-abort
+           "<tab>" #'company-complete-dwim
            "<backtab>" #'company-select-previous
            "C-n" #'company-select-next
            "C-p" #'company-select-previous
@@ -489,23 +475,17 @@ changed my mind and use one theme with my own custom theme now"
            "C-j" #'company-complete-common
            "C-w" nil)
 
-  ;; Use company for `completion-at-point' -- by @dgutov
-  ;; https://github.com/company-mode/company-mode/issues/94#issuecomment-40884387
-  ;; TODO: `company-complete-common-or-next'
-  (td/bind company-mode-map
-           [remap indent-for-tab-command] #'company-indent-for-tab-command)
-
-  (defvar completion-at-point-functions-saved nil)
-
-  (defun company-indent-for-tab-command (&optional arg)
+  (defun company-complete-dwim (&optional arg)
     (interactive "P")
-    (let ((completion-at-point-functions-saved completion-at-point-functions)
-          (completion-at-point-functions '(company-complete-common-wrapper)))
-      (indent-for-tab-command arg)))
+    (let ((pos (point)))
+      (indent-according-to-mode)
+      (when (= pos (point))
+        (if (eq last-command 'company-complete-dwim)
+            (company-select-next)
+          (company-complete-common)))))
 
-  (defun company-complete-common-wrapper ()
-    (let ((completion-at-point-functions completion-at-point-functions-saved))
-      (company-complete-common))))
+  (td/bind company-mode-map
+           [remap indent-for-tab-command] #'company-complete-dwim))
 
 ;;;; ido
 (td/after 'smex-autoloads
@@ -517,21 +497,19 @@ changed my mind and use one theme with my own custom theme now"
 (ido-mode t)
 
 (td/after 'ido
-  (setq ido-enable-prefix nil
-        ido-enable-dot-prefix t
+  (setq ido-enable-dot-prefix t
         ido-use-virtual-buffers t
         ido-auto-merge-work-directories-length -1
         ido-create-new-buffer 'always
-        ido-use-url-at-point nil
-        ido-use-filename-at-point nil
-        ido-ignore-extensions t
         ido-save-directory-list-file (td/data-file "ido.last")
         ido-enable-flex-matching t
         ido-case-fold t
-        ido-ignore-buffers '("\\` ")
         ido-ignore-files '("ido.last" ".*-autoloads.el")
-        ido-file-extensions-order '(".rb" ".py" ".clj" ".cljs" ".el"
-                                    ".coffee" ".js" ".scss" ".css" ".php" ".html" t)
+        ido-ignore-directories
+        '("\\`CVS/" "\\`\\.\\./" "\\`\\./" "node_modules" "build" "dist")
+        ido-file-extensions-order
+        '(".rb" ".py" ".clj" ".cljs" ".el" ".coffee" ".js"
+          ".scss" ".php" ".html" t)
         ido-default-buffer-method 'samewindow)
 
   ;; (setq ido-decorations
@@ -592,11 +570,13 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; diff
 (td/after 'ediff
-  (setq ediff-split-window-function 'split-window-horizontally))
+  (setq ediff-split-window-function 'split-window-horizontally
+        ediff-window-setup-function 'ediff-setup-windows-plain
+        ediff-diff-options "-w"))
 
 ;;;; spell
 ;; (add-hook 'text-mode-hook #'turn-on-flyspell)
-(add-hook 'prog-mode-hook #'flyspell-prog-mode)
+;; (add-hook 'prog-mode-hook #'flyspell-prog-mode)
 
 (td/after 'ispell
   (setq ispell-extra-args '("-C")))
@@ -724,6 +704,105 @@ changed my mind and use one theme with my own custom theme now"
          (td/make-diff-hl-margin-spec 'change "| ")
          (td/make-diff-hl-margin-spec 'unknown "| "))))
 
+;;;; evil
+(td/after 'evil-autoloads
+  (evil-mode t)
+  (setq-default mode-line-format
+                (cons '(evil-mode ("" evil-mode-line-tag)) mode-line-format)))
+
+(td/after 'evil
+  (when (boundp 'global-surround-mode)
+    (global-surround-mode))
+
+  (setq evil-move-cursor-back nil
+        evil-mode-line-format nil
+        evil-cross-lines t
+        evil-emacs-state-cursor '("orange"))
+
+  (td/bind evil-normal-state-map
+           "''" (td/cmd (evil-goto-mark ?`))
+           "M-j" (td/cmd (evil-next-visual-line 10))
+           "M-k" (td/cmd (evil-previous-visual-line 10))
+           "j" #'evil-next-visual-line
+           "k" #'evil-previous-visual-line
+           "C-a" #'back-to-indentation
+           "C-e" #'end-of-line
+           "<tab>" #'evilmi-jump-items
+           "gp" #'simpleclip-paste
+           "C-:" #'eval-expression
+           "z SPC" #'evil-toggle-fold
+           ",," #'evil-buffer
+           ",w" #'evil-write-all
+           ",f" #'ido-find-file
+           ",e" #'projectile-find-file
+           ",b" #'ido-switch-buffer
+           ",a" #'org-agenda)
+
+  (td/bind evil-insert-state-map
+           "C-a" #'back-to-indentation
+           "C-e" #'end-of-line
+           "C-d" #'delete-char
+           "M-h" " => "
+           "M-a" "@")
+
+  (td/bind evil-visual-state-map
+           "Y" #'simpleclip-copy
+           "*" #'evil-visualstar/begin-search-forward
+           "#" #'evil-visualstar/begin-search-backward)
+
+  (td/bind evil-motion-state-map
+           "<tab>" #'evilmi-jump-items
+           "TAB" #'evilmi-jump-items)
+
+  (evil-define-key 'normal org-mode-map
+    (kbd "SPC") #'org-cycle)
+
+  (mapc (lambda (mode)
+          (evil-set-initial-state mode 'emacs))
+        '(cider-popup-buffer-mode
+          undo-tree-visualizer-mode
+          epa-key-list-mode
+          help-mode
+          dired-mode
+          wdired-mode))
+
+  (mapc (lambda (mode)
+          (evil-set-initial-state mode 'insert))
+        '(cider-repl-mode
+          git-commit-mode))
+
+  (evil-define-key 'normal org-mode-map
+    "<tab>" #'org-cycle
+    "TAB" #'org-cycle)
+
+  (defadvice evil-ex-pattern-whole-line
+    (after evil-global-defaults activate)
+    (setq ad-return-value "g"))
+
+  ;; Thanks to tkf on
+  ;; https://github.com/magnars/multiple-cursors.el/issues/19
+  ;; insert state has been changed to emacs state
+  (defvar td/mc-evil-previous-state nil)
+
+  (defun td/mc-evil-switch-to-emacs-state ()
+    (unless (evil-emacs-state-p))
+    (setq td/mc-evil-previous-state evil-state)
+    (evil-emacs-state))
+
+  (defun td/mc-evil-back-to-previous-state ()
+    (when td/mc-evil-previous-state
+      (unwind-protect
+          (case td/mc-evil-previous-state
+            ((normal visual insert) (evil-force-normal-state))
+            (t (message "Don't know how to handle previous state: %S"
+                        td/mc-evil-previous-state)))
+        (setq td/mc-evil-previous-state nil))))
+
+  (add-hook 'multiple-cursors-mode-enabled-hook
+            #'td/mc-evil-switch-to-emacs-state)
+  (add-hook 'multiple-cursors-mode-disabled-hook
+            #'td/mc-evil-back-to-previous-state))
+
 ;;;; undo-tree
 (td/after 'undo-tree-autoloads
   (global-undo-tree-mode t))
@@ -804,6 +883,35 @@ changed my mind and use one theme with my own custom theme now"
 
 (td/bind "C-c h" #'copy-as-html-for-paste)
 
+;; Insert special character -- like a boss
+(setq read-quoted-char-radix 16)
+
+;;;; isearch
+(setq lazy-highlight-initial-delay 0)
+
+;; Enable accents-folding for ISearch. Support only Vietnamese accents atm.
+;; Source: http://thread.gmane.org/gmane.emacs.devel/117003/focus=117959.
+;; FIXME: refactor
+(let ((eqv-list '("aàáạảãăằắặẳẵâầấậẩẫAÀÁẠẢÃĂẰẮẶẲẴÂẦẤẬẨẪ"
+                  "eèéẹẻẽêềếệểễEÈÉẸẺẼÊỀẾỆỂỄ"
+                  "dđDĐ"
+                  "iìíịỉĩIÌÍỊỈĨ"
+                  "oòóọỏõôồốộổỗơờớợởỡOÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ"
+                  "uùúụủũưừứựửữUÙÚỤỦŨƯỪỨỰỬỮ"
+                  "yỳýỵỷỹYỲÝỴỶỸ"))
+      (table (standard-case-table))
+      (canon (copy-sequence (standard-case-table))))
+  (mapc (lambda (s)
+          (mapc (lambda (c) (aset canon c (aref s 0))) s))
+        eqv-list)
+  (set-char-table-extra-slot table 1 canon)
+  (set-char-table-extra-slot table 2 nil)
+  (set-standard-case-table table))
+
+;;;; imenu
+(td/after 'imenu
+  (setq imenu-auto-rescan t))
+
 ;;;; hideshow
 (autoload 'hideshowvis-symbols
   "hideshowvis"
@@ -876,7 +984,7 @@ changed my mind and use one theme with my own custom theme now"
           0 font-lock-preprocessor-face t)))
   (number-font-lock-mode t))
 
-(add-hook 'prog-mode-hook 'td/custom-font-lock-hightlights)
+(add-hook 'prog-mode-hook #'td/custom-font-lock-hightlights)
 
 ;;;; flycheck
 (td/after 'flycheck-autoloads
@@ -896,9 +1004,11 @@ changed my mind and use one theme with my own custom theme now"
 
 (td/after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save))
+  ;; (add-hook 'flycheck-mode-hook #'flycheck-cask-setup)
   (mapc (lambda (checker)
           (delq checker flycheck-checkers))
-        '(go-build emacs-lisp-checkdoc)))
+        '(go-build
+          emacs-lisp-checkdoc)))
 
 ;;;; web
 (td/mode 'html-mode
@@ -908,8 +1018,7 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'mmm-mode-autoloads
   (setq mmm-global-mode 'maybe
         mmm-submode-decoration-level 0
-        mmm-parse-when-idle t
-        mmm-mode-prefix-key "C-c m")
+        mmm-parse-when-idle t)
 
   (require 'mmm-auto)
   (require 'mmm-sample)
@@ -973,7 +1082,7 @@ changed my mind and use one theme with my own custom theme now"
   (add-hook 'js-mode-hook #'td/javascript-style))
 
 (td/after 'tern-autoloads
-  (add-hook 'js-mode-hook (lambda () (tern-mode t))))
+  (td/on 'js-mode-hook (tern-mode t)))
 
 ;;;; typescript
 (td/after 'tss-autoloads
@@ -984,6 +1093,7 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; coffee
 (td/after 'coffee-mode-autoloads
+  (setq )
   (td/mode 'coffee-mode "\\.coffee$" "Cakefile"))
 
 ;;;; css
@@ -1094,7 +1204,8 @@ changed my mind and use one theme with my own custom theme now"
   (add-hook 'cider-mode-hook #'cider-turn-on-eldoc-mode))
 
 (td/after 'cider-repl
-  (setq cider-repl-popup-stacktraces t
+  (setq cider-repl-use-clojure-font-lock t
+        cider-repl-popup-stacktraces t
         cider-repl-pop-to-buffer-on-connect nil))
 
 ;;;; go

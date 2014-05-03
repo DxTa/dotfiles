@@ -4,9 +4,11 @@
 (setq mc/cmds-to-run-for-all
       '(
         dabbrev-expand
+        evil-find-char-to
         kill-region-or-word
         org-force-self-insert
         org-self-insert-command
+        toggle-input-method
         yas-expand
         ))
 
