@@ -2,100 +2,102 @@
 (source melpa)
 
 ;;;; Auto complete
-(depends-on company)
-(depends-on company-go)
+(depends-on ""company"")
+(depends-on "company-go")
 
-(depends-on smex)
-(depends-on ido-ubiquitous)
-(depends-on ido-vertical-mode)
+(depends-on "smex")
+(depends-on "ido-ubiquitous")
+(depends-on "ido-vertical-mode")
 
 ;;;; Editing
-(depends-on evil)
-(depends-on evil-visualstar)
-(depends-on surround)
-(depends-on ace-jump-mode)
+(depends-on "evil")
+(depends-on "evil-visualstar")
+(depends-on "surround")
+(depends-on "ace-jump-mode")
 
-;; (depends-on visual-regexp)
+;; (depends-on "visual-regexp")
 
-(depends-on undo-tree)
+(depends-on "undo-tree")
 
-;; (depends-on smartparens)
+;; (depends-on "smartparens")
 
-(depends-on expand-region)
-(depends-on multiple-cursors)
-(depends-on yasnippet)
+(depends-on "expand-region")
+(depends-on "multiple-cursors")
+(depends-on "yasnippet")
 
 ;;;; Project
-(depends-on projectile)
+(depends-on "projectile")
 
-(depends-on ag)
-(depends-on wgrep-ag)
+(depends-on "ag")
+(depends-on "wgrep-ag")
 
-(depends-on magit)
-(depends-on diff-hl)
-(depends-on ibuffer-vc)
+(depends-on "magit")
+(depends-on "diff-hl")
+(depends-on "ibuffer-vc")
 
 ;;;; UI
-(depends-on diminish)
-(depends-on color-theme-approximate)
-(depends-on number-font-lock-mode)
-;; (depends-on fill-column-indicator)
-(depends-on rainbow-delimiters)
-(depends-on rainbow-mode)
+(depends-on "diminish")
+;; (depends-on "color-theme-approximate")
+(depends-on "number-font-lock-mode")
+;; (depends-on "fill-column-indicator")
+(depends-on "rainbow-delimiters")
+(depends-on "rainbow-mode")
 
-(depends-on sublime-themes)
-(depends-on solarized-theme)
+(depends-on "sublime-themes")
+(depends-on "solarized-theme")
 
 ;;;; Programming
-;; (depends-on devdocs-lookup)
-(depends-on flycheck)
-(depends-on flycheck-cask)
+;; (depends-on "devdocs-lookup")
+(depends-on "flycheck")
+(depends-on "flycheck-cask")
 
-(depends-on emmet-mode)
-(depends-on websocket)
-(depends-on restclient)
+(depends-on "emmet-mode")
+(depends-on "websocket")
+(depends-on "restclient")
 
-(depends-on mmm-mode)
+(depends-on "mmm-mode")
 
-(depends-on go-eldoc)
-(depends-on go-mode)
+;; (depends-on "go-eldoc")
+;; (depends-on "go-mode")
 
-(depends-on clojure-mode)
-(depends-on cider)
+(depends-on "clojure-mode")
+(depends-on "cider")
+(depends-on "slamhound")
+(depends-on "javadoc-lookup")
 
-(depends-on javadoc-lookup)
-(depends-on groovy-mode)
+(depends-on "groovy-mode")
 
-(depends-on lua-mode)
+(depends-on "lua-mode")
 
-(depends-on php-mode)
-;; (depends-on inf-php)
+(depends-on "php-mode")
+;; (depends-on "inf-php")
 
-;; (depends-on robe)
-;; (depends-on inf-ruby)
+;; (depends-on "robe")
+;; (depends-on "inf-ruby")
 
-(depends-on tern)
-;; (depends-on tss)
-(depends-on json-mode)
-(depends-on coffee-mode)
+(depends-on "tern")
+;; (depends-on "tss")
+(depends-on "json-mode")
+(depends-on "json-reformat")
+(depends-on "coffee-mode")
 
-(depends-on markdown-mode)
+(depends-on "markdown-mode")
 
-;; (depends-on rust-mode)
+;; (depends-on "rust-mode")
 
-(depends-on scss-mode)
-;; (depends-on less-css-mode)
+(depends-on "scss-mode")
+;; (depends-on "less-css-mode")
 
-(depends-on yaml-mode)
+(depends-on "yaml-mode")
 
-(depends-on graphviz-dot-mode)
+(depends-on "graphviz-dot-mode")
 
 ;;;; Utils
-(depends-on dash)
-(depends-on s)
-(depends-on popwin)
-(depends-on exec-path-from-shell)
-(depends-on simpleclip)
-(depends-on fetch)
-(depends-on ignoramus)
-(depends-on htmlize)
+(depends-on "dash")
+(depends-on "s")
+(depends-on "popwin")
+(depends-on "exec-path-from-shell")
+(depends-on "simpleclip")
+(depends-on "fetch")
+(depends-on "ignoramus")
+(depends-on "htmlize")

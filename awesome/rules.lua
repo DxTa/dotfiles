@@ -24,6 +24,10 @@ awful.rules.rules = {
    { rule = { class = "gimp" },
      properties = { floating = true } },
 
+   -- Java Apps
+   { rule = { class = "sun-awt-X11-XFramePeer" },
+     properties = { floating = true },
+
    -- Flash player
    { rule = { class = "Plugin-container" },
      properties = { floating = true } },

@@ -7,10 +7,8 @@
 (fringe-mode '(16 . 0))
 
 ;;;; packages
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/"))
-(package-initialize)
+(require 'cask "~/.cask/cask.el")
+(cask-initialize)
 
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
@@ -727,10 +725,10 @@ changed my mind and use one theme with my own custom theme now"
            "k" #'evil-previous-visual-line
            "C-a" #'back-to-indentation
            "C-e" #'end-of-line
-           "<tab>" #'evilmi-jump-items
+           "<tab>" #'evil-jump-item
            "gp" #'simpleclip-paste
            "C-:" #'eval-expression
-           "z SPC" #'evil-toggle-fold
+           "SPC" #'evil-toggle-fold
            ",," #'evil-buffer
            ",w" #'evil-write-all
            ",f" #'ido-find-file
@@ -751,8 +749,8 @@ changed my mind and use one theme with my own custom theme now"
            "#" #'evil-visualstar/begin-search-backward)
 
   (td/bind evil-motion-state-map
-           "<tab>" #'evilmi-jump-items
-           "TAB" #'evilmi-jump-items)
+           "<tab>" #'evil-jump-item
+           "TAB" #'evil-jump-item)
 
   (evil-define-key 'normal org-mode-map
     (kbd "SPC") #'org-cycle)
