@@ -3,7 +3,7 @@ local awful = require("awful")
 local bindings = require("bindings")
 local beautiful = require("beautiful")
 
-awful.rules.rules = {
+local rules = {
    -- Default
    { rule = { },
      properties = { border_width = beautiful.border_width,
@@ -21,12 +21,16 @@ awful.rules.rules = {
      properties = { floating = true } },
    { rule = { class = "pinentry" },
      properties = { floating = true } },
-   { rule = { class = "gimp" },
+   { rule = { class = "Gimp" },
      properties = { floating = true } },
 
    -- Java Apps
-   { rule = { class = "sun-awt-X11-XFramePeer" },
-     properties = { floating = true },
+   { rule = { class = "java-lang-Thread" },
+     properties = { floating = true } },
+
+   -- VirtualBox
+   { rule = { class = "VBoxSDL" },
+     properties = { floating = true } },
 
    -- Flash player
    { rule = { class = "Plugin-container" },
@@ -34,3 +38,5 @@ awful.rules.rules = {
    { rule = { class = "Exe" },
      properties = { floating = true } }
 }
+
+return rules

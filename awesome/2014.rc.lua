@@ -6,7 +6,6 @@ local gears = require("gears")
 local wibox = require("wibox")
 
 require("awful.autofocus")
-awful.rules = require("awful.rules")
 
 require("errors")
 require("gtk")
@@ -111,35 +110,8 @@ root.buttons(
 ))
 
 -- Rules
-awful.rules.rules = {
-   -- Default
-   { rule = { },
-     properties = { border_width = beautiful.border_width,
-                    border_color = beautiful.border_normal,
-                    focus = awful.client.focus.filter,
-                    keys = bindings.client.keys,
-                    buttons = bindings.client.buttons,
-                    size_hints_honor = false },
-     callback = function(c) c.icon = nil end },
-
-   -- Applications
-   { rule = { class = "Synapse" },
-     properties = { border_width = 0, floating = true } },
-   { rule = { class = "MPlayer" },
-     properties = { floating = true } },
-   { rule = { class = "pinentry" },
-     properties = { floating = true } },
-   { rule = { class = "gimp" },
-     properties = { floating = true } },
-   { rule = { class = "Corebird" },
-     properties = { floating = true } },
-
-   -- Flash
-   { rule = { class = "Plugin-container" },
-     properties = { floating = true } },
-   { rule = { class = "Exe" },
-     properties = { floating = true } }
-}
+awful.rules = require("awful.rules")
+awful.rules.rules = require("rules")
 
 -- Panel
 local widgets = require("widgets")
