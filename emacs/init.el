@@ -7,8 +7,9 @@
 (fringe-mode '(16 . 0))
 
 ;;;; packages
-(require 'cask "~/.cask/cask.el")
-(cask-initialize)
+;; (require 'cask "~/.cask/cask.el")
+;; (cask-initialize)
+(require 'td-package)
 
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
@@ -82,12 +83,7 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file :no-error :no-message)
 
-(defun td/from-git-config (key)
-  (s-trim (shell-command-to-string
-           (format "git config --global --get %s" key))))
-
-(setq user-full-name (td/from-git-config "user.name")
-      user-mail-address (td/from-git-config "user.email"))
+(load (td/data-file "~/.emacs.d/private.el") :no-error :no-message)
 
 ;;;; startup
 (defun td/scratch-fortune ()
@@ -109,7 +105,10 @@
       (set-frame-position frame 500 22)))
   (when (eq system-type 'gnu/linux)
     (menu-bar-mode -1)
-    (set-face-attribute 'default frame :family "M+ 1mn" :height 110 :weight 'semi-bold)))
+    (set-face-attribute 'default frame :family "M+ 1mn" :height 110 :weight 'semi-bold))
+  (when (eq system-type 'windows-nt)
+    (menu-bar-mode -1)
+    (set-face-attribute 'default nil :font "Consolas-11")))
 
 (add-hook 'after-make-frame-functions #'td/setup-frame)
 
@@ -196,7 +195,9 @@
               truncate-lines nil)
 
 (td/on 'after-init-hook
-  (exec-path-from-shell-initialize)
+  (unless (eq system-type 'windows-nt)
+    (exec-path-from-shell-initialize))
+  (td/setup-frame (selected-frame))
   (visual-line-mode -1)
   (which-function-mode t)
   (global-auto-revert-mode t)
@@ -475,7 +476,7 @@ changed my mind and use one theme with my own custom theme now"
         '((company-yasnippet
            company-dabbrev-code company-keywords
            company-capf
-           company-go
+           ;; company-go
            company-css
            company-c-headers
            ;; company-php-reflection
@@ -1283,6 +1284,45 @@ changed my mind and use one theme with my own custom theme now"
       (comint-send-string nil (concat "cd " dir "\n")))))
 
 (td/bind "<f12>" #'td/shell-popup)
+
+;;;; circe
+(td/after 'circe
+  (setq lui-time-stamp-position 'left
+        circe-reduce-lurker-spam t
+        circe-network-options
+        `(("Freenode"
+           :nick "tungd"
+           :pass ,td/freenode-password
+           :realname user-full-name
+           :channels ("#emacs" "#clojure" "#ruby" "#reactjs" "#archlinux" "#ubuntu-vn"))))
+
+  (enable-circe-color-nicks)
+
+  (defun circe-no-op (&rest ignored))
+  (circe-set-display-handler "JOIN" #'circe-no-op)
+
+  (defun td/circe-prompt ()
+    (lui-set-prompt
+     (concat (propertize (concat (buffer-name) ">")
+                         'face 'circe-prompt-face)
+             " ")))
+  (add-hook 'circe-chat-mode-hook #'td/circe-prompt)
+
+  (defvar td/circe-bot-list '("fsbot" "rubybot"))
+  (defun td/circe-message-option-bot (nick &rest ignored)
+    (when (member nick td/circe-bot-list)
+      '((text-properties . (face circe-fool-face
+                                 lui-do-not-track t)))))
+  (add-hook 'circe-message-option-functions 'td/circe-message-option-bot)
+
+  (require 'lui-irc-colors)
+  (add-to-list 'lui-pre-output-hook #'lui-irc-colors)
+
+  (require 'lui-logging)
+  (add-hook 'circe-channel-mode-hook #'enable-lui-logging)
+
+  (require 'lui-autopaste)
+  (add-hook 'circe-channel-mode-hook #'enable-lui-autopaste))
 
 ;;;; commands
 (defmacro with-region-or-current-line (&rest body)
