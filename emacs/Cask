@@ -3,6 +3,7 @@
 
 ;;;; Auto complete
 (depends-on ""company"")
+(depends-on "company-c-headers")
 (depends-on "company-go")
 
 (depends-on "smex")

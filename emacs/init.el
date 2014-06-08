@@ -109,7 +109,7 @@
       (set-frame-position frame 500 22)))
   (when (eq system-type 'gnu/linux)
     (menu-bar-mode -1)
-    (set-face-attribute 'default frame :family "M+ 1mn" :height 110)))
+    (set-face-attribute 'default frame :family "M+ 1mn" :height 110 :weight 'semi-bold)))
 
 (add-hook 'after-make-frame-functions #'td/setup-frame)
 
@@ -246,7 +246,7 @@
     (find-alternate-file
      (concat "/sudo:root@localhost:" buffer-file-name))))
 
-(add-hook 'find-file-hook #'find-file-sudo)
+;; (add-hook 'find-file-hook #'find-file-sudo)
 
 (defun td/before-save-make-directories ()
   (let ((dir (file-name-directory buffer-file-name)))
@@ -311,7 +311,7 @@ changed my mind and use one theme with my own custom theme now"
   (mapc #'disable-theme custom-enabled-themes))
 
 ;; (color-theme-approximate-on)
-(load-theme 'junio t)
+(load-theme 'solarized-dark t)
 (load-theme 'td-custom t)
 
 ;;;; linum
@@ -340,6 +340,29 @@ changed my mind and use one theme with my own custom theme now"
 
 (td/after 'popwin-autoloads
   (popwin-mode t))
+
+(td/after 'popwin
+  (setq popwin:special-display-config
+        '(("*Help*"  :height 15)
+          ("*Completions*" :noselect t)
+          ("*Messages*" :noselect t :height 15)
+          ("*Apropos*" :noselect t :height 15)
+          ("*compilation*" :noselect t)
+          ("*Backtrace*" :height 15)
+          ("*Messages*" :height 15)
+          ("*Occur*" :noselect t)
+          ("*Ido Completions*" :noselect t :height 15)
+          ;; ("*magit-commit*" :noselect t :height 40 :width 80 :stick t)
+          ;; ("*magit-diff*" :noselect t :height 40 :width 80)
+          ;; ("*magit-edit-log*" :noselect t :height 15 :width 80)
+          ("\\*ansi-term\\*.*" :regexp t :height 15)
+          ("*shell*" :height 15)
+          ("*cider-error*" :height 15 :stick t)
+          ("*cider-doc*" :height 15 :stick t)
+          ("*cider-src*" :height 15 :stick t)
+          ("*cider-result*" :height 15 :stick t)
+          ("*cider-macroexpansion*" :height 15 :stick t)
+          ("*Compile-Log*" :height 15 :stick t))))
 
 ;;;; diminish
 (td/after 'diminish-autoloads
@@ -454,6 +477,7 @@ changed my mind and use one theme with my own custom theme now"
            company-capf
            company-go
            company-css
+           company-c-headers
            ;; company-php-reflection
            company-clang)))
 
@@ -758,6 +782,7 @@ changed my mind and use one theme with my own custom theme now"
   (mapc (lambda (mode)
           (evil-set-initial-state mode 'emacs))
         '(cider-popup-buffer-mode
+          cider-stacktrace-mode
           undo-tree-visualizer-mode
           epa-key-list-mode
           help-mode

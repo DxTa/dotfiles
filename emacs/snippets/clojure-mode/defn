@@ -2,6 +2,7 @@
 # name: defn
 # key: defn
 # --
-(defn ${1:name} [${2:args}]
-  ${3:"document"
-}$0)
+(defn ${1:name}
+  ${2:"document"
+ }[${3:args}]
+ $0)
