@@ -27,10 +27,14 @@ local rules = {
    -- Java Apps
    { rule = { class = "java-lang-Thread" },
      properties = { floating = true } },
+   { rule = { class = "clojure-main" },
+     properties = { floating = true } },
+   { rule = { class = "jmt-framework-gui-components-JMTFrame" },
+     properties = { floating = true } },
 
    -- VirtualBox
    { rule = { class = "VBoxSDL" },
-     properties = { floating = true } },
+     properties = { floating = true, width = 1024, height = 768 } },
 
    -- Flash player
    { rule = { class = "Plugin-container" },

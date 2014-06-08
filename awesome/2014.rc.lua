@@ -13,7 +13,7 @@ require("signals")
 
 -- Global configurations
 modkey = "Mod4"
-terminal = "xfce4-terminal"
+terminal = "gnome-terminal"
 editor = "emacsclient -n -c -a ''"
 browser = "chromium --remote-debugging-port=9222"
 filemanager = "nautilus"

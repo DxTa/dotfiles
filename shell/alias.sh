@@ -32,6 +32,10 @@ alias rm="rm -i"
 # cd
 alias ..="cd .."
 alias ...="cd ../../"
+alias ....="cd ../../../"
+alias .....="cd ../../../"
+alias ......="cd ../../../../"
+
 md() {
   mkdir -p "$1" && cd "$1";
 }
