@@ -9,7 +9,7 @@
 ;;;; packages
 ;; (require 'cask "~/.cask/cask.el")
 ;; (cask-initialize)
-(require 'td-package)
+(require 'td-package "~/.emacs.d/vendor/td-package.el")
 
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
@@ -287,7 +287,8 @@
   (add-to-list 'recentf-exclude "cache")
   (add-hook 'server-visit-hook #'recentf-save-list))
 
-(setq recentf-max-saved-items 256
+(setq recentf-auto-cleanup 60
+      recentf-max-saved-items 256
       recentf-save-file (td/data-file "recentf"))
 
 (td/on 'after-init-hook
@@ -411,13 +412,8 @@ changed my mind and use one theme with my own custom theme now"
            ("Shells" (or
                       (mode . eshell-mode)
                       (mode . shell-mode)))
-           ("Misc" (or
-                    (name . "\*magit.+\*")
-                    (name . "\*Help\*")
-                    (name . "\*Apropos\*")
-                    (name . "\*info\*")
-                    (name . "\*Completions\*")
-                    (name . "\*Backtrace\*")))))
+           ("IRC" (or (mode . circe-channel-mode)
+                      (mode . circe-server-mode)))))
         ibuffer-formats
         '((mark modified read-only vc-status-mini " "
                 (name 18 18 :left :elide) " "
@@ -627,10 +623,12 @@ changed my mind and use one theme with my own custom theme now"
 ;;;; yasnippets
 (td/after 'yasnippet-autoloads
   (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-  (yas-global-mode t))
+  (run-with-idle-timer 2 nil #'yas-global-mode t))
 
 (td/after 'yasnippet
-  (setq yas-prompt-functions
+  (setq yas-expand-only-for-last-commands
+        '(self-insert-command)
+        yas-prompt-functions
         '(yas-ido-prompt yas-completing-prompt yas-no-prompt))
 
   (td/bind yas-minor-mode-map
@@ -834,7 +832,8 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'undo-tree
   (setq undo-limit (* 128 1024 1024)
         undo-strong-limit (* 256 1024 1024)
-        undo-tree-auto-save-history t
+        ;; Conflict with Yasnippet, I'm trying to fix this
+        ;; undo-tree-auto-save-history t
         undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t
         undo-tree-history-directory-alist
