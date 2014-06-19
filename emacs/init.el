@@ -738,7 +738,8 @@ changed my mind and use one theme with my own custom theme now"
   (setq evil-move-cursor-back nil
         evil-mode-line-format nil
         evil-cross-lines t
-        evil-emacs-state-cursor '("orange"))
+        evil-emacs-state-cursor '("orange")
+        evil-ex-substitute-global t)
 
   (td/bind evil-normal-state-map
            "''" (td/cmd (evil-goto-mark ?`))
@@ -796,10 +797,6 @@ changed my mind and use one theme with my own custom theme now"
   (evil-define-key 'normal org-mode-map
     "<tab>" #'org-cycle
     "TAB" #'org-cycle)
-
-  (defadvice evil-ex-pattern-whole-line
-    (after evil-global-defaults activate)
-    (setq ad-return-value "g"))
 
   ;; Thanks to tkf on
   ;; https://github.com/magnars/multiple-cursors.el/issues/19
