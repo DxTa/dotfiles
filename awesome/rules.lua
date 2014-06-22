@@ -36,6 +36,10 @@ local rules = {
    { rule = { class = "VBoxSDL" },
      properties = { floating = true, width = 1024, height = 768 } },
 
+   -- Wine Apps
+   { rule = { class = "Wine" },
+     properties = { border_width = 0, floating = true } },
+
    -- Flash player
    { rule = { class = "Plugin-container" },
      properties = { floating = true } },

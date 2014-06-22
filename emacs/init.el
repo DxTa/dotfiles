@@ -247,7 +247,7 @@
     (find-alternate-file
      (concat "/sudo:root@localhost:" buffer-file-name))))
 
-;; (add-hook 'find-file-hook #'find-file-sudo)
+(add-hook 'find-file-hook #'find-file-sudo)
 
 (defun td/before-save-make-directories ()
   (let ((dir (file-name-directory buffer-file-name)))
@@ -732,8 +732,8 @@ changed my mind and use one theme with my own custom theme now"
                 (cons '(evil-mode ("" evil-mode-line-tag)) mode-line-format)))
 
 (td/after 'evil
-  (when (boundp 'global-surround-mode)
-    (global-surround-mode))
+  (global-evil-surround-mode t)
+  (global-evil-matchit-mode t)
 
   (setq evil-move-cursor-back nil
         evil-mode-line-format nil
@@ -907,7 +907,8 @@ changed my mind and use one theme with my own custom theme now"
 (setq read-quoted-char-radix 16)
 
 ;;;; isearch
-(setq lazy-highlight-initial-delay 0)
+(setq lazy-highlight-initial-delay 0
+      search-nonincremental-instead nil)
 
 ;; Enable accents-folding for ISearch. Support only Vietnamese accents atm.
 ;; Source: http://thread.gmane.org/gmane.emacs.devel/117003/focus=117959.
@@ -1140,7 +1141,12 @@ changed my mind and use one theme with my own custom theme now"
 
 (td/after 'eldoc
   (setq eldoc-idle-delay 0
-        eldoc-echo-area-use-multiline-p nil))
+        eldoc-echo-area-use-multiline-p nil)
+
+  (defadvice eldoc-display-message-no-interference-p
+    (after eldoc-no-interference-isearch activate)
+    (setq ad-return-value
+          (and ad-return-value (not isearch-mode)))))
 
 ;;;; php
 (td/after 'php-mode

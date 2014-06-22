@@ -13,13 +13,17 @@
              circe
              clojure-mode
              coffee-mode
+             color-theme-approximate
              company
              company-c-headers
              dash
              diff-hl
              diminish
              emmet-mode
+             epl
              evil
+             evil-matchit
+             evil-surround
              evil-visualstar
              exec-path-from-shell
              expand-region
@@ -37,20 +41,20 @@
              mmm-mode
              multiple-cursors
              number-font-lock-mode
-             php-mode
              package-filter
+             php-mode
              popwin
              projectile
              rainbow-delimiters
              rainbow-mode
              restclient
+             rust-mode
              s
              scss-mode
              simpleclip
              slamhound
              smex
              solarized-theme
-             surround
              sublime-themes
              tern
              undo-tree
