@@ -7,8 +7,6 @@
 (fringe-mode '(16 . 0))
 
 ;;;; packages
-;; (require 'cask "~/.cask/cask.el")
-;; (cask-initialize)
 (require 'td-package "~/.emacs.d/vendor/td-package.el")
 
 ;;;; vendors
@@ -83,7 +81,7 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file :no-error :no-message)
 
-(load (td/data-file "~/.emacs.d/private.el") :no-error :no-message)
+(load-library "~/.emacs.d/secrets.el.gpg")
 
 ;;;; startup
 (defun td/scratch-fortune ()
@@ -287,7 +285,7 @@
   (add-to-list 'recentf-exclude "cache")
   (add-hook 'server-visit-hook #'recentf-save-list))
 
-(setq recentf-auto-cleanup 60
+(setq recentf-auto-cleanup "9:00pm"
       recentf-max-saved-items 256
       recentf-save-file (td/data-file "recentf"))
 
@@ -472,6 +470,7 @@ changed my mind and use one theme with my own custom theme now"
         '((company-yasnippet
            company-dabbrev-code company-keywords
            company-capf
+           company-inf-python
            ;; company-go
            company-css
            company-c-headers
@@ -1019,6 +1018,7 @@ changed my mind and use one theme with my own custom theme now"
           emacs-lisp-mode-hook
           js-mode-hook
           coffee-mode-hook
+          python-mode-hook
           ruby-mode-hook
           rust-mode-hook
           sh-mode-hook)))
@@ -1101,6 +1101,16 @@ changed my mind and use one theme with my own custom theme now"
     (c-set-offset 'arglist-cont '+))
 
   (add-hook 'js-mode-hook #'td/javascript-style))
+
+(td/after 'js-comint
+  ;; TODO: this package need serious love
+  (setenv "NODE_NO_READLINE" "1")
+  (setq inferior-js-program-command "node")
+
+  (defun td/setup-inferior-js ()
+    (ansi-color-for-comint-mode-on))
+
+  (add-hook 'inferior-js-mode-hook #'td/setup-inferior-js))
 
 (td/after 'tern-autoloads
   (td/on 'js-mode-hook (tern-mode t)))
@@ -1191,7 +1201,11 @@ changed my mind and use one theme with my own custom theme now"
   (defun td/setup-python-mode ()
     (td/set-local tab-width 4))
 
-  (add-hook 'python-mode-hook #'td/setup-python-mode))
+  (add-hook 'python-mode-hook #'td/setup-python-mode)
+
+  (td/bind inferior-python-mode-map
+           [remap python-shell-completion-complete-or-indent]
+           #'company-complete-dwim))
 
 ;;;; c
 

@@ -16,6 +16,7 @@
              color-theme-approximate
              company
              company-c-headers
+             company-inf-python
              dash
              diff-hl
              diminish
