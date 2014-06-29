@@ -21,21 +21,10 @@
 (autoload 'zap-up-to-char "misc" nil :interactive)
 (autoload 'zap-to-char "misc" nil :interactive)
 
-;;;; platform specific
-(when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta
-        mac-option-modifier 'super))
-
 ;;;; helpers
 (setq user-emacs-directory "~/.emacs.d/data/")
 
-(defmacro td/after (file &rest body)
-  (declare (indent 1) (debug t))
-  `(progn
-     (eval-when-compile
-       (require ,file nil :no-error))
-     (eval-after-load ,file
-       `(funcall (function ,(lambda () ,@body))))))
+(defalias 'td/after 'with-eval-after-load)
 
 (defmacro td/cmd (&rest body)
   `(lambda () (interactive) ,@body))
@@ -93,23 +82,6 @@
 (td/on 'emacs-startup-hook
   (message "Time needed to load: %s seconds." (emacs-uptime "%s")))
 
-(defun td/setup-frame (frame)
-  (interactive)
-  (message "%s" (display-graphic-p))
-  (when (eq system-type 'darwin)
-    (when (display-graphic-p)
-      (set-face-attribute 'default frame :family "Meslo LG M" :height 140)
-      (set-frame-size frame 120 35)
-      (set-frame-position frame 500 22)))
-  (when (eq system-type 'gnu/linux)
-    (menu-bar-mode -1)
-    (set-face-attribute 'default frame :family "M+ 1mn" :height 110 :weight 'semi-bold))
-  (when (eq system-type 'windows-nt)
-    (menu-bar-mode -1)
-    (set-face-attribute 'default nil :font "Consolas-11")))
-
-(add-hook 'after-make-frame-functions #'td/setup-frame)
-
 ;;;; random seed
 (random t)
 
@@ -118,6 +90,24 @@
 
 (td/after 'server
   (unless (server-running-p) (server-start nil)))
+
+;;;; platform specific
+(when (eq system-type 'darwin)
+  (setq mac-command-modifier 'meta
+        mac-option-modifier 'super))
+
+(defun td/setup-frame (&optional frame)
+  (interactive)
+  (when (eq system-type 'darwin)
+    (set-face-attribute 'default frame :family "Meslo LG M" :height 140))
+  (when (eq system-type 'gnu/linux)
+    (menu-bar-mode -1)
+    (set-face-attribute 'default frame :family "M+ 1mn" :height 110 :weight 'semi-bold))
+  (when (eq system-type 'windows-nt)
+    (menu-bar-mode -1)
+    (set-face-attribute 'default nil :font "Consolas-11")))
+
+(add-hook 'after-make-frame-functions #'td/setup-frame)
 
 ;;;; aliases
 (defalias 'qrr 'query-replace-regexp)
@@ -135,7 +125,7 @@
 (td/bind "M-=" #'cleanup-buffer)
 (td/bind "C-=" #'indent-defun)
 
-(td/bind "M-j" #'other-window)
+;; (td/bind "M-j" #'other-window)
 (td/bind "M-`" #'other-frame)
 (td/bind "C-c q" #'delete-frame)
 (td/bind "C-c Q" #'delete-window)
@@ -192,15 +182,18 @@
               fill-column 80
               truncate-lines nil)
 
-(td/on 'after-init-hook
-  (unless (eq system-type 'windows-nt)
-    (exec-path-from-shell-initialize))
-  (td/setup-frame (selected-frame))
-  (visual-line-mode -1)
-  (which-function-mode t)
-  (global-auto-revert-mode t)
-  (savehist-mode t)
-  (pending-delete-mode t))
+(unless (eq system-type 'windows-nt)
+  (exec-path-from-shell-initialize))
+
+(td/setup-frame (selected-frame))
+
+(visual-line-mode -1)
+(which-function-mode t)
+(global-auto-revert-mode t)
+(savehist-mode t)
+(pending-delete-mode t)
+
+(ignoramus-setup)
 
 ;;;; encoding
 (setq eol-mnemonic-dos " dos "
@@ -222,20 +215,20 @@
 ;;;; backup
 (setq backup-by-copying t
       delete-old-versions t
-      kept-new-versions 6
-      kept-old-versions 2
       version-control t
-      backup-directory-alist
-      (list (cons "." (td/data-file "backups"))))
+      backup-directory-alist (list (cons "." (td/data-file "backups"))))
 
 (setq auto-save-default nil
-      auto-save-list-file-prefix
-      (td/data-file "auto-saves"))
+      auto-save-list-file-prefix (td/data-file "auto-saves"))
 
 ;;;; tramp
 (td/after 'tramp
   (setq password-cache-expiry nil
-        tramp-default-method "ftp"))
+        tramp-default-method "ftp")
+
+  (add-to-list 'auth-sources "~/.emacs.d/authinfo.gpg")
+
+  (setq ange-ftp-netrc-filename "~/.emacs.d/authinfo.gpg"))
 
 ;;;; file
 (defun find-file-sudo (&optional arg)
@@ -263,34 +256,20 @@
 
 (add-hook 'after-save-hook #'td/after-save-auto-chmod)
 
-;;;; uniquify
-(td/on 'after-init-hook
-  (require 'uniquify)
-  (td/after 'uniquify
-    (setq uniquify-buffer-name-style 'post-forward
-          uniquify-separator " - "
-          uniquify-after-kill-buffer-p t
-          uniquify-ignore-buffers-re "^\\*")))
-
 ;;;; saveplace
-(td/on 'after-init-hook
-  (require 'saveplace)
-  (setq-default save-place t)
-  (setq save-place-file (td/data-file "save-places")))
+(require 'saveplace)
+(setq-default save-place t)
+(setq save-place-file (td/data-file "save-places"))
 
 ;;;; recentf
 (td/after 'recentf
-  (add-to-list 'recentf-exclude "ido")
-  (add-to-list 'recentf-exclude "elpa")
-  (add-to-list 'recentf-exclude "cache")
   (add-hook 'server-visit-hook #'recentf-save-list))
 
 (setq recentf-auto-cleanup "9:00pm"
       recentf-max-saved-items 256
       recentf-save-file (td/data-file "recentf"))
 
-(td/on 'after-init-hook
-  (recentf-mode t))
+(recentf-mode t)
 
 ;;;; display
 (setcdr
@@ -311,35 +290,30 @@ changed my mind and use one theme with my own custom theme now"
   (mapc #'disable-theme custom-enabled-themes))
 
 ;; (color-theme-approximate-on)
+;; (load-theme 'espresso)
 (load-theme 'solarized-dark t)
 (load-theme 'td-custom t)
 
 ;;;; linum
-(td/on 'after-init-hook
-  (column-number-mode t))
+(column-number-mode t)
 
 (td/after 'linum
   (setq linum-format " %4d "))
 
 ;;;; hl-line
-(td/on 'after-init-hook
-  (global-hl-line-mode t))
+(global-hl-line-mode t)
 
 (td/after 'hl-line
   (setq hl-line-sticky-flag nil))
 
 ;;;; show-paren-mode
-(td/on 'after-init-hook
-  (show-paren-mode t))
-
-(td/after 'paren
-  (setq show-paren-delay 0))
+(setq show-paren-delay 0)
+(show-paren-mode t)
 
 ;;;; popwin
 (autoload 'popwin-mode "popwin")
 
-(td/after 'popwin-autoloads
-  (popwin-mode t))
+(popwin-mode t)
 
 (td/after 'popwin
   (setq popwin:special-display-config
@@ -365,26 +339,25 @@ changed my mind and use one theme with my own custom theme now"
           ("*Compile-Log*" :height 15 :stick t))))
 
 ;;;; diminish
-(td/after 'diminish-autoloads
-  (defun td/compact-mode-line (file mode &optional lighter)
-    (eval-after-load file
-      `(diminish ,mode ,(when lighter (concat " " lighter)))))
+(defun td/compact-mode-line (file mode &optional lighter)
+  (eval-after-load file
+    `(diminish ,mode ,(when lighter (concat " " lighter)))))
 
-  (mapc (lambda (args)
-          (apply #'td/compact-mode-line args))
-        '(("company" 'company-mode "CP")
-          ("yasnippet" 'yas-minor-mode "Y")
-          ("eldoc" 'eldoc-mode "Doc")
-          ("flycheck" 'flycheck-mode "Chk")
-          ("projectile" 'projectile-mode "Proj")
-          ("flyspell" 'flyspell-mode "Spell")
-          ("emmet-mode" 'emmet-mode "Em")
-          ("hideshow" 'hs-minor-mode)
-          ("undo-tree" 'undo-tree-mode)
-          ("rainbow-mode" 'rainbow-mode)
-          ("isearch-mode" 'isearch-mode)
-          ("abbrev" 'abbrev-mode)
-          ("sackspace" 'sackspace-mode))))
+(mapc (lambda (args)
+        (apply #'td/compact-mode-line args))
+      '(("company" 'company-mode "CP")
+        ("yasnippet" 'yas-minor-mode "Y")
+        ("eldoc" 'eldoc-mode "Doc")
+        ("flycheck" 'flycheck-mode "Chk")
+        ("projectile" 'projectile-mode "Proj")
+        ("flyspell" 'flyspell-mode "Spell")
+        ("emmet-mode" 'emmet-mode "Em")
+        ("hideshow" 'hs-minor-mode)
+        ("undo-tree" 'undo-tree-mode)
+        ("rainbow-mode" 'rainbow-mode)
+        ("isearch-mode" 'isearch-mode)
+        ("abbrev" 'abbrev-mode)
+        ("sackspace" 'sackspace-mode)))
 
 ;;;; ibuffer
 (td/after 'ibuffer
@@ -443,9 +416,8 @@ changed my mind and use one theme with my own custom theme now"
 (autoload 'company-lines
   "company-lines" nil :interactive)
 
-(td/after 'company-autoloads
-  (global-company-mode t)
-  (setq completion-cycle-threshold 5))
+(global-company-mode t)
+(setq completion-cycle-threshold 5)
 
 (td/after 'company
   (setq company-idle-delay nil
@@ -469,6 +441,7 @@ changed my mind and use one theme with my own custom theme now"
         company-backends
         '((company-yasnippet
            company-dabbrev-code company-keywords
+           company-semantic
            company-capf
            company-inf-python
            ;; company-go
@@ -506,15 +479,20 @@ changed my mind and use one theme with my own custom theme now"
            [remap indent-for-tab-command] #'company-complete-dwim))
 
 ;;;; ido
-(td/after 'smex-autoloads
-  (setq smex-save-file (td/data-file "smex"))
-  (smex-initialize)
-  (td/bind "M-m" #'smex
-           "C-c C-m" #'smex))
+(setq smex-save-file (td/data-file "smex"))
+(smex-initialize)
+(td/bind "M-m" #'smex
+         "C-c C-m" #'smex)
 
 (ido-mode t)
 
 (td/after 'ido
+  (ido-ubiquitous-mode t)
+  (setq ido-ubiquitous-enable-old-style-default nil)
+
+  (ido-vertical-mode t)
+  (setq ido-vertical-define-keys nil)
+
   (setq ido-enable-dot-prefix t
         ido-use-virtual-buffers t
         ido-auto-merge-work-directories-length -1
@@ -522,9 +500,6 @@ changed my mind and use one theme with my own custom theme now"
         ido-save-directory-list-file (td/data-file "ido.last")
         ido-enable-flex-matching t
         ido-case-fold t
-        ido-ignore-files '("ido.last" ".*-autoloads.el")
-        ido-ignore-directories
-        '("\\`CVS/" "\\`\\.\\./" "\\`\\./" "node_modules" "build" "dist")
         ido-file-extensions-order
         '(".rb" ".py" ".clj" ".cljs" ".el" ".coffee" ".js"
           ".scss" ".php" ".html" t)
@@ -569,20 +544,9 @@ changed my mind and use one theme with my own custom theme now"
 
   (add-hook 'ido-setup-hook #'td/ido-hook))
 
-(td/after 'ido-ubiquitous-autoloads
-  (ido-ubiquitous-mode t))
-
-(td/after 'ido-ubiquitous
-  (setq ido-ubiquitous-enable-old-style-default nil))
-
-(td/after 'ido-vertical-mode-autoloads
-  (ido-vertical-mode t))
-
 ;;;; projectile
-(td/after 'projectile-autoloads
+(td/on 'after-init-hook
   (projectile-global-mode)
-
-  (add-to-list 'projectile-globally-ignored-directories "node_modules")
 
   (td/bind "M-l" #'projectile-find-file))
 
@@ -595,6 +559,8 @@ changed my mind and use one theme with my own custom theme now"
 ;;;; spell
 ;; (add-hook 'text-mode-hook #'turn-on-flyspell)
 ;; (add-hook 'prog-mode-hook #'flyspell-prog-mode)
+
+(add-hook 'text-mode-hook #'turn-on-auto-fill)
 
 (td/after 'ispell
   (setq ispell-extra-args '("-C")))
@@ -620,7 +586,7 @@ changed my mind and use one theme with my own custom theme now"
 (td/bind "C-c s" #'ido-ispell-word-at-point)
 
 ;;;; yasnippets
-(td/after 'yasnippet-autoloads
+(td/on 'after-init-hook
   (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
   (run-with-idle-timer 2 nil #'yas-global-mode t))
 
@@ -636,19 +602,17 @@ changed my mind and use one theme with my own custom theme now"
            "SPC" #'yas-expand))
 
 ;;;; rainbow-mode
-(td/after 'rainbow-mode-autoloads
-  (add-hook 'css-mode-hook #'rainbow-mode))
+(add-hook 'css-mode-hook #'rainbow-mode)
 
 ;;;; expand-region
 (td/bind "M--" #'er/expand-region)
 
 ;;;; multiple-cursors
-(td/after 'multiple-cursors-autoloads
-  (td/bind "M-(" #'mc/mark-previous-like-this
-           "M-)" #'mc/mark-next-like-this
-           "M-9" #'mc/skip-to-previous-like-this
-           "M-0" #'mc/skip-to-next-like-this
-           "C-c a" #'mc/mark-all-like-this))
+(td/bind "M-(" #'mc/mark-previous-like-this
+         "M-)" #'mc/mark-next-like-this
+         "M-9" #'mc/skip-to-previous-like-this
+         "M-0" #'mc/skip-to-next-like-this
+         "C-c a" #'mc/mark-all-like-this)
 
 ;;;; org
 (td/after 'org
@@ -658,7 +622,7 @@ changed my mind and use one theme with my own custom theme now"
 
   (add-hook 'org-mode-hook #'turn-on-flyspell)
 
-  (add-to-list 'org-export-latex-packages-alist '("" "minted"))
+  ;; (add-to-list 'org-export-latex-packages-alist '("" "minted"))
 
   (setq org-agenda-files
         '("~/Dropbox/gtd.org" "~/Dropbox/archives.org"))
@@ -684,13 +648,12 @@ changed my mind and use one theme with my own custom theme now"
               "a" #'org-agenda)
 
 ;;;; rainbow-delimiters
-(td/after 'rainbow-delimiters-autoloads
-  (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable)
-  (add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable))
+(add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode-enable)
+(add-hook 'clojure-mode-hook #'rainbow-delimiters-mode-enable)
+(add-hook 'nrepl-mode-hook #'rainbow-delimiters-mode-enable)
 
 ;;;; diff-hl
-(td/after 'diff-hl-autoloads
+(td/on 'after-init-hook
   (global-diff-hl-mode))
 
 (td/after 'diff-hl
@@ -701,7 +664,7 @@ changed my mind and use one theme with my own custom theme now"
   (defun td/diff-hl-bmp (type pos) 'td/diff-hl-bmp)
 
   (defadvice magit-mode-quit-window
-    (after update-diff-hl activate)
+      (after update-diff-hl activate)
     (mapc (lambda (buffer)
             (with-current-buffer buffer (diff-hl-update)))
           (buffer-list)))
@@ -725,7 +688,7 @@ changed my mind and use one theme with my own custom theme now"
          (td/make-diff-hl-margin-spec 'unknown "| "))))
 
 ;;;; evil
-(td/after 'evil-autoloads
+(td/on 'after-init-hook
   (evil-mode t)
   (setq-default mode-line-format
                 (cons '(evil-mode ("" evil-mode-line-tag)) mode-line-format)))
@@ -786,6 +749,7 @@ changed my mind and use one theme with my own custom theme now"
           epa-key-list-mode
           help-mode
           dired-mode
+          secrets-mode
           wdired-mode))
 
   (mapc (lambda (mode)
@@ -822,8 +786,7 @@ changed my mind and use one theme with my own custom theme now"
             #'td/mc-evil-back-to-previous-state))
 
 ;;;; undo-tree
-(td/after 'undo-tree-autoloads
-  (global-undo-tree-mode t))
+(global-undo-tree-mode t)
 
 (td/after 'undo-tree
   (setq undo-limit (* 128 1024 1024)
@@ -836,12 +799,10 @@ changed my mind and use one theme with my own custom theme now"
         (list (cons "." (td/data-file "undos")))))
 
 ;;;; ace-jump-mode
-(td/after 'ace-jump-mode-autoloads
-  (td/bind "M-'" #'ace-jump-mode))
+(td/bind "M-'" #'ace-jump-mode)
 
 ;;;; magit
-(td/after 'magit-autoloads
-  (td/bind "C-c g" #'magit-status))
+(td/bind "C-c g" #'magit-status)
 
 (td/after 'magit
   (setq magit-restore-window-configuration t
@@ -867,6 +828,7 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; electric
 (electric-pair-mode t)
+(electric-indent-mode t)
 
 (defun td/smart-brace ()
   (when (and (eq last-command-event ?\n)
@@ -943,7 +905,7 @@ changed my mind and use one theme with my own custom theme now"
 
 (td/after 'hideshowvis
   (defadvice display-code-line-counts
-    (around hideshowvis-no-line-count activate)
+      (around hideshowvis-no-line-count activate)
     ad-do-it
     (overlay-put ov 'display " ...")))
 
@@ -1006,22 +968,33 @@ changed my mind and use one theme with my own custom theme now"
 
 (add-hook 'prog-mode-hook #'td/custom-font-lock-hightlights)
 
-;;;; flycheck
-(td/after 'flycheck-autoloads
-  (defun turn-on-flycheck ()
-    (interactive)
-    (flycheck-mode t))
+(semantic-mode t)
 
-  (mapc (lambda (hook)
-          (add-hook hook #'turn-on-flycheck))
-        '(go-mode-hook
-          emacs-lisp-mode-hook
-          js-mode-hook
-          coffee-mode-hook
-          python-mode-hook
-          ruby-mode-hook
-          rust-mode-hook
-          sh-mode-hook)))
+(td/after 'semantic
+  (add-to-list 'semantic-default-submodes
+               'global-semantic-decoration-mode)
+  (add-to-list 'semantic-default-submodes
+               'global-semantic-idle-summary-mode)
+  (add-to-list 'semantic-default-submodes
+               'global-semantic-idle-local-symbol-highlight-mode)
+  (add-to-list 'semantic-default-submodes
+               'global-semantic-mru-bookmark-mode))
+
+;;;; flycheck
+(defun turn-on-flycheck ()
+  (interactive)
+  (flycheck-mode t))
+
+(mapc (lambda (hook)
+        (add-hook hook #'turn-on-flycheck))
+      '(go-mode-hook
+        emacs-lisp-mode-hook
+        js-mode-hook
+        coffee-mode-hook
+        python-mode-hook
+        ruby-mode-hook
+        rust-mode-hook
+        sh-mode-hook))
 
 (td/after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save))
@@ -1036,50 +1009,48 @@ changed my mind and use one theme with my own custom theme now"
          "\\.html" "*twig*" "*tmpl*" "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$"
          "\\.ctp$" "\\.tpl$" "/\\(html\\|view\\|template\\|layout\\)/.*\\.php$")
 
-(td/after 'mmm-mode-autoloads
-  (setq mmm-global-mode 'maybe
-        mmm-submode-decoration-level 0
-        mmm-parse-when-idle t)
+(setq mmm-global-mode 'maybe
+      mmm-submode-decoration-level 0
+      mmm-parse-when-idle t)
 
-  (require 'mmm-auto)
-  (require 'mmm-sample)
+(require 'mmm-auto)
+(require 'mmm-sample)
 
-  (mmm-add-mode-ext-class 'html-mode nil 'html-js)
-  (mmm-add-mode-ext-class 'html-mode nil 'html-css)
-  (mmm-add-mode-ext-class 'html-mode "\\.ejs\\'" 'ejs)
-  (mmm-add-mode-ext-class 'html-mode "\\.\\(erb\\|rhtml\\)\\'" 'erb)
-  (mmm-add-mode-ext-class 'html-mode "\\.\\(html\\|html\\.php\\|tmpl\\|ctp\\|tpl\\)\\'" 'html-php)
-  (mmm-add-mode-ext-class 'html-mode "/\\(html\\|view\\|template\\|layout\\)/.*\\.php\\'" 'html-php)
-  (mmm-add-mode-ext-class 'sh-mode nil 'here-doc)
-  (mmm-add-mode-ext-class 'php-mode nil 'here-doc)
-  (mmm-add-mode-ext-class 'ruby-mode nil 'here-doc)
+(mmm-add-mode-ext-class 'html-mode nil 'html-js)
+(mmm-add-mode-ext-class 'html-mode nil 'html-css)
+(mmm-add-mode-ext-class 'html-mode "\\.ejs\\'" 'ejs)
+(mmm-add-mode-ext-class 'html-mode "\\.\\(erb\\|rhtml\\)\\'" 'erb)
+(mmm-add-mode-ext-class 'html-mode "\\.\\(html\\|html\\.php\\|tmpl\\|ctp\\|tpl\\)\\'" 'html-php)
+(mmm-add-mode-ext-class 'html-mode "/\\(html\\|view\\|template\\|layout\\)/.*\\.php\\'" 'html-php)
+(mmm-add-mode-ext-class 'sh-mode nil 'here-doc)
+(mmm-add-mode-ext-class 'php-mode nil 'here-doc)
+(mmm-add-mode-ext-class 'ruby-mode nil 'here-doc)
 
-  (defun td/mmm-yaml-front-matter-verify ()
-    (eq (line-beginning-position) (point-min)))
+(defun td/mmm-yaml-front-matter-verify ()
+  (eq (line-beginning-position) (point-min)))
 
-  (mmm-add-group
-   'markdown-extensions
-   '((markdown-code-block
-      :front "^\\([`~]\\{3,\\}\\)\\([a-zA-Z0-9_-]+\\)$"
-      :front-offset (end-of-line 1)
-      :save-matches 1
-      :back "^~1$"
-      :match-submode mmm-here-doc-get-mode
-      :insert ((?c markdown-code-block
-                   "Code Block Name: " @ "```" str _ "\n" @ "\n" @ "```" "\n" @)))
-     (markdown-yaml-front-matter
-      :front "^\\(-\\{3,\\}\\)$"
-      :front-verify td/mmm-yaml-front-matter-verify
-      :front-offset (end-of-line 1)
-      :save-matches 1
-      :back "^~1$"
-      :submode yaml-mode)))
-  (mmm-add-mode-ext-class 'markdown-mode nil 'markdown-extensions))
+(mmm-add-group
+ 'markdown-extensions
+ '((markdown-code-block
+    :front "^\\([`~]\\{3,\\}\\)\\([a-zA-Z0-9_-]+\\)$"
+    :front-offset (end-of-line 1)
+    :save-matches 1
+    :back "^~1$"
+    :match-submode mmm-here-doc-get-mode
+    :insert ((?c markdown-code-block
+                 "Code Block Name: " @ "```" str _ "\n" @ "\n" @ "```" "\n" @)))
+   (markdown-yaml-front-matter
+    :front "^\\(-\\{3,\\}\\)$"
+    :front-verify td/mmm-yaml-front-matter-verify
+    :front-offset (end-of-line 1)
+    :save-matches 1
+    :back "^~1$"
+    :submode yaml-mode)))
+(mmm-add-mode-ext-class 'markdown-mode nil 'markdown-extensions)
 
-(td/after 'emmet-mode-autoloads
-  (add-hook 'sgml-mode-hook #'emmet-mode)
-  (add-hook 'web-mode-hook #'emmet-mode)
-  (add-hook 'css-mode-hook #'emmet-mode))
+(add-hook 'sgml-mode-hook #'emmet-mode)
+(add-hook 'web-mode-hook #'emmet-mode)
+(add-hook 'css-mode-hook #'emmet-mode)
 
 (td/after 'emmet-mode
   (setq emmet-indentation 2
@@ -1087,20 +1058,19 @@ changed my mind and use one theme with my own custom theme now"
         emmet-insert-flash-time 0.1)
 
   (defadvice emmet-preview
-    (after emmet-preview-hide-tooltip activate)
+      (after emmet-preview-hide-tooltip activate)
     (overlay-put emmet-preview-output 'before-string nil)))
 
 ;;;; javascript
 (td/after 'js
+  (require 'td-js)
+
   (setq js-indent-level 2
         js-expr-indent-offset 2
         js-flat-functions t)
 
-  (defun td/javascript-style ()
-    (interactive)
-    (c-set-offset 'arglist-cont '+))
-
-  (add-hook 'js-mode-hook #'td/javascript-style))
+  ;; (td/on 'js-mode-hook (tern-mode t))
+  )
 
 (td/after 'js-comint
   ;; TODO: this package need serious love
@@ -1112,20 +1082,8 @@ changed my mind and use one theme with my own custom theme now"
 
   (add-hook 'inferior-js-mode-hook #'td/setup-inferior-js))
 
-(td/after 'tern-autoloads
-  (td/on 'js-mode-hook (tern-mode t)))
-
-;;;; typescript
-(td/after 'tss-autoloads
-  (td/mode 'typescript-mode "\\.ts$"))
-
-(td/after 'typescript
-  (tss-config-default))
-
 ;;;; coffee
-(td/after 'coffee-mode-autoloads
-  (setq )
-  (td/mode 'coffee-mode "\\.coffee$" "Cakefile"))
+(td/mode 'coffee-mode "\\.coffee$" "Cakefile")
 
 ;;;; css
 (defun td/css-imenu-expressions ()
@@ -1154,7 +1112,7 @@ changed my mind and use one theme with my own custom theme now"
         eldoc-echo-area-use-multiline-p nil)
 
   (defadvice eldoc-display-message-no-interference-p
-    (after eldoc-no-interference-isearch activate)
+      (after eldoc-no-interference-isearch activate)
     (setq ad-return-value
           (and ad-return-value (not isearch-mode)))))
 
@@ -1209,23 +1167,6 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; c
 
-;;;; vala
-(autoload 'vala-mode "vala-mode"
-  "Major mode for editing Vala files; updated for Emacs 24.")
-
-(td/mode 'vala-mode "\\.vala$")
-
-(td/after 'vala-mode
-  (defun td/vala-style ()
-    (interactive)
-    (setq c-basic-offset 4
-          indent-tabs-mode nil)
-    (c-set-offset 'arglist-intro '+)
-    (c-set-offset 'arglist-cont '+)
-    (c-set-offset 'arglist-cont-nonempty '+))
-
-  (add-hook 'vala-mode-hook #'td/vala-style))
-
 ;;;; java
 (td/after 'javadoc-lookup
   (javadoc-add-roots "~/local/docs/jdk/docs/api"))
@@ -1258,8 +1199,7 @@ changed my mind and use one theme with my own custom theme now"
   (setq rust-indent-offset 4))
 
 ;;;; markdown
-(td/after 'markdown-mode-autoloads
-  (td/mode 'markdown-mode "\\.md$" "\\.mkd$" "\\.markdown$"))
+(td/mode 'markdown-mode "\\.md$" "\\.mkd$" "\\.markdown$")
 
 (td/after 'markdown-mode
   (setq markdown-command "redcarpet"
@@ -1308,7 +1248,7 @@ changed my mind and use one theme with my own custom theme now"
         circe-network-options
         `(("Freenode"
            :nick "tungd"
-           :pass ,td/freenode-password
+           :pass ,secrets/freenode-password
            :realname user-full-name
            :channels ("#emacs" "#clojure" "#ruby" "#reactjs" "#archlinux" "#ubuntu-vn"))))
 
@@ -1540,5 +1480,5 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; advices
 (defadvice save-buffers-kill-emacs
-  (around no-query-kill-emacs activate)
+    (around no-query-kill-emacs activate)
   (cl-labels ((process-list ())) ad-do-it))

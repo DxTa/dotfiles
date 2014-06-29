@@ -22,6 +22,7 @@
              diminish
              emmet-mode
              epl
+             espresso-theme
              evil
              evil-matchit
              evil-surround
@@ -42,7 +43,6 @@
              mmm-mode
              multiple-cursors
              number-font-lock-mode
-             package-filter
              php-mode
              popwin
              projectile
