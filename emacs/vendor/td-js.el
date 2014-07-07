@@ -1,27 +1,22 @@
 
-(defadvice js--proper-indentation (after js-my-indentation activate)
-  ;; Leading comma style
-  ;; (save-excursion
-  ;;   (back-to-indentation)
-  ;;   (if (looking-at ",")
-  ;;       (re-search-backward js--declaration-keyword-re (point-min) t)
-  ;;       (setq ad-return-value
-  ;;             (+ (current-column) js-expr-indent-offset))))
-  ;; Bracket related
-  (when (nth 1 parse-status)
-    (save-excursion
-      (let ((continued-expr-p (js--continued-expression-p)))
-        (goto-char (nth 1 parse-status))
-        (if (looking-at "[({[]\\s-*\\(/[/*]\\|$\\)")
-            ;; Continued expression
-            (when continued-expr-p
-              (skip-syntax-backward " ")
-              (when (eq (char-before) ?\)) (backward-list))
-              (back-to-indentation)
-              (setq ad-return-value
-                    (+ (current-column) js-indent-level js-expr-indent-offset)))
-          ;; argslist-cont
-          (setq ad-return-value
-                (+ js-indent-level js-expr-indent-offset)))))))
+;; Switched to js2-mode
+(td/after 'js
+  (require 'js-indentation)
 
-(provide 'td-js)
+  (setq-default js-indent-level 2
+                js-expr-indent-offset 2
+                js-flat-functions t)
+
+  (td/on 'js-mode-hook (tern-mode t)))
+
+
+;; Use my own vendored js-comint
+(td/after 'js-comint
+  ;; TODO: this package need serious love
+  (setenv "NODE_NO_READLINE" "1")
+  (setq inferior-js-program-command "node")
+
+  (defun td/setup-inferior-js ()
+    (ansi-color-for-comint-mode-on))
+
+  (add-hook 'inferior-js-mode-hook #'td/setup-inferior-js))
