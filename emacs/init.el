@@ -7,7 +7,7 @@
 (fringe-mode '(16 . 0))
 
 ;;;; packages
-(require 'td-package "~/.emacs.d/vendor/td-package.el")
+(require 'packages "~/.emacs.d/packages.el")
 
 ;;;; vendors
 (add-to-list 'load-path (expand-file-name "vendor" user-emacs-directory))
@@ -25,6 +25,7 @@
 (setq user-emacs-directory "~/.emacs.d/data/")
 
 (defalias 'td/after 'with-eval-after-load)
+(defalias 'td/set 'setq-default)
 
 (defmacro td/cmd (&rest body)
   `(lambda () (interactive) ,@body))
@@ -117,16 +118,18 @@
 ;;;; keys
 (td/bind "C-M-f" #'td/toggle-fullscreen)
 (td/bind "M-m" #'execute-extended-command)
+
 (td/bind "M-n" (td/cmd (next-line 10)))
 (td/bind "M-p" (td/cmd (previous-line 10)))
+(td/bind "M-j" #'other-window)
+(td/bind "M-k" (td/cmd (other-window -1)))
+(td/bind "M-`" #'other-frame)
 
 (td/bind "RET" #'newline-and-indent)
 
 (td/bind "M-=" #'cleanup-buffer)
 (td/bind "C-=" #'indent-defun)
 
-;; (td/bind "M-j" #'other-window)
-(td/bind "M-`" #'other-frame)
 (td/bind "C-c q" #'delete-frame)
 (td/bind "C-c Q" #'delete-window)
 (td/bind "C-c k" #'kill-buffer-and-window)
@@ -168,12 +171,12 @@
       x-select-enable-clipboard nil
       frame-title-format '("%b %+%+ %f")
       default-input-method 'vietnamese-telex
-      tab-stop-list (number-sequence 2 128 2)
       history-length 256
       confirm-nonexistent-file-or-buffer nil
       comment-style 'multi-line
       require-final-newline t
-      mode-require-final-newline nil)
+      mode-require-final-newline nil
+      create-lockfiles nil)
 
 (setq-default major-mode 'text-mode
               tab-width 2
@@ -192,8 +195,6 @@
 (global-auto-revert-mode t)
 (savehist-mode t)
 (pending-delete-mode t)
-
-(ignoramus-setup)
 
 ;;;; encoding
 (setq eol-mnemonic-dos " dos "
@@ -227,7 +228,6 @@
         tramp-default-method "ftp")
 
   (add-to-list 'auth-sources "~/.emacs.d/authinfo.gpg")
-
   (setq ange-ftp-netrc-filename "~/.emacs.d/authinfo.gpg"))
 
 ;;;; file
@@ -316,7 +316,8 @@ changed my mind and use one theme with my own custom theme now"
 (popwin-mode t)
 
 (td/after 'popwin
-  (setq popwin:special-display-config
+  (mapc (lambda (c)
+          (add-to-list 'popwin:special-display-config c))
         '(("*Help*"  :height 15)
           ("*Completions*" :noselect t)
           ("*Messages*" :noselect t :height 15)
@@ -326,9 +327,6 @@ changed my mind and use one theme with my own custom theme now"
           ("*Messages*" :height 15)
           ("*Occur*" :noselect t)
           ("*Ido Completions*" :noselect t :height 15)
-          ;; ("*magit-commit*" :noselect t :height 40 :width 80 :stick t)
-          ;; ("*magit-diff*" :noselect t :height 40 :width 80)
-          ;; ("*magit-edit-log*" :noselect t :height 15 :width 80)
           ("\\*ansi-term\\*.*" :regexp t :height 15)
           ("*shell*" :height 15)
           ("*cider-error*" :height 15 :stick t)
@@ -336,7 +334,8 @@ changed my mind and use one theme with my own custom theme now"
           ("*cider-src*" :height 15 :stick t)
           ("*cider-result*" :height 15 :stick t)
           ("*cider-macroexpansion*" :height 15 :stick t)
-          ("*Compile-Log*" :height 15 :stick t))))
+          ("*Compile-Log*" :height 15 :stick t)
+          (ag-mode :height 15))))
 
 ;;;; diminish
 (defun td/compact-mode-line (file mode &optional lighter)
@@ -548,7 +547,12 @@ changed my mind and use one theme with my own custom theme now"
 (td/on 'after-init-hook
   (projectile-global-mode)
 
-  (td/bind "M-l" #'projectile-find-file))
+  (td/bind "M-l" #'projectile-find-file
+           [remap projectile-ack] #'projectile-ag
+           [remap projectile-grep] #'projectile-ag))
+
+;;;; wgrep
+(add-hook 'ag-mode-hook #'wgrep-setup)
 
 ;;;; diff
 (td/after 'ediff
@@ -938,15 +942,17 @@ changed my mind and use one theme with my own custom theme now"
 
 ;; dired
 (td/after 'dired
-  (setq dired-listing-switches "-alh")
+  (setq dired-listing-switches "-alh"
+        dired-recursive-copies 'always
+        dired-recursive-deletes 'always)
 
   (defun td/dired-back-to-top ()
     (interactive)
     (goto-char (point-min))
     (dired-next-line 4))
 
-  (define-key dired-mode-map
-    (vector 'remap 'beginning-of-buffer) 'td/dired-back-to-top)
+  (td/bind dired-mode-map
+           [remap beginning-of-buffer] 'td/dired-back-to-top)
 
   (defun td/dired-jump-to-bottom ()
     (interactive)
@@ -968,18 +974,6 @@ changed my mind and use one theme with my own custom theme now"
 
 (add-hook 'prog-mode-hook #'td/custom-font-lock-hightlights)
 
-(semantic-mode t)
-
-(td/after 'semantic
-  (add-to-list 'semantic-default-submodes
-               'global-semantic-decoration-mode)
-  (add-to-list 'semantic-default-submodes
-               'global-semantic-idle-summary-mode)
-  (add-to-list 'semantic-default-submodes
-               'global-semantic-idle-local-symbol-highlight-mode)
-  (add-to-list 'semantic-default-submodes
-               'global-semantic-mru-bookmark-mode))
-
 ;;;; flycheck
 (defun turn-on-flycheck ()
   (interactive)
@@ -990,6 +984,7 @@ changed my mind and use one theme with my own custom theme now"
       '(go-mode-hook
         emacs-lisp-mode-hook
         js-mode-hook
+        js2-mode-hook
         coffee-mode-hook
         python-mode-hook
         ruby-mode-hook
@@ -1010,7 +1005,6 @@ changed my mind and use one theme with my own custom theme now"
          "\\.ctp$" "\\.tpl$" "/\\(html\\|view\\|template\\|layout\\)/.*\\.php$")
 
 (setq mmm-global-mode 'maybe
-      mmm-submode-decoration-level 0
       mmm-parse-when-idle t)
 
 (require 'mmm-auto)
@@ -1062,25 +1056,28 @@ changed my mind and use one theme with my own custom theme now"
     (overlay-put emmet-preview-output 'before-string nil)))
 
 ;;;; javascript
+(td/mode 'js2-mode "\\.js$")
+
+(td/after 'js2-mode
+  (require 'js-indentation)
+
+  (setq-default js2-basic-offset 2
+                js2-highlight-level 3
+                js2-idle-timer-delay 0
+                js2-mode-show-parse-errors nil
+                js2-strict-missing-semi-warning nil
+                js2-indent-switch-body t
+                js2-bounce-indent-p nil
+                js2-include-node-externs t
+                js2-global-externs
+                '("jQuery" "Zepto" "$" "location" "Image" "describe" "it"))
+
+  (td/on 'js2-mode-hook (tern-mode t)))
+
+(td/mode 'json-mode "\\.json$" "\\.tern-project")
+
 (td/after 'js
-  (require 'td-js)
-
-  (setq js-indent-level 2
-        js-expr-indent-offset 2
-        js-flat-functions t)
-
-  ;; (td/on 'js-mode-hook (tern-mode t))
-  )
-
-(td/after 'js-comint
-  ;; TODO: this package need serious love
-  (setenv "NODE_NO_READLINE" "1")
-  (setq inferior-js-program-command "node")
-
-  (defun td/setup-inferior-js ()
-    (ansi-color-for-comint-mode-on))
-
-  (add-hook 'inferior-js-mode-hook #'td/setup-inferior-js))
+  (setq js-indent-level 2))
 
 ;;;; coffee
 (td/mode 'coffee-mode "\\.coffee$" "Cakefile")
@@ -1167,6 +1164,23 @@ changed my mind and use one theme with my own custom theme now"
 
 ;;;; c
 
+;;;; vala
+(autoload 'vala-mode "vala-mode"
+  "Major mode for editing Vala files; updated for Emacs 24.")
+
+(td/mode 'vala-mode "\\.vala$")
+
+(td/after 'vala-mode
+  (defun td/vala-style ()
+    (interactive)
+    (setq c-basic-offset 4
+          indent-tabs-mode nil)
+    (c-set-offset 'arglist-intro '+)
+    (c-set-offset 'arglist-cont '+)
+    (c-set-offset 'arglist-cont-nonempty '+))
+
+  (add-hook 'vala-mode-hook #'td/vala-style))
+
 ;;;; java
 (td/after 'javadoc-lookup
   (javadoc-add-roots "~/local/docs/jdk/docs/api"))
@@ -1222,6 +1236,13 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'sh-script
   (setq sh-basic-offset 2
         sh-indentation 2))
+
+;;;; deft
+(setq-default deft-extension "org"
+              deft-text-mode 'org-mode
+              deft-directory "~/Dropbox/Notes"
+              deft-use-filename-as-title t)
+
 
 ;;;; popup shell
 ;; shamlessly copy from http://tsdh.wordpress.com/2011/10/12/a-quick-pop-up-shell-for-emacs/
@@ -1281,6 +1302,8 @@ changed my mind and use one theme with my own custom theme now"
   (add-hook 'circe-channel-mode-hook #'enable-lui-autopaste))
 
 ;;;; commands
+(ignoramus-setup)
+
 (defmacro with-region-or-current-line (&rest body)
   (declare (indent defun) (debug t))
   `(if (region-active-p) ,@body
