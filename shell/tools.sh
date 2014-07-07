@@ -4,7 +4,7 @@ if [ -d $HOME/cli/bin ]; then
   export PATH=$HOME/cli/bin:$PATH
 fi
 
-LOCAL=$HOME/local
+LOCAL=$HOME/.local
 if [ -d $LOCAL/bin ]; then
   export PATH=$LOCAL/bin:$PATH
 fi
