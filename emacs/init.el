@@ -1070,14 +1070,17 @@ changed my mind and use one theme with my own custom theme now"
                 js2-bounce-indent-p nil
                 js2-include-node-externs t
                 js2-global-externs
-                '("jQuery" "Zepto" "$" "location" "Image" "describe" "it"))
+                '("jQuery" "Zepto" "$" "location" "Image" "describe" "it" "goog"))
 
   (td/on 'js2-mode-hook (tern-mode t)))
 
 (td/mode 'json-mode "\\.json$" "\\.tern-project")
 
 (td/after 'js
-  (setq js-indent-level 2))
+  ;; `js-mode' is still used in `mmm-mode' buffers.
+  (setq js-indent-level 2
+        js-expr-indent-offset 2
+        js-flat-functions t))
 
 ;;;; coffee
 (td/mode 'coffee-mode "\\.coffee$" "Cakefile")
