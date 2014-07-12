@@ -14,6 +14,9 @@ gtk-xft-antialias=1
 gtk-xft-hinting=1
 gtk-xft-hintstyle="hintmedium"
 gtk-xft-rgba="rgb"
+gtk-enable-event-sounds=true
+gtk-enable-input-feedback-sounds=true
+gtk-sound-theme-name=freedesktop
 ]]
 
 local gtk2rc = io.open(os.getenv("HOME") .. "/.gtkrc-2.0", "w")

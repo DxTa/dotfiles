@@ -28,5 +28,6 @@ mpdas &
 xautolock -time 15 -locker $HOME/cli/bin/i3lock-locker &
 clipit &
 dropboxd &
+pa-applet &
 
 exec awesome --no-argb

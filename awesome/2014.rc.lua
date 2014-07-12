@@ -64,7 +64,7 @@ local menu = awful.menu(
 
 -- Bindings
 local bindings = require("bindings")
-local alsa = require("alsa")
+-- local alsa = require("alsa")
 local mpd = require("mpd")
 
 root.keys(
@@ -76,9 +76,9 @@ root.keys(
       awful.key({ modkey }, "w", function () menu:toggle() end),
 
       -- Media
-      awful.key({}, "XF86AudioRaiseVolume", alsa.raise),
-      awful.key({}, "XF86AudioLowerVolume", alsa.lower),
-      awful.key({}, "XF86AudioMute", alsa.toggle),
+      -- awful.key({}, "XF86AudioRaiseVolume", alsa.raise),
+      -- awful.key({}, "XF86AudioLowerVolume", alsa.lower),
+      -- awful.key({}, "XF86AudioMute", alsa.toggle),
       awful.key({}, "XF86AudioPrev", mpd.prev),
       awful.key({}, "XF86AudioNext", mpd.next),
       awful.key({}, "XF86AudioPlay", mpd.toggle),
