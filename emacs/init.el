@@ -1,8 +1,10 @@
 
 ;; init.el --- tungd's Emacs configuration file
 (tool-bar-mode -1)
-(scroll-bar-mode -1)
-(blink-cursor-mode -1)
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+(when (fboundp 'blink-cursor-mode)
+  (blink-cursor-mode -1))
 
 (fringe-mode '(16 . 0))
 
@@ -307,7 +309,7 @@ changed my mind and use one theme with my own custom theme now"
   (setq hl-line-sticky-flag nil))
 
 ;;;; show-paren-mode
-(setq show-paren-delay 0)
+(setq-default show-paren-delay 0)
 (show-paren-mode t)
 
 ;;;; popwin
