@@ -488,6 +488,8 @@ changed my mind and use one theme with my own custom theme now"
 (ido-mode t)
 
 (td/after 'ido
+  (require 'ido-sort-mtime)
+
   (ido-ubiquitous-mode t)
   (setq ido-ubiquitous-enable-old-style-default nil)
 
