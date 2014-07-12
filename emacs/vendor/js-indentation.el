@@ -48,4 +48,7 @@
           (setq ad-return-value
                 (+ js-indent-level js-expr-indent-offset)))))))
 
+;; (ad-deactivate 'js--proper-indentation)
+
+
 (provide 'js-indentation)

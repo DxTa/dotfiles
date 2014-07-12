@@ -832,31 +832,36 @@ changed my mind and use one theme with my own custom theme now"
 (td/after 'vc-hooks
   (setq vc-follow-symlinks t))
 
-;;;; electric
-(electric-pair-mode t)
-(electric-indent-mode t)
 
-(defun td/smart-brace ()
-  (when (and (eq last-command-event ?\n)
-             (looking-at "[<}]"))
-    (indent-according-to-mode)
+(td/on 'after-init-hook
+  (smartparens-global-mode t))
+
+(td/after 'smartparens
+  (require 'smartparens-config)
+
+  (defun td/sp-open-block (&rest _)
+    "Equal to Smartparens' '||\n[i]', but more readable to me."
+    (newline-and-indent)
     (forward-line -1)
-    (end-of-line)
-    (newline-and-indent)))
+    (indent-according-to-mode))
 
-(defun td/smart-parenthesis ()
-  (when (and (eq last-command-event ?\s)
-             (or (and (looking-back "( " (- (point) 2))
-                      (looking-at ")"))
-                 (and (looking-back "{ " (- (point) 2))
-                      (looking-at "}"))
-                 (and (looking-back "\\[ " (- (point) 2))
-                      (looking-at "\\]"))))
+  (defun td/sp-open-spaced-pair (&rest _)
+    "Equal to Smartparens' '| ', but more readable to me."
     (insert " ")
-    (backward-char 1)))
+    (backward-char))
 
-(add-hook 'post-self-insert-hook #'td/smart-brace t)
-(add-hook 'post-self-insert-hook #'td/smart-parenthesis t)
+  (sp-pair "{" nil
+           :post-handlers '((td/sp-open-block "RET")
+                            (td/sp-open-block "<return>")
+                            (td/sp-open-spaced-pair "SPC")))
+  (sp-pair "[" nil
+           :post-handlers '((td/sp-open-block "RET")
+                            (td/sp-open-block "<return>")
+                            (td/sp-open-spaced-pair "SPC")))
+  (sp-pair "(" nil
+           :post-handlers '((td/sp-open-block "RET")
+                            (td/sp-open-block "<return>")
+                            (td/sp-open-spaced-pair "SPC"))))
 
 ;;;; typewriter-sound
 (autoload 'typewriter-mode
