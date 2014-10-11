@@ -8,11 +8,19 @@
 ;;; Code:
 
 ;; Cask manages our package dependencies
-(require 'cask "~/.cask/cask.el")
-(cask-initialize)
+(when (eq system-type 'windows-nt)
+  (require 'package)
+  (add-to-list 'package-archives
+	       '("melpa" . "http://melpa.milkbox.net/packages/") t)
+  (package-initialize))
 
-;; Pallet allows us to use Cask in tandem with package.el
-(require 'pallet)
+(when (or (eq system-type 'gnu/linux)
+	  (eq system-type 'darwin))
+  (require 'cask "~/.cask/cask.el")
+  (cask-initialize)
+  ;; Pallet allows us to use Cask in tandem with package.el
+
+  (require 'pallet))
 
 ;; Load up Org-babel
 (require 'ob-tangle)

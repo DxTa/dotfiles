@@ -512,23 +512,29 @@
        :defer t
        :config (setq vc-follow-symlinks t))
 
-     (use-package magit
-       :commands (magit-status magit-diff magit-log magit-blame-mode)
-       :bind ("C-c g" . magit-status)
-       :config
-       (progn
-         (setq magit-restore-window-configuration t
-               magit-save-some-buffers t
-               magit-commit-all-when-nothing-staged t)
+     ;; (use-package magit
+     ;;   :commands (magit-status magit-diff magit-log magit-blame-mode)
+     ;;   :bind ("C-c g" . magit-status)
+     ;;   :config
+     ;;   (progn
+     ;;     (setq magit-restore-window-configuration t
+     ;;           magit-save-some-buffers t
+     ;;           magit-commit-all-when-nothing-staged t)
 
-         (defun td/magit-quick-amend ()
-           (interactive)
-           (start-process-shell-command
-            "*magit-commit-amend*" nil
-            "git --no-pager commit --amend --reuse-message=HEAD")
-           (magit-refresh))
+     ;;     (defun td/magit-quick-amend ()
+     ;;       (interactive)
+     ;;       (start-process-shell-command
+     ;;        "*magit-commit-amend*" nil
+     ;;        "git --no-pager commit --amend --reuse-message=HEAD")
+     ;;       (magit-refresh))
 
-         (bind-key "C-c C-a" #'td/magit-quick-amend magit-status-mode-map)))
+     ;;     (bind-key "C-c C-a" #'td/magit-quick-amend magit-status-mode-map)))
+
+     (defun td/vc-projectile-root ()
+       (interactive)
+       (vc-dir (projectile-project-root)))
+
+     (bind-key "C-c g" 'td/vc-projectile-root)
    #+END_SRC
 
 ** Search and Replace
@@ -666,22 +672,24 @@
 
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
-     (use-package ispell
-       :defer t
-       :bind ("<f8>" . ispell-word)
-       :init (setq-default ispell-program-name "hunspell"
-                           ispell-skip-html t
-                           ispell-silently-savep t
-                           ispell-really-hunspell t))
+     (when (executable-find "hunspell")
+       (use-package ispell
+         :defer t
+         :bind ("<f8>" . ispell-word)
+         :init (setq-default ispell-program-name "hunspell"
+                             ispell-skip-html t
+                             ispell-silently-savep t
+                             ispell-really-hunspell t))
 
-     (use-package flyspell
-       :defer t
-       :idle (td/setup-flyspell))
+       (use-package flyspell
+         :defer t
+         :idle (td/setup-flyspell))
 
-     (defun td/setup-flyspell ()
-       (interactive)
-       ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-       (add-hook 'text-mode-hook 'flyspell-mode))
+       (defun td/setup-flyspell ()
+         (interactive)
+         ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+         (add-hook 'text-mode-hook 'flyspell-mode)))
+
    #+END_SRC
 
 ** Parentheses
