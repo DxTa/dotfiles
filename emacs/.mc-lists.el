@@ -11,6 +11,7 @@
         sp--self-insert-command
         sp-forward-slurp-sexp
         td/join-next-line
+        td/kill-region-or-word
         yas-expand
         ))
 

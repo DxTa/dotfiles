@@ -9,33 +9,30 @@
    repository]]. The meat of it (and the source of this document) is the
    =emacs.org= file.
 
-   Big thank to Noah Frederick for his [[https://github.com/noahfrederick/dots][awesome Emacs setup]]. I have
-   stolen many of his ideas.
+   Big thank to Noah Frederick for his [[https://github.com/noahfrederick/dots][awesome Emacs setup]]. I have stolen
+   many of his ideas.
 
 ** Installation
 
-   This configuration is intended to be installable from scratch. It
-   uses [[https://github.com/cask/cask][Cask]] to specify the package dependencies. [[https://github.com/rdallasgray/pallet][Pallet]] allows us to
-   use Cask in conjunction with =package.el= such that our =Cask= file is
-   kept up to date when we add and remove packages.
+   I use =package.el= to manage Emacs packages and their dependencies. [[https://github.com/cask/cask][Cask]]
+   is an alternative, however I find it hard to use on Windows, so I went
+   with the vanila =packages.el= instead.
 
-  - Install GNU Emacs 24 or later
-  - Install Cask from https://github.com/cask/cask
-  - Run =cask install= in =$HOME/.emacs.d=
+   Still, the setup is installable from scratch. Just start Emacs, open
+   =~/.emacs.d/packages.el= and evaluate the buffer;
 
 ** Commentary
 
-   Any variables, functions, or macros defined in this configuration
-   are "namespaced" with a prefix of ~td/~. This is only a convention
-   for easily distinguishing between built-in functions and those
-   defined in this configuration or another package, and has no other
-   special significance.
+   Any variables, functions, or macros defined in this configuration are
+   "namespaced" with a prefix of ~td/~. This is only a convention for easily
+   distinguishing between built-in functions and those defined in this
+   configuration or another package, and has no other special significance.
 
 ** Configuring Packages
 
-   We use [[https://github.com/jwiegley/use-package][use-package]] to autoload packages. It provides a DSL for
-   setting up autoloads and keybindings, and for deferring the loading
-   of packages that might otherwise slow down Emacs's startup.
+   I use [[https://github.com/jwiegley/use-package][use-package]] to autoload packages. It provides a DSL for setting up
+   autoloads and keybindings, and for deferring the loading of packages that
+   might otherwise slow down Emacs's startup.
 
    #+NAME: init-before
    #+BEGIN_SRC emacs-lisp :tangle no
@@ -43,14 +40,6 @@
    #+END_SRC
 
 * Emacs Initialization
-
-  Do GC less often.
-
-  #+name: init-before
-  #+begin_src emacs-lisp :tangle no
-    (setq gc-cons-percentage 0.4)
-    ;; (setq-default debug-on-error t)
-  #+end_src
 
 ** Paths
 
@@ -94,7 +83,7 @@
      (add-hook 'emacs-startup-hook 'td/show-startup-time 'append)
    #+END_SRC
 
-   [[https://github.com/dholm/benchmark-init-el][Benchmark-init.el]] can give us a breakdown of time spent on ~require~
+   [[https://github.com/dholm/benchmark-init-el][benchmark-init.el]] can give us a breakdown of time spent on ~require~
    and ~load~ calls:
 
    #+NAME: init-before
@@ -125,6 +114,9 @@
 
        ;; Derive PATH by running a shell so that GUI Emacs sessions have access to it
        (exec-path-from-shell-initialize))
+
+     (when (eq system-type 'windows-nt)
+       (add-to-list 'exec-path "C:\\MinGW\\msys\\1.0\\bin"))
    #+END_SRC
 
 ** Server
@@ -171,14 +163,9 @@
 ** Private
 
    Since this configuration is kept in version control in public view,
-   we keep sensitive information (mostly passwords) in a separate file
-   encrypted using GnuPG. The file is kept in ~.netrc~ format, so we
-   define a helper function to easily retrieve password by hostname.
-
-   #+NAME: init-before
-   #+BEGIN_SRC emacs-lisp :tangle no
-    ;; TODO
-   #+END_SRC
+   I keep sensitive information (mostly passwords) in a separate file
+   encrypted using GnuPG. The file is kept in ~.netrc~ format, so that it can
+   be used automagically by Tramp.
 
 ** Custom
 
@@ -297,9 +284,6 @@
 
      ;; Never require full word answers
      (defalias 'yes-or-no-p 'y-or-n-p)
-
-     ;; (setq linum-format "%4d ")
-     ;; (add-hook 'prog-mode-hook 'linum-mode)
    #+END_SRC
 
 ** Mode-line
@@ -335,11 +319,11 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     ;; (use-package rainbow-delimiters
-     ;;   :commands rainbow-delimiters-mode
-     ;;   :init
-     ;;   (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
-     ;;   (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode))
+     (use-package rainbow-delimiters
+       :commands rainbow-delimiters-mode
+       :init
+       (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
+       (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode))
    #+END_SRC
 
    I'm experimenting with the ~highlight-parentheses~. My impression is
@@ -365,11 +349,6 @@
   #+begin_src emacs-lisp :tangle no
     (which-function-mode t)
 
-    (use-package imenu
-      :bind ("C-c i" . imenu)
-      :config
-      (setq imenu-auto-rescan t))
-
     (use-package highlight-escape-sequences
       :idle (hes-mode t))
   #+end_src
@@ -381,10 +360,10 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (use-package rainbow-mode
-       :commands rainbow-turn-on
-       :init
-       (add-hook 'prog-mode-hook 'rainbow-turn-on))
+     ;; (use-package rainbow-mode
+     ;;   :commands rainbow-turn-on
+     ;;   :init
+     ;;   (add-hook 'prog-mode-hook 'rainbow-turn-on))
    #+END_SRC
 
 ** Code Folding
@@ -494,7 +473,10 @@
              (list (cons "." (expand-file-name "undos" td/data-directory)))))
    #+END_SRC
 
-   Magit provides featureful Git integration.
+   I used to be a =Magit= user, unfortunately at work I have to use Windows,
+   and Magit in Windows is slow as hell, so I fallback to =vc.el= which
+   shipped with Emacs by default. It is not terrible though, I even find it
+   usefull and consider it is a reasonable replacement for =Magit=.
 
    | Binding | Function                                        |
    |---------+-------------------------------------------------|
@@ -508,10 +490,65 @@
 
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
-     (use-package vc-hooks
+     (use-package vc
        :defer t
-       :config (setq vc-follow-symlinks t))
+       :config
+       (progn
+         (setq vc-follow-symlinks t)
 
+         (defun td/vc-git-command (verb fn)
+           (let* ((args (vc-deduce-fileset nil t))
+                  (backend (car args))
+                  (files (nth 1 args)))
+             (if (eq backend 'Git)
+                 (progn
+                   (funcall fn files)
+                   (message (concat verb " "
+                                    (number-to-string (length files))
+                                    " file(s).")))
+               (message "Not in a vc git buffer."))))
+
+         (defun td/vc-git-add (&optional revision args comment)
+           (interactive "P")
+           (td/vc-git-command "Staged" 'vc-git-register))
+
+         (defun td/vc-git-reset (&optional revision args comment)
+           (interactive "P")
+           (td/vc-git-command
+            "Unstaged"
+            (lambda (files) (vc-git-command nil 0 files "reset" "-q" "--"))))
+
+         (defun td/vc-git-amend (&optional revision args comment)
+           (interactive "P")
+           (td/vc-git-command
+            "Ammended"
+            (lambda (files)
+              (vc-git-command nil 0 files
+                              "commit" "--amend" "--reuse-message=HEAD"))))
+
+         (defadvice vc-dir-refresh
+             (after td/vc-hide-up-to-date-after-refresh activate)
+           (vc-dir-hide-up-to-date))
+
+         (bind-keys :map vc-dir-mode-map
+                    ("r" . vc-revert-buffer)
+                    ("a" . td/vc-git-add)
+                    ("u" . td/vc-git-reset)
+                    ("A" . td/vc-git-amend))
+
+         (bind-keys :map vc-prefix-map
+                    ("r" . vc-revert-buffer)
+                    ("a" . td/vc-git-add)
+                    ("u" . td/vc-git-reset))))
+
+     (defun td/vc-projectile-root ()
+       (interactive)
+       (vc-dir (projectile-project-root)))
+
+     (bind-key "C-c g" 'td/vc-projectile-root)
+   #+END_SRC
+
+   #+begin_src emacs-lisp
      ;; (use-package magit
      ;;   :commands (magit-status magit-diff magit-log magit-blame-mode)
      ;;   :bind ("C-c g" . magit-status)
@@ -529,13 +566,8 @@
      ;;       (magit-refresh))
 
      ;;     (bind-key "C-c C-a" #'td/magit-quick-amend magit-status-mode-map)))
+   #+end_src
 
-     (defun td/vc-projectile-root ()
-       (interactive)
-       (vc-dir (projectile-project-root)))
-
-     (bind-key "C-c g" 'td/vc-projectile-root)
-   #+END_SRC
 
 ** Search and Replace
 
@@ -634,7 +666,7 @@
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq-default comment-auto-fill-only-comments t
-                   fill-column 80)
+                   fill-column 75)
      (add-hook 'text-mode-hook 'turn-on-auto-fill)
      (add-hook 'prog-mode-hook 'turn-on-auto-fill)
    #+END_SRC
@@ -721,6 +753,8 @@
        (progn
          (require 'smartparens-config)
          (sp-use-smartparens-bindings)
+
+         (setq sp-autoinsert-if-followed-by-same 1)
 
          (sp-pair "{" nil
                   :post-handlers '(:add ("||\n[i]" "RET") ("| " "SPC")))
@@ -989,7 +1023,35 @@
          (bind-key "SPC" 'yas-expand yas-minor-mode-map)))
    #+END_SRC
 
+** Diff
+
+   #+NAME: editing
+   #+begin_src emacs-lisp :tangle no
+     (use-package ediff
+       :defer t
+       :init
+       (progn
+         (defun td/ediff-from-command-line (switch)
+           (let ((file-a (pop command-line-args-left))
+                 (file-b (pop command-line-args-left)))
+             (ediff file-a file-b)))
+
+         (add-to-list 'command-switch-alist '("diff" . td/ediff-from-command-line)))
+       :config
+       (progn
+         (setq ediff-window-setup-function 'ediff-setup-windows-plain
+               ediff-split-window-function 'split-window-horizontally)))
+   #+end_src
+
+
 * Navigation and Completion
+
+  #+begin_src emacs-lisp
+    (use-package imenu
+      :bind ("C-c i" . imenu)
+      :config
+      (setq imenu-auto-rescan t))
+  #+end_src
 
 ** TODO Auto Complete
 
@@ -1058,7 +1120,7 @@
            (interactive "P")
            (let ((pos (point)))
              (indent-according-to-mode)
-             (when (= pos (point))
+             (when (and (= pos (point)) (looking-at "\\_>"))
                (if (eq last-command 'company-complete-dwim)
                    (company-select-next)
                  (company-complete-common)))))
@@ -1471,7 +1533,8 @@
          (setq php-template-compatibility nil
                php-manual-path "~/local/docs/php")
 
-         (add-hook 'php-mode-hook #'php-enable-drupal-coding-style)))
+         ;; (add-hook 'php-mode-hook #'php-enable-drupal-coding-style)
+         ))
    #+end_src
 
 ** Web
@@ -1482,53 +1545,69 @@
 
    #+name: programming
    #+begin_src emacs-lisp :tangle no
-     (use-package mmm-mode
-       :init
-       (progn
-         (setq mmm-global-mode 'maybe)
-         (require 'mmm-auto)
+     ;; (use-package mmm-mode
+     ;;   :init
+     ;;   (progn
+     ;;     (setq mmm-global-mode 'maybe)
+     ;;     (require 'mmm-auto)
 
-         (dolist (pattern '("\\.html" "*twig*" "*tmpl*"
-                            "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$" "\\.ctp$" "\\.tpl$"
-                            "/\\(html\\|view\\|template\\|layout\\)/.*\\.php$"))
-           (add-to-list 'auto-mode-alist (cons pattern 'html-mode))))
+     ;;     (dolist (pattern '("\\.html" "*twig*" "*tmpl*"
+     ;;                        "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$" "\\.ctp$" "\\.tpl$"
+     ;;                        "/\\(html\\|view\\|template\\|layout\\)/.*\\.php$"))
+     ;;       (add-to-list 'auto-mode-alist (cons pattern 'html-mode))))
 
-       :config
-       (progn
-         (require 'mmm-sample)
+     ;;   :config
+     ;;   (progn
+     ;;     (require 'mmm-sample)
 
-         (mmm-add-mode-ext-class 'html-mode nil 'html-js)
-         (mmm-add-mode-ext-class 'html-mode nil 'html-css)
-         (mmm-add-mode-ext-class 'html-mode "\\.ejs\\'" 'ejs)
-         (mmm-add-mode-ext-class 'html-mode "\\.\\(erb\\|rhtml\\)\\'" 'erb)
-         (mmm-add-mode-ext-class 'html-mode "\\.\\(html\\|html\\.php\\|tmpl\\|ctp\\|tpl\\)\\'" 'html-php)
-         (mmm-add-mode-ext-class 'html-mode "/\\(html\\|view\\|template\\|layout\\)/.*\\.php\\'" 'html-php)
-         (mmm-add-mode-ext-class 'sh-mode nil 'here-doc)
-         (mmm-add-mode-ext-class 'php-mode nil 'here-doc)
-         (mmm-add-mode-ext-class 'ruby-mode nil 'here-doc)
+     ;;     (mmm-add-mode-ext-class 'html-mode nil 'html-js)
+     ;;     (mmm-add-mode-ext-class 'html-mode nil 'html-css)
+     ;;     (mmm-add-mode-ext-class 'html-mode "\\.ejs\\'" 'ejs)
+     ;;     (mmm-add-mode-ext-class 'html-mode "\\.\\(erb\\|rhtml\\)\\'" 'erb)
+     ;;     (mmm-add-mode-ext-class 'html-mode "\\.\\(html\\|html\\.php\\|tmpl\\|ctp\\|tpl\\)\\'" 'html-php)
+     ;;     (mmm-add-mode-ext-class 'html-mode "/\\(html\\|view\\|template\\|layout\\)/.*\\.php\\'" 'html-php)
+     ;;     (mmm-add-mode-ext-class 'sh-mode nil 'here-doc)
+     ;;     (mmm-add-mode-ext-class 'php-mode nil 'here-doc)
+     ;;     (mmm-add-mode-ext-class 'ruby-mode nil 'here-doc)
 
-         (defun td/mmm-yaml-front-matter-verify ()
-           (eq (line-beginning-position) (point-min)))
+     ;;     (defun td/mmm-yaml-front-matter-verify ()
+     ;;       (eq (line-beginning-position) (point-min)))
 
-         (mmm-add-group
-          'markdown-extensions
-          '((markdown-code-block
-             :front "^\\([`~]\\{3,\\}\\)\\([a-zA-Z0-9_-]+\\)$"
-             :front-offset (end-of-line 1)
-             :save-matches 1
-             :back "^~1$"
-             :match-submode mmm-here-doc-get-mode
-             :insert ((?c markdown-code-block
-                          "Code Block Name: " @ "```" str _ "\n" @ "\n" @ "```" "\n" @)))
-            (markdown-yaml-front-matter
-             :front "^\\(-\\{3,\\}\\)$"
-             :front-verify td/mmm-yaml-front-matter-verify
-             :front-offset (end-of-line 1)
-             :save-matches 1
-             :back "^~1$"
-             :submode yaml-mode)))
-         (mmm-add-mode-ext-class 'markdown-mode nil 'markdown-extensions)))
+     ;;     (mmm-add-group
+     ;;      'markdown-extensions
+     ;;      '((markdown-code-block
+     ;;         :front "^\\([`~]\\{3,\\}\\)\\([a-zA-Z0-9_-]+\\)$"
+     ;;         :front-offset (end-of-line 1)
+     ;;         :save-matches 1
+     ;;         :back "^~1$"
+     ;;         :match-submode mmm-here-doc-get-mode
+     ;;         :insert ((?c markdown-code-block
+     ;;                      "Code Block Name: " @ "```" str _ "\n" @ "\n" @ "```" "\n" @)))
+     ;;        (markdown-yaml-front-matter
+     ;;         :front "^\\(-\\{3,\\}\\)$"
+     ;;         :front-verify td/mmm-yaml-front-matter-verify
+     ;;         :front-offset (end-of-line 1)
+     ;;         :save-matches 1
+     ;;         :back "^~1$"
+     ;;         :submode yaml-mode)))
+     ;;     (mmm-add-mode-ext-class 'markdown-mode nil 'markdown-extensions)))
    #+end_src
+
+   Trying out web-mode.
+
+   #+name: programming
+   #+begin_src emacs-lisp :tangle no
+     (use-package web-mode
+       :mode (("\\.phtml$" . web-mode)
+              ("\\.tpl$" . web-mode)
+              ("\\.[gj]sp" . web-mode)
+              ("\\.as[cp]x" . web-mode)
+              ("\\.erb" . web-mode)
+              ("\\.mustache" . web-mode)
+              ("\\.djhtml" . web-mode)
+              ("\\.html?" . web-mode)))
+   #+end_src
+
 
    I also use ~emmet-mode~, it's a life-saver.
 
@@ -2056,5 +2135,4 @@
   - circe for IRC
   - tags
   - ediff
-  - wgrep
   - async
