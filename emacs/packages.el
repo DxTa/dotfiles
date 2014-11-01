@@ -21,6 +21,7 @@
     flycheck
     ggtags
     golden-ratio
+    hideshowvis
     highlight-escape-sequences
     highlight-parentheses
     ibuffer-vc

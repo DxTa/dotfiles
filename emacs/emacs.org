@@ -84,7 +84,10 @@
    #+END_SRC
 
    [[https://github.com/dholm/benchmark-init-el][benchmark-init.el]] can give us a breakdown of time spent on ~require~
-   and ~load~ calls:
+   and ~load~ calls. After Emacs has fully loaded, run the command ~M-x
+   benchmark-init/show-durations-tree~ or ~M-x
+   benchmark-init/show-durations-tabular~ to get the detailed packages'
+   impact on load time.
 
    #+NAME: init-before
    #+BEGIN_SRC emacs-lisp :tangle no :tangle no
@@ -128,9 +131,11 @@
    #+NAME: init-after
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package server
-       :init
-       (unless (server-running-p)
-         (server-start)))
+       :defer t
+       :commands server-running-p
+       :idle
+       (progn
+         (unless (server-running-p) (server-start))))
    #+END_SRC
 
    Here are the most common ways in which =emacsclient= is used:
@@ -177,6 +182,20 @@
      (load custom-file 'noerror)
    #+END_SRC
 
+** Fix
+
+   In Emacs 24.4, there's a bug that breaks every ~cc-mode~ derived,
+   including PHP mode. The bug is related to ~cl~ package being used, but
+   not required. I'll just go ahead and require ~cl~. This is going to be
+   fixed in Emacs 24.5.
+
+   http://lists.gnu.org/archive/html/bug-gnu-emacs/2014-10/msg01332.html
+
+   #+NAME: init-before
+   #+begin_src emacs-lisp
+     (require 'cl)
+   #+end_src
+
 * Appearance
 
 ** UI
@@ -188,12 +207,7 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq default-frame-alist
            '((left-fringe . 16) (right-fringe . 0)
-             ;; (font . "Meslo LG L Bold 10")
-             ))
-
-     (set-face-attribute
-      'default nil
-      :family "Meslo LG L" :weight 'semi-bold :height 105)
+             (font . "Meslo LG L 10")))
 
      (when (fboundp 'tool-bar-mode)
        (tool-bar-mode -1))
@@ -215,12 +229,13 @@
        (set-window-display-table (selected-window) display-table))
    #+END_SRC
 
-   Load the theme, which determines colors and font variants. Enox is
-   a medium-contrast theme with a dark background.
+   Load the theme, which determines colors and font variants. Solarized is
+   a very popular one.
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (load-theme 'solarized-dark t)
+     (load-theme 'wombat t)
+     (load-theme 'custom t)
    #+END_SRC
 
    Highlight the current line.
@@ -237,20 +252,6 @@
      (line-number-mode t)
      (column-number-mode t)
    #+END_SRC
-
-   GUI Emacs windows default to a tiny size. Usually, I want the
-   window to fill the screen:
-
-   #+BEGIN_QUOTE
-     The developer build of Emacs Trunk has a function called
-     ~toggle-frame-maximized~, which is included within
-     =.../lisp/frame.el=. That function can be added to the
-     ~after-init-hook~ or ~emacs-startup-hook~, or simply included in the
-     =.emacs= file that gets loaded on startup. On OSX, it increases
-     both width and height in one-fell-swoop.
-   #+END_QUOTE
-
-   Source: http://stackoverflow.com/a/18711628
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
@@ -293,11 +294,9 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package smart-mode-line
-       :init
+       :idle (sml/setup)
+       :config
        (progn
-         (if after-init-time (sml/setup)
-           (add-hook 'after-init-hook 'sml/setup))
-
          (setq sml/theme nil)
 
          (add-to-list 'sml/replacer-regexp-list '("^~/cli/\\(.*\\)/" ":Config:\\1:") t)
@@ -312,28 +311,15 @@
 
 ** Highlight
 
-   The parenface package colors parentheses distinctly. The
-   rainbow-delimiters package goes a step further and differentiates
-   levels of nested parentheses by color. This is mostly useful for
-   visually parsing Lisp's parenthesis-heavy syntax.
-
-   #+NAME: appearance
-   #+BEGIN_SRC emacs-lisp :tangle no
-     (use-package rainbow-delimiters
-       :commands rainbow-delimiters-mode
-       :init
-       (add-hook 'emacs-lisp-mode-hook 'rainbow-delimiters-mode)
-       (add-hook 'clojure-mode-hook 'rainbow-delimiters-mode))
-   #+END_SRC
-
-   I'm experimenting with the ~highlight-parentheses~. My impression is
-   that it is better than ~rainbow-delimiters~ in term of functionality,
-   however it is also more distracting to see the parentheses
-   constantly change their color.
+   I switched from ~rainbow-delimiters~ with the ~highlight-parentheses~. My
+   impression is that it is better than ~rainbow-delimiters~ in term of
+   functionality, however it is also more distracting to see the
+   parentheses constantly change their color.
 
    #+name: appearance
    #+begin_src emacs-lisp :tangle no
      (use-package highlight-parentheses
+       :defer t
        :idle (global-highlight-parentheses-mode t))
    #+end_src
 
@@ -341,15 +327,16 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (setq-default show-paren-delay 0)
-     (show-paren-mode t)
+     (use-package paren
+       :defer t
+       :init (setq-default show-paren-delay 0)
+       :idle (show-paren-mode t))
    #+END_SRC
 
   #+name: appearance
   #+begin_src emacs-lisp :tangle no
-    (which-function-mode t)
-
     (use-package highlight-escape-sequences
+      :defer t
       :idle (hes-mode t))
   #+end_src
 
@@ -360,10 +347,10 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     ;; (use-package rainbow-mode
-     ;;   :commands rainbow-turn-on
-     ;;   :init
-     ;;   (add-hook 'prog-mode-hook 'rainbow-turn-on))
+     (use-package rainbow-mode
+       :commands rainbow-turn-on
+       :init
+       (add-hook 'prog-mode-hook 'rainbow-turn-on))
    #+END_SRC
 
 ** Code Folding
@@ -374,25 +361,27 @@
    manage it myself in the ~vendor~ folder.
 
    #+begin_src emacs-lisp :tangle no
-     (defun td/toggle-hiding-on-demand ()
-       (interactive)
-       (unless hs-minor-mode
-         (hs-minor-mode t))
-       (hs-toggle-hiding))
-
      (use-package hideshow
-       :commands hs-toggle-hiding
-       :bind ("C-c C-SPC" . hs-toggle-hiding)
        :init
        (progn
          (require 'hideshowvis)
 
+         ;; We need an around advice here to access the ov internal variable
          (defadvice display-code-line-counts
-           (around td/hideshowvis-no-line-count activate)
+             (around td/hideshowvis-no-line-count activate)
            ad-do-it
            (overlay-put ov 'display " ..."))
 
-         (hideshowvis-symbols)))
+         (hideshowvis-symbols)
+
+         (progn
+           (defun td/toggle-hiding-on-demand ()
+             (interactive)
+             (unless hs-minor-mode
+               (hs-minor-mode t))
+             (hs-toggle-hiding))
+
+           (bind-key "C-c C-SPC" 'td/toggle-hiding-on-demand)))
    #+end_src
 
 ** Popwin
@@ -490,12 +479,14 @@
 
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
-     (use-package vc
+     (use-package vc-hooks
+       :defer t
+       :config (setq vc-follow-symlinks t))
+
+     (use-package vc-dir
        :defer t
        :config
        (progn
-         (setq vc-follow-symlinks t)
-
          (defun td/vc-git-command (verb fn)
            (let* ((args (vc-deduce-fileset nil t))
                   (backend (car args))
@@ -547,27 +538,6 @@
 
      (bind-key "C-c g" 'td/vc-projectile-root)
    #+END_SRC
-
-   #+begin_src emacs-lisp
-     ;; (use-package magit
-     ;;   :commands (magit-status magit-diff magit-log magit-blame-mode)
-     ;;   :bind ("C-c g" . magit-status)
-     ;;   :config
-     ;;   (progn
-     ;;     (setq magit-restore-window-configuration t
-     ;;           magit-save-some-buffers t
-     ;;           magit-commit-all-when-nothing-staged t)
-
-     ;;     (defun td/magit-quick-amend ()
-     ;;       (interactive)
-     ;;       (start-process-shell-command
-     ;;        "*magit-commit-amend*" nil
-     ;;        "git --no-pager commit --amend --reuse-message=HEAD")
-     ;;       (magit-refresh))
-
-     ;;     (bind-key "C-c C-a" #'td/magit-quick-amend magit-status-mode-map)))
-   #+end_src
-
 
 ** Search and Replace
 
@@ -748,7 +718,8 @@
    #+name: editing
    #+begin_src emacs-lisp :tangle no
      (use-package smartparens
-       :init (smartparens-global-mode t)
+       :defer t
+       :idle (smartparens-global-mode t)
        :config
        (progn
          (require 'smartparens-config)
@@ -761,7 +732,15 @@
          (sp-pair "[" nil
                   :post-handlers '(:add ("||\n[i]" "RET") ("| " "SPC")))
          (sp-pair "(" nil
-                  :post-handlers '(:add ("||\n[i]" "RET") ("| " "SPC")))))
+                  :post-handlers '(:add ("||\n[i]" "RET") ("| " "SPC")))
+
+         (defun sp-web-mode-is-code-context (id action context)
+           (when (and (eq action 'insert)
+                      (not (or (get-text-property (point) 'part-side)
+                               (get-text-property (point) 'block-side))))
+             t))
+
+         (sp-local-pair 'web-mode "<" nil :when '(sp-web-mode-is-code-context))))
    #+end_src
 
 ** Commenting
@@ -800,9 +779,9 @@
                   ("M-C-0" . mc/mark-next-like-this)
                   ("M-(" . mc/skip-to-previous-like-this)
                   ("M-)" . mc/skip-to-next-like-this)
-                  ("M-a" . mc/mark-all-like-this)))
+                  ("M-C-a" . mc/mark-all-like-this)))
 
-     (bind-key "C-c C-SPC" 'set-rectangular-region-anchor)
+     (bind-key "C-x SPC" 'set-rectangular-region-anchor)
    #+end_src
 
 ** Utilities
@@ -1046,8 +1025,12 @@
 
 * Navigation and Completion
 
+  #+name: navigation-completion
   #+begin_src emacs-lisp
+    (which-function-mode t)
+
     (use-package imenu
+      :defer t
       :bind ("C-c i" . imenu)
       :config
       (setq imenu-auto-rescan t))
@@ -1060,7 +1043,19 @@
    #+name: navigation-completion
    #+begin_src emacs-lisp :tangle no
      (use-package company
-       :init (global-company-mode t)
+       :init
+       (progn
+         (setq company-backends
+               '((company-yasnippet
+                  company-dabbrev-code company-keywords
+                  company-capf
+                  ;; company-inf-python
+                  ;; company-go
+                  company-css
+                  ;; company-c-headers
+                  ;; company-php-reflection
+                  company-clang)))
+         (global-company-mode t))
        :config
        (progn
          (use-package company-lines
@@ -1087,18 +1082,7 @@
                company-frontends
                '(company-pseudo-tooltip-unless-just-one-frontend
                  company-echo-metadata-frontend
-                 company-preview-frontend)
-
-               company-backends
-               '((company-yasnippet
-                  company-dabbrev-code company-keywords
-                  company-capf
-                  ;; company-inf-python
-                  ;; company-go
-                  company-css
-                  ;; company-c-headers
-                  ;; company-php-reflection
-                  company-clang)))
+                 company-preview-frontend))
 
          (bind-keys :prefix-map td/completion-map
                     :prefix "M-;"
@@ -1134,6 +1118,7 @@
    #+name: navigation-completion
    #+begin_src emacs-lisp :tangle no
      (use-package savehist
+       :defer t
        :init
        (progn
          (setq savehist-file (expand-file-name "savehist" td/data-directory))
@@ -1143,6 +1128,8 @@
    #+name: navigation-completion
    #+begin_src emacs-lisp :tangle no
      (use-package ido
+       :commands (ido-switch-buffer
+                  ido-find-file)
        :init
        (progn
          (ido-mode t)
@@ -1325,7 +1312,7 @@
 
    #+NAME: navigation-completion
    #+BEGIN_SRC emacs-lisp :tangle no
-     (use-package midnight)
+     ;; (use-package midnight)
    #+END_SRC
 
    #+name: navigation-completion
@@ -1360,21 +1347,20 @@
    #+NAME: navigation-completion
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package projectile
-       :init (projectile-global-mode t)
+       :defer t
+       :idle (projectile-global-mode t)
        :config
        (progn
          (setq projectile-enable-idle-timer t
                projectile-mode-line
-               '(:eval (format " Proj[%s]" (projectile-project-name)))
-               projectile-known-projects-file
-               (expand-file-name "projectile-bookmarks.eld" td/data-directory))
+               '(:eval (format " Proj[%s]" (projectile-project-name))))
 
-         (bind-keys
-          ("M-l" . projectile-find-file)
-          ([remap projectile-ack] . projectile-ag)
-          ([remap projectile-grep] . projectile-ag))))
+         (bind-keys ("M-l" . projectile-find-file)
+                    ([remap projectile-ack] . projectile-ag)
+                    ([remap projectile-grep] . projectile-ag))))
 
      (use-package wgrep
+       :defer t
        :init (add-hook 'ag-mode-hook #'wgrep-setup))
    #+END_SRC
 
@@ -1495,6 +1481,7 @@
    #+name: programming
    #+begin_src emacs-lisp :tangle no
      (use-package js
+       :defer t
        :config
        (setq js-indent-level 2
              js-expr-indent-offset 2
@@ -1528,84 +1515,32 @@
    #+name: programming
    #+begin_src emacs-lisp :tangle no
      (use-package php-mode
+       :mode "\\.php\\'"
        :config
        (progn
          (setq php-template-compatibility nil
-               php-manual-path "~/local/docs/php")
-
-         ;; (add-hook 'php-mode-hook #'php-enable-drupal-coding-style)
-         ))
+               php-manual-path "~/local/docs/php")))
    #+end_src
 
 ** Web
 
-   Buffers with mixed languages are pretty painful in Emacs. I use
-   ~mmm-mode~, which work pretty well for me. The alternative is
-   ~web-mode~, which is more popular but much less flexible.
-
-   #+name: programming
-   #+begin_src emacs-lisp :tangle no
-     ;; (use-package mmm-mode
-     ;;   :init
-     ;;   (progn
-     ;;     (setq mmm-global-mode 'maybe)
-     ;;     (require 'mmm-auto)
-
-     ;;     (dolist (pattern '("\\.html" "*twig*" "*tmpl*"
-     ;;                        "\\.erb" "\\.rhtml$" "\\.ejs$" "\\.hbs$" "\\.ctp$" "\\.tpl$"
-     ;;                        "/\\(html\\|view\\|template\\|layout\\)/.*\\.php$"))
-     ;;       (add-to-list 'auto-mode-alist (cons pattern 'html-mode))))
-
-     ;;   :config
-     ;;   (progn
-     ;;     (require 'mmm-sample)
-
-     ;;     (mmm-add-mode-ext-class 'html-mode nil 'html-js)
-     ;;     (mmm-add-mode-ext-class 'html-mode nil 'html-css)
-     ;;     (mmm-add-mode-ext-class 'html-mode "\\.ejs\\'" 'ejs)
-     ;;     (mmm-add-mode-ext-class 'html-mode "\\.\\(erb\\|rhtml\\)\\'" 'erb)
-     ;;     (mmm-add-mode-ext-class 'html-mode "\\.\\(html\\|html\\.php\\|tmpl\\|ctp\\|tpl\\)\\'" 'html-php)
-     ;;     (mmm-add-mode-ext-class 'html-mode "/\\(html\\|view\\|template\\|layout\\)/.*\\.php\\'" 'html-php)
-     ;;     (mmm-add-mode-ext-class 'sh-mode nil 'here-doc)
-     ;;     (mmm-add-mode-ext-class 'php-mode nil 'here-doc)
-     ;;     (mmm-add-mode-ext-class 'ruby-mode nil 'here-doc)
-
-     ;;     (defun td/mmm-yaml-front-matter-verify ()
-     ;;       (eq (line-beginning-position) (point-min)))
-
-     ;;     (mmm-add-group
-     ;;      'markdown-extensions
-     ;;      '((markdown-code-block
-     ;;         :front "^\\([`~]\\{3,\\}\\)\\([a-zA-Z0-9_-]+\\)$"
-     ;;         :front-offset (end-of-line 1)
-     ;;         :save-matches 1
-     ;;         :back "^~1$"
-     ;;         :match-submode mmm-here-doc-get-mode
-     ;;         :insert ((?c markdown-code-block
-     ;;                      "Code Block Name: " @ "```" str _ "\n" @ "\n" @ "```" "\n" @)))
-     ;;        (markdown-yaml-front-matter
-     ;;         :front "^\\(-\\{3,\\}\\)$"
-     ;;         :front-verify td/mmm-yaml-front-matter-verify
-     ;;         :front-offset (end-of-line 1)
-     ;;         :save-matches 1
-     ;;         :back "^~1$"
-     ;;         :submode yaml-mode)))
-     ;;     (mmm-add-mode-ext-class 'markdown-mode nil 'markdown-extensions)))
-   #+end_src
-
-   Trying out web-mode.
+   I used to be a happy ~mmm-mode~ user; I even added support for some
+   interesting stuff. However ~mmm-mode~ needs some updates to work with
+   Emacs 24.4, in the mean time I use ~web-mode~.
 
    #+name: programming
    #+begin_src emacs-lisp :tangle no
      (use-package web-mode
-       :mode (("\\.phtml$" . web-mode)
-              ("\\.tpl$" . web-mode)
-              ("\\.[gj]sp" . web-mode)
-              ("\\.as[cp]x" . web-mode)
-              ("\\.erb" . web-mode)
-              ("\\.mustache" . web-mode)
-              ("\\.djhtml" . web-mode)
-              ("\\.html?" . web-mode)))
+       :mode (("\\.phtml\\'" . web-mode)
+              ("/\\(views\\|html\\|templates\\)/.*\\.php\\'" . web-mode)
+              ("\\.tpl\\'" . web-mode)
+              ("\\.[gj]sp\\'" . web-mode)
+              ("\\.as[cp]x\\'" . web-mode)
+              ("\\.erb\\'" . web-mode)
+              ("\\.mustache\\'" . web-mode)
+              ("\\.djhtml\\'" . web-mode)
+              ("\\.html?" . web-mode)
+              ("\\.hbs\\'" . web-mode)))
    #+end_src
 
 
@@ -1639,11 +1574,15 @@
        (add-to-list 'imenu-generic-expression '("Section" "^.*\\* =\\(.+\\)$" 1) t))
 
      (use-package css-mode
+       :mode "\\.css\\'"
+       :init
        (progn
          (setq-default css-indent-offset 2)
          (add-hook 'css-mode-hook #'td/css-imenu-expressions)))
 
-     (eval-after-load 'scss-mode
+     (use-package scss-mode
+       :mode "\\.scss\\'"
+       :init
        (progn
          (setq scss-compile-at-save nil
                css-indent-offset 2)
@@ -1677,9 +1616,9 @@
    #+name: programming
    #+begin_src emacs-lisp :tangle no
      (use-package nxml-mode
+       :defer t
        :config
        (progn
-
          (defun nxml-where ()
            "Display the hierarchy of XML elements the point is on as a path."
            (interactive)
@@ -1970,6 +1909,7 @@
    #+name: management
    #+begin_src emacs-lisp :tangle no
      (use-package eshell
+       :defer t
        :init
        (progn
          (defun td/find-eshell ()
@@ -2029,6 +1969,7 @@
    #+name: management
    #+begin_src emacs-lisp :tangle no
      (use-package tramp
+       :defer t
        :config
        (progn
          (setq password-cache-expiry nil
@@ -2043,6 +1984,7 @@
    #+name: management
    #+begin_src emacs-lisp :tangle no
      (use-package dired
+       :defer t
        :config
        (progn
          (setq dired-listing-switches "-alh"
@@ -2069,6 +2011,7 @@
    #+name: management
    #+begin_src emacs-lisp :tangle no
      (use-package recentf
+       :defer t
        :idle (recentf-mode t)
        :config
        (progn
@@ -2136,3 +2079,4 @@
   - tags
   - ediff
   - async
+  - adapt prelude's key bindings
