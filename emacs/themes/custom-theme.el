@@ -29,9 +29,9 @@
 
  `(hl-line ((t :inherit nil :underline nil :foreground nil)))
 
- `(org-level-1 ((t :height 1.3)))
- `(org-level-2 ((t :height 1.2)))
- `(org-level-3 ((t :height 1.1)))
+ `(org-level-1 ((t :weight bold :height 1.3)))
+ `(org-level-2 ((t :weight bold :height 1.2)))
+ `(org-level-3 ((t :weight bold :height 1.1)))
 
  `(company-tooltip ((t :background "lightgray" :foreground "black")))
  `(company-tooltip-selection ((t :background "steelblue" :foreground "white")))

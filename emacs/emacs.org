@@ -97,18 +97,18 @@
 
 ** Platform-specific
 
-   There are a few settings that are only relevant to OS X (Darwin):
+   There are a few settings that are only relevant to certain OS:
 
    #+NAME: init-before
    #+BEGIN_SRC emacs-lisp :tangle no
+     (setq delete-by-moving-to-trash t)
+
      (when (eq system-type 'gnu/linux)
-       (setq delete-by-moving-to-trash t)
        (exec-path-from-shell-initialize))
 
      (when (eq system-type 'darwin)
        (setq mac-command-modifier 'meta
              mac-option-modifier 'super
-             delete-by-moving-to-trash t
              trash-directory "~/.Trash/")
 
        ;; BSD ls does not support --dired. Use GNU core-utils: brew install coreutils
@@ -207,7 +207,7 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq default-frame-alist
            '((left-fringe . 16) (right-fringe . 0)
-             (font . "Meslo LG L 10")))
+             (font . "Inconsolata 12")))
 
      (when (fboundp 'tool-bar-mode)
        (tool-bar-mode -1))
@@ -224,7 +224,7 @@
      (let ((display-table
             (or standard-display-table
                 (setq standard-display-table (make-display-table)))))
-       (set-display-table-slot display-table 'truncation ?¬)
+       (set-display-table-slot display-table 'truncation ?�)
        (set-display-table-slot display-table 'vertical-border ?\s)
        (set-window-display-table (selected-window) display-table))
    #+END_SRC
@@ -234,8 +234,8 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (load-theme 'wombat t)
-     (load-theme 'custom t)
+     (load-theme 'base16-chalk t)
+     ;; (load-theme 'custom t)
    #+END_SRC
 
    Highlight the current line.
@@ -545,26 +545,10 @@
    #+begin_src emacs-lisp :tangle no
      (use-package isearch
        :bind (("C-s" . isearch-forward-regexp)
-              ("C-r" . isearch-backward-regexp)))
-
-     ;; Enable accents-folding for ISearch. Support only Vietnamese accents atm.
-     ;; Source: http://thread.gmane.org/gmane.emacs.devel/117003/focus=117959.
-     ;; FIXME: refactor
-     (let ((eqv-list '("aàáạảãăằắặẳẵâầấậẩẫAÀÁẠẢÃĂẰẮẶẲẴÂẦẤẬẨẪ"
-                       "eèéẹẻẽêềếệểễEÈÉẸẺẼÊỀẾỆỂỄ"
-                       "dđDĐ"
-                       "iìíịỉĩIÌÍỊỈĨ"
-                       "oòóọỏõôồốộổỗơờớợởỡOÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ"
-                       "uùúụủũưừứựửữUÙÚỤỦŨƯỪỨỰỬỮ"
-                       "yỳýỵỷỹYỲÝỴỶỸ"))
-           (table (standard-case-table))
-           (canon (copy-sequence (standard-case-table))))
-       (mapc (lambda (s)
-               (mapc (lambda (c) (aset canon c (aref s 0))) s))
-             eqv-list)
-       (set-char-table-extra-slot table 1 canon)
-       (set-char-table-extra-slot table 2 nil)
-       (set-standard-case-table table))
+              ("C-r" . isearch-backward-regexp))
+       ;;:config
+       ;;(require 'isearch-diacritics-fold)
+       )
    #+end_src
 
    =Anzu= is better than the default =query-replace= commands for a
@@ -635,8 +619,10 @@
 
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
-     (setq-default comment-auto-fill-only-comments t
-                   fill-column 75)
+     (setq-default
+      comment-auto-fill-only-comments t
+      fill-column 75)
+
      (add-hook 'text-mode-hook 'turn-on-auto-fill)
      (add-hook 'prog-mode-hook 'turn-on-auto-fill)
    #+END_SRC
@@ -719,7 +705,7 @@
    #+begin_src emacs-lisp :tangle no
      (use-package smartparens
        :defer t
-       :idle (smartparens-global-mode t)
+       :init (smartparens-global-mode t)
        :config
        (progn
          (require 'smartparens-config)
@@ -735,10 +721,9 @@
                   :post-handlers '(:add ("||\n[i]" "RET") ("| " "SPC")))
 
          (defun sp-web-mode-is-code-context (id action context)
-           (when (and (eq action 'insert)
-                      (not (or (get-text-property (point) 'part-side)
-                               (get-text-property (point) 'block-side))))
-             t))
+           (and (eq action 'insert)
+                (or (get-text-property (point) 'part-side)
+                    (get-text-property (point) 'block-side))))
 
          (sp-local-pair 'web-mode "<" nil :when '(sp-web-mode-is-code-context))))
    #+end_src
@@ -1022,12 +1007,14 @@
                ediff-split-window-function 'split-window-horizontally)))
    #+end_src
 
-
 * Navigation and Completion
 
   #+name: navigation-completion
   #+begin_src emacs-lisp
-    (which-function-mode t)
+    (use-package which-func
+      :defer t
+      :idle
+      (which-function-mode t))
 
     (use-package imenu
       :defer t
@@ -1212,8 +1199,7 @@
      (use-package saveplace
        :init
        (progn
-         (setq-default save-place t)
-         (setq save-place-file (expand-file-name "saved-places" td/data-directory))))
+         (setq-default save-place t)))
    #+END_SRC
 
 ** Windows
@@ -1540,7 +1526,9 @@
               ("\\.mustache\\'" . web-mode)
               ("\\.djhtml\\'" . web-mode)
               ("\\.html?" . web-mode)
-              ("\\.hbs\\'" . web-mode)))
+              ("\\.hbs\\'" . web-mode))
+       :config
+       (add-hook 'web-mode-hook #'turn-off-auto-fill))
    #+end_src
 
 
@@ -2077,6 +2065,5 @@
   - eldoc on demand
   - circe for IRC
   - tags
-  - ediff
   - async
   - adapt prelude's key bindings
