@@ -209,6 +209,10 @@
            '((left-fringe . 16) (right-fringe . 0)
              (font . "Inconsolata 12")))
 
+     ;; Fallback font for missing Unicode glyph
+     ;; (set-fontset-font
+     ;;  nil '(#x0250 . #x02af) (font-spec :family "DejaVu Sans Mono"))
+
      (when (fboundp 'tool-bar-mode)
        (tool-bar-mode -1))
      (when (fboundp 'scroll-bar-mode)
@@ -531,12 +535,6 @@
                     ("r" . vc-revert-buffer)
                     ("a" . td/vc-git-add)
                     ("u" . td/vc-git-reset))))
-
-     (defun td/vc-projectile-root ()
-       (interactive)
-       (vc-dir (projectile-project-root)))
-
-     (bind-key "C-c g" 'td/vc-projectile-root)
    #+END_SRC
 
 ** Search and Replace
@@ -980,7 +978,9 @@
                ;; I am a weird user, I use SPACE to expand my
                ;; snippets, this save me from triggering them accidentally.
                yas-expand-only-for-last-commands
-               '(self-insert-command org-self-insert-command))
+               '(self-insert-command org-self-insert-command)
+               yas-snippet-dirs
+               '("~/.emacs.d/snippets"))
 
          (unbind-key "TAB" yas-minor-mode-map)
          (unbind-key "<tab>" yas-minor-mode-map)
@@ -1048,9 +1048,6 @@
          (use-package company-lines
            :commands (company-lines))
 
-         (use-package company-filename
-           :commands (company-filename))
-
          (setq completion-cycle-threshold 5)
 
          (setq company-idle-delay nil
@@ -1074,7 +1071,7 @@
          (bind-keys :prefix-map td/completion-map
                     :prefix "M-;"
                     ("s" . company-ispell)
-                    ("f" . company-filename)
+                    ("f" . company-files)
                     ("l" . company-lines))
 
          (bind-keys :map company-active-map
@@ -1340,6 +1337,9 @@
          (setq projectile-enable-idle-timer t
                projectile-mode-line
                '(:eval (format " Proj[%s]" (projectile-project-name))))
+
+         (persp-mode)
+         (require 'persp-projectile)
 
          (bind-keys ("M-l" . projectile-find-file)
                     ([remap projectile-ack] . projectile-ag)
@@ -1900,6 +1900,8 @@
        :defer t
        :init
        (progn
+         (setq eshell-list-files-after-cd t)
+
          (defun td/find-eshell ()
            (interactive)
            (if (get-buffer "*eshell*")
@@ -1961,6 +1963,7 @@
        :config
        (progn
          (setq password-cache-expiry nil
+               tramp-debug-buffer t
                tramp-default-method "ftp")
 
          (add-to-list 'auth-sources "~/.emacs.d/authinfo.gpg")
@@ -2008,6 +2011,30 @@
                recentf-save-file (expand-file-name "recentf" td/data-directory))
 
          (add-hook 'server-visit-hook #'recentf-save-list)))
+   #+end_src
+
+** TODO Prodigy
+
+   Define the services automatically after enter a project.
+   We might hook in projectile project change, and look for known service
+   definition files, for example Gulp, Grunt, RackUp, Foreman
+
+   (Gulpfile.js, Gulpfile.coffee, gruntfile.js, gruntfile.coffee,
+   config.ru, Procfile, )
+
+   #+name: management
+   #+begin_src emacs-lisp :tangle no
+
+   #+end_src
+
+** Perspective
+
+   #+name: management
+   #+begin_src emacs-lisp :tangle no
+     (use-package persp-mode
+       :defer t
+       :idle (persp-mode t)
+       :init (setq persp-keymap-prefix (kbd "C-x p")))
    #+end_src
 
 * Configuration Layout
