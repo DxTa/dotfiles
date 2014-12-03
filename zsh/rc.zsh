@@ -19,7 +19,7 @@ fi
 [ -n "$TMUX" ] && export TERM=screen-256color
 
 # Handy variable
-export CLI=$HOME/cli
+export CLI=$HOME/Projects/dotfiles
 export TODO="$HOME/Dropbox/GTD/@Projects.taskpaper"
 
 

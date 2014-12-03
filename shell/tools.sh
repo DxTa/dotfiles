@@ -58,6 +58,7 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 # Node
 [[ -s "$HOME/.nvm/nvm.sh" ]] && . "$HOME/.nvm/nvm.sh"
 export NODE_PATH=$LOCAL/lib/node_modules:$NODE_PATH
+export PATH=$PATH:$HOME/.npm/bin
 
 # Clojure
 if [ -d $LOCAL/clojurescript ]; then

@@ -13,10 +13,11 @@ else
     fi
   }
 
-  source $HOME/cli/shell/init.sh
+  # source $HOME/cli/shell/init.sh
 
   # echo "source $CLI/shell/init.sh" >> ~/.bashrc
-  echo "source $CLI/shell/init.sh" >> ~/.zshrc
+  # echo "source $CLI/shell/init.sh" >> ~/.zshrc
+  CLI=$HOME/Projects/dotfiles
 
   # vim
   link $CLI/vim/vimrc $HOME/.vimrc
