@@ -48,6 +48,8 @@
 
    #+NAME: init-before
    #+BEGIN_SRC emacs-lisp :tangle no
+     (setq gc-cons-threshold (* 4 1024 1024))
+
      (defvar td/vendor-directory (concat user-emacs-directory "vendor/"))
      (add-to-list 'load-path td/vendor-directory)
    #+END_SRC
@@ -176,7 +178,7 @@
 
    Set alternative location for =custom-set-variables= and =custom-set-faces=:
 
-   #+NAME: init-after
+   #+NAME: init-before
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
      (load custom-file 'noerror)
@@ -238,7 +240,7 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (load-theme 'base16-chalk t)
+     (load-theme 'ujelly t)
      ;; (load-theme 'custom t)
    #+END_SRC
 
@@ -259,8 +261,8 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (if (fboundp 'toggle-frame-maximized)
-         (add-hook 'emacs-startup-hook 'toggle-frame-maximized))
+     ;; (if (fboundp 'toggle-frame-maximized)
+     ;;     (add-hook 'emacs-startup-hook 'toggle-frame-maximized))
    #+END_SRC
 
    Suppress the theme's background color and Emacs's menu bar in
@@ -298,12 +300,10 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package smart-mode-line
-       :idle (sml/setup)
+       :init (sml/setup)
        :config
        (progn
-         (setq sml/theme nil)
-
-         (add-to-list 'sml/replacer-regexp-list '("^~/cli/\\(.*\\)/" ":Config:\\1:") t)
+         (add-to-list 'sml/replacer-regexp-list '("^~/Projects/dotfiles/\\(.*\\)/" ":Config:\\1:"))
 
          (use-package rich-minority
            :init
@@ -709,7 +709,9 @@
          (require 'smartparens-config)
          (sp-use-smartparens-bindings)
 
-         (setq sp-autoinsert-if-followed-by-same 1)
+         (setq sp-autoinsert-if-followed-by-same 1
+               sp-autoescape-string-quote nil
+               sp-highlight-pair-overlay nil)
 
          (sp-pair "{" nil
                   :post-handlers '(:add ("||\n[i]" "RET") ("| " "SPC")))
@@ -730,16 +732,12 @@
 
    #+name: editing
    #+begin_src emacs-lisp :tangle no
-     (setq comment-style 'multi-line)
-
-     (defun td/comment-or-uncomment-region-or-line (&optional args)
-       (interactive "*P")
-       (comment-normalize-vars)
-       (if (region-active-p)
-           (comment-or-uncomment-region (region-beginning) (region-end))
-         (comment-or-uncomment-region (line-beginning-position) (line-end-position))))
-
-     (bind-key "C-l" #'td/comment-or-uncomment-region-or-line)
+     (use-package comment-dwim2
+       :commands comment-dwim2
+       :init
+       (progn
+         (setq comment-style 'multi-line)
+         (bind-key "C-l" #'comment-dwim-2)))
    #+end_src
 
 ** Selecting (Marking)
@@ -968,7 +966,11 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package yasnippet
        :commands yas-global-mode
-       :idle (yas-global-mode t)
+       :init
+       (progn
+         (setq yas-snippet-dirs
+                       '("~/.emacs.d/snippets"))
+         (yas-global-mode t))
        :config
        (progn
          (setq yas-prompt-functions
@@ -978,9 +980,7 @@
                ;; I am a weird user, I use SPACE to expand my
                ;; snippets, this save me from triggering them accidentally.
                yas-expand-only-for-last-commands
-               '(self-insert-command org-self-insert-command)
-               yas-snippet-dirs
-               '("~/.emacs.d/snippets"))
+               '(self-insert-command org-self-insert-command))
 
          (unbind-key "TAB" yas-minor-mode-map)
          (unbind-key "<tab>" yas-minor-mode-map)
@@ -1119,7 +1119,8 @@
          (ido-mode t)
          (ido-everywhere t)
          (ido-ubiquitous-mode t)
-         (ido-vertical-mode))
+         (ido-vertical-mode)
+         (flx-ido-mode t))
 
        :config
        (progn
@@ -1134,7 +1135,8 @@
                '(".rb" ".py" ".clj" ".cljs" ".el" ".coffee" ".js" ".ts"
                  ".scss" ".php" ".html" t)
                ido-default-buffer-method 'samewindow
-               ido-vertical-define-keys nil)
+               ido-vertical-define-keys nil
+               flx-ido-threshold 2048)
 
          (add-to-list 'ido-ignore-files "\\.DS_Store")
 
@@ -1338,9 +1340,6 @@
                projectile-mode-line
                '(:eval (format " Proj[%s]" (projectile-project-name))))
 
-         (persp-mode)
-         (require 'persp-projectile)
-
          (bind-keys ("M-l" . projectile-find-file)
                     ([remap projectile-ack] . projectile-ag)
                     ([remap projectile-grep] . projectile-ag))))
@@ -1406,38 +1405,25 @@
     #+NAME: programming
     #+BEGIN_SRC emacs-lisp :tangle no
       (use-package emacs-lisp-mode
-        :init
-        (progn
-          ;; (use-package eldoc
-          ;;   :commands turn-on-eldoc-mode
-          ;;   :init (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode))
-
-      ;;    (evil-leader/set-key-for-mode 'emacs-lisp-mode "C" 'byte-compile-file)
-      ;;    (evil-leader/set-key-for-mode 'emacs-lisp-mode "E" 'eval-buffer)
-      ;;    (evil-leader/set-key-for-mode 'emacs-lisp-mode "e" 'eval-defun)
-      ;;    (evil-leader/set-key-for-mode 'emacs-lisp-mode "x" 'eval-last-sexp)
-      ;;    (evil-leader/set-key-for-mode 'emacs-lisp-mode "X"
-      ;;    'eval-print-last-sexp)
-      )
         :mode ("Cask" . emacs-lisp-mode))
 
-      (defun nox/byte-recompile ()
-        "`byte-compile' every .el file under `user-emacs-directory' recursively"
-        (interactive)
-        (byte-recompile-directory user-emacs-directory 0)
-        (when (fboundp 'sauron-add-event)
-          (sauron-add-event 'editor 2 "Byte compiled Emacs directory")))
+      (use-package eldoc
+        :commands turn-on-eldoc-mode
+        :init (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+        :config
+        (progn
+          (defun eldoc-message-now ()
+            (interactive))
 
-      (defun nox/byte-compile-current-buffer ()
-        "`byte-compile' current buffer in emacs-lisp-mode if compiled file exists."
-        (interactive)
-        (when (and (eq major-mode 'emacs-lisp-mode)
-                   (file-exists-p (byte-compile-dest-file buffer-file-name)))
-          (byte-compile-file buffer-file-name)
-          (when (fboundp 'sauron-add-event)
-            (sauron-add-event 'editor 2 "Byte compiled buffer"))))
+          (setq eldoc-idle-delay 0)
 
-      (add-hook 'after-save-hook 'nox/byte-compile-current-buffer)
+          (defun eldoc--message-command-p (command)
+            (eq command 'eldoc-message-now))
+
+          (bind-key "C-c l" #'eldoc-message-now)
+
+          (eldoc-add-command 'eldoc-message-now)))
+
     #+END_SRC
 
 ** Ruby
@@ -1505,7 +1491,9 @@
        :config
        (progn
          (setq php-template-compatibility nil
-               php-manual-path "~/local/docs/php")))
+               php-manual-path "~/local/docs/php"
+               php-mode-warn-if-mumamo-off nil
+               php-mode-coding-style 'drupal)))
    #+end_src
 
 ** Web
@@ -2007,8 +1995,7 @@
        :config
        (progn
          (setq recentf-auto-cleanup "9:00pm"
-               recentf-max-saved-items 256
-               recentf-save-file (expand-file-name "recentf" td/data-directory))
+               recentf-max-saved-items 256)
 
          (add-hook 'server-visit-hook #'recentf-save-list)))
    #+end_src
@@ -2031,10 +2018,12 @@
 
    #+name: management
    #+begin_src emacs-lisp :tangle no
-     (use-package persp-mode
-       :defer t
-       :idle (persp-mode t)
-       :init (setq persp-keymap-prefix (kbd "C-x p")))
+     ;; (use-package persp-mode
+     ;;   :defer t
+     ;;   :idle
+     ;;   (progn
+     ;;     (setq persp-keymap-prefix (kbd "C-x p"))
+     ;;     (persp-mode t)))
    #+end_src
 
 * Configuration Layout

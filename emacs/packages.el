@@ -13,6 +13,7 @@
         benchmark-init
         cider
         clojure-mode
+        comment-dwim-2
         company
         diff-hl
         elixir-mix
@@ -21,7 +22,7 @@
         exec-path-from-shell
         expand-region
         flycheck
-        ggtags
+        flx-ido
         hideshowvis
         highlight-escape-sequences
         highlight-parentheses
@@ -32,7 +33,6 @@
         json-mode
         markdown-mode
         multiple-cursors
-        persp-projectile
         php-mode
         popwin
         prodigy

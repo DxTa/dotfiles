@@ -4,7 +4,10 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        c-electric-delete-forward
+        c-electric-semi&comma
         dabbrev-expand
+        end-of-visual-line
         indent-for-tab-command
         org-self-insert-command
         sgml-slash
