@@ -9,7 +9,7 @@ function icon(path)
 end
 
 theme.font = "terminus 8"
-theme.wallpaper = os.getenv("HOME").."/Pictures/wall.jpg"
+theme.wallpaper = os.getenv("HOME").."/Pictures/wall.png"
 
 -- theme.bg_normal     = "#222222"
 -- theme.bg_focus      = "#535d6c"

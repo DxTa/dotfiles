@@ -1,7 +1,7 @@
 
 local settings = [[
 gtk-font-name="Droid Sans 10"
-gtk-theme-name="Numix Redux Dark"
+gtk-theme-name="Numix"
 gtk-icon-theme-name="gnome"
 gtk-fallback-icon-theme="gnome"
 gtk-cursor-blink=0
