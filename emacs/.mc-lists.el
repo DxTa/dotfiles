@@ -20,5 +20,6 @@
 
 (setq mc/cmds-to-run-once
       '(
+        select-window-0
         undo-tree-visualizer-quit
         ))

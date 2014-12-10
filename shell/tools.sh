@@ -91,12 +91,17 @@ fi
 if [[ "$OS" = "darwin" ]]; then
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS:$PATH
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS/bin:$PATH
+  export PATH=/Applications/Emacs.app/Contents/MacOS:$PATH
+  export PATH=/Applications/Emacs.app/Contents/MacOS/bin:$PATH
 fi
 
 # WP-cli
 if [ -d $HOME/.wp-cli ]; then
   export PATH=$HOME/.wp-cli/bin:$PATH
 fi
+
+# Docker
+export DOCKER_HOST=tcp://192.168.132.128:4243
 
 # Shortcut
 export DEV=$HOME/Projects

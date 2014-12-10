@@ -18,3 +18,14 @@ mpd/mpd.db
 mpd/mpd.pid
 mpd/mpd.state
 mpd/playlists
+
+emacs.el
+places
+projectile-bookmarks.eld
+recentf
+srecode-map.el
+tramp
+.org-id-locations
+aria2-controller.eieio
+aria2c.session
+./

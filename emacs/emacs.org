@@ -48,7 +48,8 @@
 
    #+NAME: init-before
    #+BEGIN_SRC emacs-lisp :tangle no
-     (setq gc-cons-threshold (* 4 1024 1024))
+     (setq gc-cons-threshold (* 4 1024 1024)
+           jit-lock-defer-time 0.01)
 
      (defvar td/vendor-directory (concat user-emacs-directory "vendor/"))
      (add-to-list 'load-path td/vendor-directory)
@@ -109,8 +110,9 @@
        (exec-path-from-shell-initialize))
 
      (when (eq system-type 'darwin)
-       (setq mac-command-modifier 'meta
-             mac-option-modifier 'super
+       (setq ns-use-native-fullscreen nil
+             ns-command-modifier 'meta
+             ns-option-modifier 'super
              trash-directory "~/.Trash/")
 
        ;; BSD ls does not support --dired. Use GNU core-utils: brew install coreutils
@@ -194,7 +196,7 @@
    http://lists.gnu.org/archive/html/bug-gnu-emacs/2014-10/msg01332.html
 
    #+NAME: init-before
-   #+begin_src emacs-lisp
+   #+begin_src emacs-lisp :tangle no
      (require 'cl)
    #+end_src
 
@@ -209,7 +211,8 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq default-frame-alist
            '((left-fringe . 16) (right-fringe . 0)
-             (font . "Inconsolata 12")))
+             (width . 120) (height . 45)
+             (font . "Inconsolata 16")))
 
      ;; Fallback font for missing Unicode glyph
      ;; (set-fontset-font
@@ -221,8 +224,9 @@
        (scroll-bar-mode -1))
      (when (fboundp 'blink-cursor-mode)
        (blink-cursor-mode -1))
-     (when (fboundp 'menu-bar-mode)
-       (menu-bar-mode -1))
+     (unless (and (eq system-type 'darwin) (display-graphic-p))
+       (when (fboundp 'menu-bar-mode)
+         (menu-bar-mode -1)))
 
      (setcdr
       (assoc 'truncation fringe-indicator-alist) nil)
@@ -240,7 +244,7 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (load-theme 'ujelly t)
+     (load-theme 'base16-railscasts t)
      ;; (load-theme 'custom t)
    #+END_SRC
 
@@ -300,7 +304,8 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package smart-mode-line
-       :init (sml/setup)
+       ;; :init (sml/setup)
+       :defer t
        :config
        (progn
          (add-to-list 'sml/replacer-regexp-list '("^~/Projects/dotfiles/\\(.*\\)/" ":Config:\\1:"))
@@ -637,7 +642,8 @@
    TODO: stop spell checking source code regions
    http://superuser.com/questions/345084/how-to-exclude-in-flyspell-mode-and-flyspell-buffer/345461#345461
 
-   #+begin_src emacs-lisp
+   #+name: editing
+   #+begin_src emacs-lisp :tangle no
      ;; (defun flyspell-ignore-verbatim ()
      ;;   "Function used for `flyspell-generic-check-word-predicate' to ignore {{{ }}} blocks."
      ;;   (save-excursion
@@ -1010,7 +1016,7 @@
 * Navigation and Completion
 
   #+name: navigation-completion
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :tangle no
     (use-package which-func
       :defer t
       :idle
@@ -1023,7 +1029,7 @@
       (setq imenu-auto-rescan t))
   #+end_src
 
-** TODO Auto Complete
+** Auto Complete
 
    Take a look at ~company-sort-by-backend-importance~.
 
@@ -1333,12 +1339,21 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package projectile
        :defer t
-       :idle (projectile-global-mode t)
+       :init (projectile-global-mode t)
        :config
        (progn
          (setq projectile-enable-idle-timer t
                projectile-mode-line
                '(:eval (format " Proj[%s]" (projectile-project-name))))
+
+         (defadvice projectile-mode (before maybe-use-cache activate)
+           (when
+               (--any? (and it (file-remote-p it))
+                       (list
+                        (buffer-file-name)
+                        list-buffers-directory
+                        default-directory))
+             (setq-local projectile-enable-caching t)))
 
          (bind-keys ("M-l" . projectile-find-file)
                     ([remap projectile-ack] . projectile-ag)
@@ -1444,6 +1459,22 @@
 
 ** TODO Java
 
+   #+name: programming
+   #+begin_src emacs-lisp :tangle no
+     (use-package semantic-mode
+       :idle (semantic-mode 1)
+       (setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
+                                         global-semanticdb-minor-mode
+                                         global-semantic-idle-summary-mode
+                                         global-semantic-mru-bookmark-mode)))
+
+     (use-package malabar-mode
+       :mode ("\\.java\\'" . malabar-mode)
+       :config
+       (progn
+         (setq malabar-groovy-lib-dir "/path/to/malabar/lib")))
+   #+end_src
+
 ** TODO JavaScript/TypeScript/CoffeeScript
 
    This section contains configuration for both ~js-mode~ and
@@ -1516,7 +1547,9 @@
               ("\\.html?" . web-mode)
               ("\\.hbs\\'" . web-mode))
        :config
-       (add-hook 'web-mode-hook #'turn-off-auto-fill))
+       (progn
+         (setq web-mode-markup-indent-offset 2)
+         (add-hook 'web-mode-hook #'turn-off-auto-fill)))
    #+end_src
 
 
@@ -2024,6 +2057,33 @@
      ;;   (progn
      ;;     (setq persp-keymap-prefix (kbd "C-x p"))
      ;;     (persp-mode t)))
+   #+end_src
+
+** Aria2
+
+   [[http://aria2.sourceforge.net][Aria]]2 is my download manager of choice, and I controll it from Emacs
+   using the ~aria2~ package. Unfortunately, this package requires
+   ~process-attributes~, which is not supported on Mac OS X.
+
+
+   #+name: management
+   #+begin_src emacs-lisp :tangle no
+     (use-package aria2
+       :defer t
+       :config
+       (progn
+         (defun td/aria2--is-aria-process-p (fn pid)
+           (if (eq system-type 'darwin)
+               (let* ((cmd (format "ps -o user='',comm='' %d" pid))
+                      (data (split-string (shell-command-to-string cmd)))
+                      (user (car data))
+                      (comm (cadr data)))
+                 (and
+                  (string= (executable-find "aria2c") comm)
+                  (string= (user-real-login-name) user)))
+             (funcall fn pid)))
+
+         (advice-add 'aria2--is-aria-process-p :around #'td/aria2--is-aria-process-p)))
    #+end_src
 
 * Configuration Layout

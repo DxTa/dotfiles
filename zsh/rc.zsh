@@ -9,7 +9,7 @@ export LANG="en_US.UTF-8"
 
 if [ "$OS" = "darwin" ]; then
   launchctl setenv LANG $LANG
-  launchctl setenv LC_CTYPE $LC_CTYPE
+  # launchctl setenv LC_CTYPE $LC_CTYPE
   launchctl setenv PATH $PATH
 fi
 

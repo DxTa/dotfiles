@@ -9,6 +9,7 @@
 (defvar td/packages)
 (setq td/packages
       '(ace-jump-mode
+        ag
         anzu
         benchmark-init
         cider
@@ -16,8 +17,8 @@
         comment-dwim-2
         company
         diff-hl
-        elixir-mix
-        elixir-mode
+        ;; elixir-mix
+        ;; elixir-mode
         emmet-mode
         exec-path-from-shell
         expand-region
@@ -46,6 +47,7 @@
         solarized-theme
         undo-tree
         use-package
+        web-mode
         wgrep-ag
         window-numbering
         yaml-mode
