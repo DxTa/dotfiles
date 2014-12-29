@@ -93,6 +93,7 @@ if [[ "$OS" = "darwin" ]]; then
   export PATH=$HOME/Applications/Emacs.app/Contents/MacOS/bin:$PATH
   export PATH=/Applications/Emacs.app/Contents/MacOS:$PATH
   export PATH=/Applications/Emacs.app/Contents/MacOS/bin:$PATH
+  export JAVA_HOME=$(/usr/libexec/java_home)
 fi
 
 # WP-cli

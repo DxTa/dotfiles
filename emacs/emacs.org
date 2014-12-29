@@ -48,8 +48,7 @@
 
    #+NAME: init-before
    #+BEGIN_SRC emacs-lisp :tangle no
-     (setq gc-cons-threshold (* 4 1024 1024)
-           jit-lock-defer-time 0.01)
+     (setq gc-cons-threshold (* 4 1024 1024))
 
      (defvar td/vendor-directory (concat user-emacs-directory "vendor/"))
      (add-to-list 'load-path td/vendor-directory)
@@ -211,7 +210,7 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq default-frame-alist
            '((left-fringe . 16) (right-fringe . 0)
-             (width . 120) (height . 45)
+             (width . 120) (height . 44)
              (font . "Inconsolata 16")))
 
      ;; Fallback font for missing Unicode glyph
@@ -252,7 +251,7 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (global-hl-line-mode t)
+     ;; (global-hl-line-mode t)
    #+END_SRC
 
    Display the line and column number in the mode line.
@@ -304,8 +303,7 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package smart-mode-line
-       ;; :init (sml/setup)
-       :defer t
+       :init (sml/setup)
        :config
        (progn
          (add-to-list 'sml/replacer-regexp-list '("^~/Projects/dotfiles/\\(.*\\)/" ":Config:\\1:"))
@@ -369,28 +367,35 @@
    fringe. ~hideshowvis~ is not available in any of the ELPA, so I
    manage it myself in the ~vendor~ folder.
 
+   #+name: appearance
    #+begin_src emacs-lisp :tangle no
-     (use-package hideshow
-       :init
-       (progn
-         (require 'hideshowvis)
+     ;; (use-package hideshow
+     ;;   :init
+     ;;   :defer t
+     ;;   (progn
+     ;;     (require 'hideshowvis)
 
-         ;; We need an around advice here to access the ov internal variable
-         (defadvice display-code-line-counts
-             (around td/hideshowvis-no-line-count activate)
-           ad-do-it
-           (overlay-put ov 'display " ..."))
+     ;;     ;; We need an around advice here to access the ov internal variable
+     ;;     (defadvice display-code-line-counts
+     ;;         (around td/hideshowvis-no-line-count activate)
+     ;;       ad-do-it
+     ;;       (overlay-put ov 'display " ..."))
 
-         (hideshowvis-symbols)
+     ;;     (hideshowvis-symbols)
 
-         (progn
-           (defun td/toggle-hiding-on-demand ()
-             (interactive)
-             (unless hs-minor-mode
-               (hs-minor-mode t))
-             (hs-toggle-hiding))
+     ;;     (defun td/toggle-hiding-on-demand ()
+     ;;       (interactive)
+     ;;       (unless hs-minor-mode
+     ;;         (hs-minor-mode t))
+     ;;       (hs-toggle-hiding))
 
-           (bind-key "C-c C-SPC" 'td/toggle-hiding-on-demand)))
+     ;;     (bind-key "C-c C-SPC" 'td/toggle-hiding-on-demand)))
+   #+end_src
+
+   #+name: appearance
+   #+begin_src emacs-lisp :tangle no
+     (use-package origami
+       :bind (("C-c C-SPC" . origami-toggle-node)))
    #+end_src
 
 ** Popwin
@@ -549,9 +554,17 @@
      (use-package isearch
        :bind (("C-s" . isearch-forward-regexp)
               ("C-r" . isearch-backward-regexp))
-       ;;:config
-       ;;(require 'isearch-diacritics-fold)
-       )
+       :init
+       (progn
+         (defun td/isearch-message (&optional c-q-hack ellipsis)
+           "Cursor flashing in the echo area makes me crazy."
+           (isearch-message c-q-hack nil))
+
+         (setq lazy-highlight-initial-delay 0
+               isearch-message-function #'td/isearch-message)
+
+         ;;(require 'isearch-diacritics-fold)
+         ))
    #+end_src
 
    =Anzu= is better than the default =query-replace= commands for a
@@ -634,33 +647,10 @@
 
    Use aspell for spell checking. Installation:
 
-   | Platform  | Command                         |
-   |-----------+---------------------------------|
-   | Mac OS X  | =brew install aspell --lang=en=   |
-   | Archlinux | =sudo pacman -S aspell aspell-en= |
-
-   TODO: stop spell checking source code regions
-   http://superuser.com/questions/345084/how-to-exclude-in-flyspell-mode-and-flyspell-buffer/345461#345461
-
-   #+name: editing
-   #+begin_src emacs-lisp :tangle no
-     ;; (defun flyspell-ignore-verbatim ()
-     ;;   "Function used for `flyspell-generic-check-word-predicate' to ignore {{{ }}} blocks."
-     ;;   (save-excursion
-     ;;     (widen)
-     ;;     (let ((p (point))
-     ;;           (count 0))
-     ;;       (not (or (and (re-search-backward "^{{{" nil t)
-     ;;                     (> p (point))
-     ;;                     ;; If there is no closing }}} then assume we're still in it
-     ;;                     (or (not (re-search-forward "^}}}" nil t))
-     ;;                         (< p (point))))
-     ;;                (eq 1 (progn (while (re-search-backward "`" (line-beginning-position) t)
-     ;;                               (setq count (1+ count)))
-     ;;                             (- count (* 2 (/ count 2))))))))))
-     ;; (put 'text-mode 'flyspell-mode-predicate 'flyspell-ignore-verbatim)
-   #+end_src
-
+   | Platform  | Command                  |
+   |-----------+--------------------------|
+   | Mac OS X  | =brew install hunspell=    |
+   | Archlinux | =sudo pacman - S hunspell= |
 
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
@@ -675,13 +665,16 @@
 
        (use-package flyspell
          :defer t
-         :idle (td/setup-flyspell))
+         :idle (td/setup-flyspell)
+         :config
+         (progn
+           (require 'flyspell-ignore-faces)
+           (put 'org-mode 'flyspell-mode-predicate 'td/flyspell-check-p)))
 
        (defun td/setup-flyspell ()
          (interactive)
          ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
          (add-hook 'text-mode-hook 'flyspell-mode)))
-
    #+END_SRC
 
 ** Parentheses
@@ -1047,6 +1040,7 @@
                   company-css
                   ;; company-c-headers
                   ;; company-php-reflection
+                  company-restclient
                   company-clang)))
          (global-company-mode t))
        :config
@@ -1088,7 +1082,8 @@
                     ("C-p" . company-select-previous)
                     ("C-s" . company-filter-candidates)
                     ("C-l" . company-show-location)
-                    ("C-j" . company-complete-common))
+                    ("C-j" . company-complete-common)
+                    ("C-d" . company-show-doc-buffer))
 
          (defun company-complete-dwim (&optional arg)
            (interactive "P")
@@ -1161,7 +1156,7 @@
 
          (defun ido-goto-line ()
            (interactive)
-           (let* ((lines (current-buffer-lines))
+           (let* ((lines (split-string (buffer-string) "[\n\r]"))
                   (choices (-remove (lambda (l) (zerop (length l))) lines))
                   (line (ido-completing-read "Line: " choices)))
              (push-mark)
@@ -1343,17 +1338,18 @@
        :config
        (progn
          (setq projectile-enable-idle-timer t
-               projectile-mode-line
-               '(:eval (format " Proj[%s]" (projectile-project-name))))
+               ;; Use static mode line here to eliminate GC. SML already
+               ;; displays the current project anyway.
+               projectile-mode-line " Proj")
 
-         (defadvice projectile-mode (before maybe-use-cache activate)
-           (when
-               (--any? (and it (file-remote-p it))
-                       (list
-                        (buffer-file-name)
-                        list-buffers-directory
-                        default-directory))
-             (setq-local projectile-enable-caching t)))
+         ;; (defadvice projectile-mode (before maybe-use-cache activate)
+         ;;   (when
+         ;;       (--any? (and it (file-remote-p it))
+         ;;               (list
+         ;;                (buffer-file-name)
+         ;;                list-buffers-directory
+         ;;                default-directory))
+         ;;     (setq-local projectile-enable-caching t)))
 
          (bind-keys ("M-l" . projectile-find-file)
                     ([remap projectile-ack] . projectile-ag)
@@ -1461,18 +1457,28 @@
 
    #+name: programming
    #+begin_src emacs-lisp :tangle no
-     (use-package semantic-mode
-       :idle (semantic-mode 1)
-       (setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
-                                         global-semanticdb-minor-mode
-                                         global-semantic-idle-summary-mode
-                                         global-semantic-mru-bookmark-mode)))
+     ;; (use-package semantic-mode
+     ;;   :idle (semantic-mode 1)
+     ;;   (setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
+     ;;                                     global-semanticdb-minor-mode
+     ;;                                     global-semantic-idle-summary-mode
+     ;;                                     global-semantic-mru-bookmark-mode)))
 
-     (use-package malabar-mode
-       :mode ("\\.java\\'" . malabar-mode)
-       :config
-       (progn
-         (setq malabar-groovy-lib-dir "/path/to/malabar/lib")))
+     ;; (use-package malabar-mode
+     ;;   :mode ("\\.java\\'" . malabar-mode)
+     ;;   :config
+     ;;   (progn
+     ;;     (setq malabar-groovy-lib-dir "/path/to/malabar/lib")))
+
+     ;; (load-file "~/Projects/cedet/cedet-devel-load.el")
+     ;; (add-to-list 'load-path "~/Projects/malabar-mode/src/main/lisp")
+
+     ;; (load "malabar-mode")
+
+     ;; (eval-after-load 'inf-groovy
+     ;;   (add-hook 'inf-groovy-load-hook 'flycheck-mode))
+     ;; (eval-after-load 'java-mode
+     ;;   (add-hook 'java-mode-hook   'flycheck-mode))
    #+end_src
 
 ** TODO JavaScript/TypeScript/CoffeeScript

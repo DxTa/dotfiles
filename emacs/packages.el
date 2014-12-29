@@ -11,6 +11,7 @@
       '(ace-jump-mode
         ag
         anzu
+        base16-theme
         benchmark-init
         cider
         clojure-mode
@@ -24,7 +25,7 @@
         expand-region
         flycheck
         flx-ido
-        hideshowvis
+        ;; hideshowvis
         highlight-escape-sequences
         highlight-parentheses
         ibuffer-vc
