@@ -10,49 +10,67 @@
 (setq td/packages
       '(ace-jump-mode
         ag
+        ant
         anzu
+        async
         base16-theme
         benchmark-init
+        bind-key
         cider
         clojure-mode
         comment-dwim-2
         company
+        dash
         diff-hl
-        ;; elixir-mix
-        ;; elixir-mode
+        diminish
         emmet-mode
         exec-path-from-shell
         expand-region
-        flycheck
+        f
+        fish-mode
+        flx
         flx-ido
         ;; hideshowvis
+        flycheck
+        flycheck-cask
+        fringe-helper
+        gitconfig-mode
+        groovy-mode
         highlight-escape-sequences
         highlight-parentheses
+        http
         ibuffer-vc
         ido-ubiquitous
         ido-vertical-mode
         js2-mode
         json-mode
+        magit
         markdown-mode
         multiple-cursors
+        noflet
+        origami
         php-mode
         popwin
         prodigy
         projectile
         rainbow-delimiters
         rainbow-mode
+        request
+        s
+        scss-mode
         smart-mode-line
         smartparens
-        scss-mode
         smex
         solarized-theme
         undo-tree
         use-package
         web-mode
+        wgrep
         wgrep-ag
         window-numbering
         yaml-mode
         yasnippet
+        ztree
         ))
 
 (defun td/install-packages ()

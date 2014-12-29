@@ -243,7 +243,7 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (load-theme 'base16-railscasts t)
+     (load-theme 'adwaita t)
      ;; (load-theme 'custom t)
    #+END_SRC
 
@@ -388,7 +388,6 @@
      ;;       (unless hs-minor-mode
      ;;         (hs-minor-mode t))
      ;;       (hs-toggle-hiding))
-
      ;;     (bind-key "C-c C-SPC" 'td/toggle-hiding-on-demand)))
    #+end_src
 
@@ -656,7 +655,6 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (when (executable-find "hunspell")
        (use-package ispell
-         :defer t
          :bind ("<f8>" . ispell-word)
          :init (setq-default ispell-program-name "hunspell"
                              ispell-skip-html t
@@ -665,16 +663,11 @@
 
        (use-package flyspell
          :defer t
-         :idle (td/setup-flyspell)
+         :init (add-hook 'text-mode-hook 'flyspell-mode)
          :config
          (progn
            (require 'flyspell-ignore-faces)
-           (put 'org-mode 'flyspell-mode-predicate 'td/flyspell-check-p)))
-
-       (defun td/setup-flyspell ()
-         (interactive)
-         ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-         (add-hook 'text-mode-hook 'flyspell-mode)))
+           (put 'org-mode 'flyspell-mode-predicate 'td/flyspell-check-p))))
    #+END_SRC
 
 ** Parentheses
@@ -889,6 +882,51 @@
 
      (bind-key "M-o" 'open-thing-at-point)
 
+     (defun char-upcasep (letter)
+       (eq letter (upcase letter)))
+
+     ;; TOOD: find appropriate key binding for these functions
+
+     (defun capitalize-word-toggle ()
+       (interactive)
+       (let ((start (car (save-excursion
+                           (backward-word)
+                           (bounds-of-thing-at-point 'symbol)))))
+         (if start
+             (save-excursion
+               (goto-char start)
+               (funcall (if (char-upcasep (char-after))
+                            'downcase-region
+                          'upcase-region)
+                        start (1+ start)))
+           (capitalize-word -1))))
+
+     (defun upcase-word-toggle ()
+       (interactive)
+       (let ((bounds (bounds-of-thing-at-point 'symbol))
+             beg end
+             (regionp (if (eq this-command last-command)
+                          (get this-command 'regionp)
+                        (put this-command 'regionp nil))))
+         (cond
+          ((or (region-active-p) regionp)
+           (setq beg (region-beginning)
+                 end (region-end))
+           (put this-command 'regionp t))
+          (bounds
+           (setq beg (car bounds)
+                 end (cdr bounds)))
+          (t
+           (setq beg (point)
+                 end (1+ beg))))
+         (save-excursion
+           (goto-char (1- beg))
+           (and (re-search-forward "[A-Za-z]" end t)
+                (funcall (if (char-upcasep (char-before))
+                             'downcase-region
+                           'upcase-region)
+                         beg end)))))
+
 
      (defun find-file-sudo (&optional arg)
        (interactive)
@@ -1033,7 +1071,8 @@
        (progn
          (setq company-backends
                '((company-yasnippet
-                  company-dabbrev-code company-keywords
+                  company-dabbrev-code
+                  company-keywords
                   company-capf
                   ;; company-inf-python
                   ;; company-go
@@ -1050,12 +1089,13 @@
 
          (setq completion-cycle-threshold 5)
 
-         (setq company-idle-delay nil
+         (setq company-idle-delay 0.2
                company-auto-complete t
                company-selection-wrap-around t
                company-echo-delay 0
                company-tooltip-align-annotations t
                company-show-numbers t
+               company-minimum-prefix-length 4
 
                company-auto-complete-chars
                '(?\ ?\( ?\) ?. ?\" ?$ ?\' ?< ?> ?| ?!)
@@ -1064,7 +1104,7 @@
                '(company-sort-by-occurrence)
 
                company-frontends
-               '(company-pseudo-tooltip-unless-just-one-frontend
+               '(;; company-pseudo-tooltip-unless-just-one-frontend
                  company-echo-metadata-frontend
                  company-preview-frontend))
 
@@ -1653,6 +1693,21 @@
                    (format "/%s" (mapconcat 'identity path "/")))))))
 
          (bind-key "C-c C-p" 'nxml-where)))
+   #+end_src
+
+** Fish
+
+   #+name: programming
+   #+begin_src emacs-lisp :tangle no
+     (use-package fish-mode
+       :mode (("\\.fish$" . fish-mode))
+       :config
+       (progn
+
+         (defun td/setup-fish-mode ()
+           (setq-local tab-width 2))
+
+         (add-hook 'fish-mode-hook #'td/setup-fish-mode)))
    #+end_src
 
 * Org

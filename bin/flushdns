@@ -1,0 +1,5 @@
+#!/bin/sh
+
+command -v discoveryutil >/dev/null 2>&1 && \
+    sudo discoveryutil mdnsflushcache && \
+    sudo discoveryutil udnsflushcaches
