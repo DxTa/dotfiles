@@ -1,7 +1,7 @@
 
 local settings = [[
 gtk-font-name="Droid Sans 10"
-gtk-theme-name="Numix Redux Dark"
+gtk-theme-name="Numix"
 gtk-icon-theme-name="gnome"
 gtk-fallback-icon-theme="gnome"
 gtk-cursor-blink=0
@@ -14,6 +14,9 @@ gtk-xft-antialias=1
 gtk-xft-hinting=1
 gtk-xft-hintstyle="hintmedium"
 gtk-xft-rgba="rgb"
+gtk-enable-event-sounds=true
+gtk-enable-input-feedback-sounds=true
+gtk-sound-theme-name=freedesktop
 ]]
 
 local gtk2rc = io.open(os.getenv("HOME") .. "/.gtkrc-2.0", "w")

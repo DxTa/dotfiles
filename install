@@ -13,10 +13,11 @@ else
     fi
   }
 
-  source $HOME/cli/shell/init.sh
+  # source $HOME/cli/shell/init.sh
 
-  echo "source $CLI/shell/init.sh" >> ~/.bashrc
-  echo "source $CLI/shell/init.sh" >> ~/.zshrc
+  # echo "source $CLI/shell/init.sh" >> ~/.bashrc
+  # echo "source $CLI/shell/init.sh" >> ~/.zshrc
+  CLI=$HOME/Projects/dotfiles
 
   # vim
   link $CLI/vim/vimrc $HOME/.vimrc
@@ -39,17 +40,17 @@ else
   link $CLI/tmux.conf $HOME/.tmux.conf
   link $CLI/ctags $HOME/.ctags
 
-  if [ "$OS" = "darwin" ]; then
-    cat $CLI/Custom.css > "$HOME/Library/Application Support/Google/Chrome/Default/User StyleSheets/Custom.css"
-  fi
+  # if [ "$OS" = "darwin" ]; then
+    # cat $CLI/Custom.css > "$HOME/Library/Application Support/Google/Chrome/Default/User StyleSheets/Custom.css"
+  # fi
 
-  if [ "$OS" = "linux" ]; then
-    link $CLI/awesome $HOME/.config/awesome
+  # if [ "$OS" = "linux" ]; then
+    # link $CLI/awesome $HOME/.config/awesome
     # link $CLI/x/xinitrc $HOME/.xinitrc
-    link $CLI/x/xresources $HOME/.xresources
-    link $CLI/x/xmodmap $HOME/.xmodmap
-    link $CLI/x/terminalrc $HOME/.config/xfce4/terminal/terminalrc
-    cat $CLI/Custom.css > "$HOME/.config/chromium/Default/User StyleSheets/Custom.css"
-  fi
+    # link $CLI/x/xresources $HOME/.xresources
+    # link $CLI/x/xmodmap $HOME/.xmodmap
+    # link $CLI/x/terminalrc $HOME/.config/xfce4/terminal/terminalrc
+    # cat $CLI/Custom.css > "$HOME/.config/chromium/Default/User StyleSheets/Custom.css"
+  # fi
 fi
 

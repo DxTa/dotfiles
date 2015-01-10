@@ -1,9 +1,9 @@
 
-(deftheme td-custom
+(deftheme custom
   "My custom faces that fix some theme annoyances.")
 
 (custom-theme-set-faces
- 'td-custom
+ 'custom
  ;; Some theme define modeline with boxed border and small font :(
  `(mode-line ((t :box nil :inherit nil :height ,(cdr (assoc :height (face-all-attributes 'default))))))
  `(mode-line-highlight ((t :box nil)))
@@ -29,9 +29,9 @@
 
  `(hl-line ((t :inherit nil :underline nil :foreground nil)))
 
- `(org-level-1 ((t :height 1.3)))
- `(org-level-2 ((t :height 1.2)))
- `(org-level-3 ((t :height 1.1)))
+ `(org-level-1 ((t :weight bold :height 1.3)))
+ `(org-level-2 ((t :weight bold :height 1.2)))
+ `(org-level-3 ((t :weight bold :height 1.1)))
 
  `(company-tooltip ((t :background "lightgray" :foreground "black")))
  `(company-tooltip-selection ((t :background "steelblue" :foreground "white")))
@@ -42,8 +42,8 @@
  `(company-scrollbar-fg ((t :background "black")))
  `(company-scrollbar-bg ((t :background "gray")))
  `(company-preview ((t :background nil :foreround "darkgray")))
- `(company-preview-common ((t :background nil :foreround "darkgray")))
+ `(company-preview-common ((t :background nil :foreground "darkgray")))
  ;; `(company-preview-search ((t :background "" :foreground "")))
  )
 
-(provide-theme 'td-custom)
+(provide-theme 'custom)

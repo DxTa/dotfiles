@@ -44,7 +44,7 @@
   addall = add -A
   aa = add -A
   ap = add --patch
-  amend = commit --amend
+  amend = commit --amend --reuse-message=HEAD
   undo = reset --soft HEAD^
   rank = !$HOME/cli/bin/git-rank-contributers
   count = shortlog -sn
