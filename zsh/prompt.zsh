@@ -23,7 +23,8 @@ zstyle ':vcs_info:*' unstagedstr $'%{$fg_bold[red]%}+'
 zstyle ':vcs_info:*' formats $'%{$fg_bold[green]%}%u%c[%b:%7.7i]'
 
 function git_prompt_info() {
-  echo "${vcs_info_msg_0_}"
+    echo "${vcs_info_msg_0_}"
+    # echo -ne $(git-prompt_status)
 }
 
 if [[ $CLICOLOR == 1 ]]; then
@@ -34,7 +35,7 @@ if [[ $CLICOLOR == 1 ]]; then
 else
   export PROMPT=$'\n%n at %m in %~/\n› '
   set_prompt () {
-    export RPROMPT="$(git_prompt_info)$(todop)"
+    export RPROMPT="$(git-prompt_status)$(todop)"
   }
 fi
 
