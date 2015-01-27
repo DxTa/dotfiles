@@ -23,8 +23,10 @@ function fish_prompt
   set_color $fish_color_cwd
   printf '%s' "$PWD"
   set_color normal
-
-  printf ' on %s' (git-prompt_status)
+  
+  if git rev-parse --show-toplevel >/dev/null 2>&1
+    printf ' on %s' (git-prompt_status)
+  end
   
   echo
 

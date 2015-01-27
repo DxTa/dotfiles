@@ -21,6 +21,7 @@
         comment-dwim-2
         company
         dash
+        deft
         diff-hl
         diminish
         emmet-mode

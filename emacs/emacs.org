@@ -642,24 +642,25 @@
      (add-hook 'prog-mode-hook 'turn-on-auto-fill)
    #+END_SRC
 
-** TODO Spelling
+** Spell checking
 
    Use aspell for spell checking. Installation:
 
-   | Platform  | Command                  |
-   |-----------+--------------------------|
-   | Mac OS X  | =brew install hunspell=    |
-   | Archlinux | =sudo pacman - S hunspell= |
+   | Platform  | Command                |
+   |-----------+------------------------|
+   | Mac OS X  | =brew install aspell=    |
+   | Archlinux | =sudo pacman - S aspell= |
 
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
-     (when (executable-find "hunspell")
+     (when (executable-find "aspell")
        (use-package ispell
          :bind ("<f8>" . ispell-word)
-         :init (setq-default ispell-program-name "hunspell"
+         :init (setq-default ispell-program-name "aspell"
+                             ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")
                              ispell-skip-html t
                              ispell-silently-savep t
-                             ispell-really-hunspell t))
+                             ispell-really-aspell t))
 
        (use-package flyspell
          :defer t
@@ -1595,7 +1596,9 @@
        :config
        (progn
          (setq web-mode-markup-indent-offset 2)
-         (add-hook 'web-mode-hook #'turn-off-auto-fill)))
+         (add-hook 'web-mode-hook #'turn-off-auto-fill)
+         (add-to-list 'web-mode-imenu-regexp-list
+                       '(" \\(ng-[a-z]*\\)=\"\\([a-zA-Z0-9]*\\)" 1 2 "="))))
    #+end_src
 
 
@@ -1719,26 +1722,22 @@
      (use-package org
        :config
        (progn
-         (setq org-directory "~/Dropbox/Notes/"
-               org-default-notes-file (expand-file-name "agenda.org" org-directory))
+         (setq org-directory "~/Documents/"
+               org-default-notes-file (expand-file-name "inbox.org" org-directory))
 
          (setq org-capture-templates
                '(("t" "To-do" entry
                   (file+headline "" "Inbox")
-                  "* TODO %u %^{Task}"
+                  "* TODO %u %?"
                   :clock-keep t :kill-buffer t)
-                 ("d" "To-do (done)" entry
-                  (file+headline "" "Inbox")
-                  "* DONE %u %^{Task}"
+                 ("r" "Links to read" checkitem
+                  (file+headline "" "Reading list")
+                  "[ ] %?"
                   :clock-keep t :kill-buffer t)
-                 ("u" "Quick to-do" entry
-                  (file+headline "" "Inbox")
-                  "* TODO %^{Task}\n  SCHEDULED: %t"
-                  :clock-keep t :kill-buffer t :immediate-finish t)
-                 ("p" "TeamworkPM task" entry
-                  (file+headline "~/org/bigtech.org" "Tasks")
-                  "* TODO %^{TWPMLink}p%^{Task}"
-                  :clock-keep t :clock-in t :immediate-finish t)))
+                 ("l" "Download" checkitem
+                  (file+headline "" "Download")
+                  "[ ] %?"
+                  :clock-keep t :kill-buffer t)))
 
          (setq org-goto-interface 'outline-path-completion
                org-log-done 'time
@@ -1974,6 +1973,23 @@
    #+END_SRC
 
 * Management
+
+** Deft
+
+   I use =Deft= to manage my =org-mode= files.
+
+   #+NAME: management
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package deft
+       :bind ("C-c b d" . deft)
+       :config
+       (progn
+         (setq deft-extension "org"
+               deft-text-mode 'org-mode
+               deft-directory "~/Documents"
+               deft-strip-title-regexp "\\(?:^%+\\|#\\+[[:alpha:]]+:\\|^[#* ]+\\|-\\*-[[:alpha:]]+-\\*-\\|#+$\\)")))
+   #+END_SRC
+
 ** Shell
 
    #+name: management

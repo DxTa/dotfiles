@@ -46,9 +46,9 @@ function fish_user_key_bindings
   jesus_fucking_christ_bind_the_fucking_keys_fish
 end
 
+set -g -x LANG "en_US"
 set -g -x LC_ALL "en_US"
-set -g -x NIX_LINK "$HOME/.nix-profile"
-
+set -g -x LANG "en_US"
 
 # Paths
 function prepend_to_path -d "Prepend the given dir to PATH if it exists and is not already in it"
