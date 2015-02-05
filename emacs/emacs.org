@@ -1098,16 +1098,11 @@
        (progn
          (setq company-backends
                '((company-yasnippet
+                  company-capf
                   company-dabbrev-code
                   company-keywords
-                  company-capf
-                  ;; company-inf-python
-                  ;; company-go
                   company-css
-                  ;; company-c-headers
-                  ;; company-php-reflection
-                  company-restclient
-                  company-clang)))
+                  company-restclient)))
          (global-company-mode t))
        :config
        (progn
@@ -1133,7 +1128,7 @@
                company-frontends
                '(;; company-pseudo-tooltip-unless-just-one-frontend
                  company-echo-metadata-frontend
-                 company-preview-frontend))
+                 company-preview-if-just-one-frontend))
 
          (bind-keys :prefix-map td/completion-map
                     :prefix "M-;"
