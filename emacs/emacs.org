@@ -210,6 +210,8 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq default-frame-alist
            '((left-fringe . 16) (right-fringe . 0)
+             (border-width . 0)
+             (internal-border-width . 0)
              (width . 120) (height . 44)
              (font . "Inconsolata 16")))
 
@@ -423,6 +425,30 @@
                  (shell-mode :height 15)
                  (ag-mode :height 15)))
          ))
+   #+END_SRC
+
+** Diff-hl
+
+   #+NAME: appearance
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package diff-hl
+       :init
+       (progn
+         (define-fringe-bitmap 'td/diff-hl-bmp [192] 1 16 '(top t))
+
+         (defun td/diff-hl-bmp (type pos) 'td/diff-hl-bmp)
+         
+         (setq diff-hl-draw-borders nil
+               diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
+
+         (set-face-attribute 'diff-hl-insert nil :background nil :foreground "#81af34")
+         (set-face-attribute 'diff-hl-delete nil :background nil :foreground "#ff0000")
+         (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
+         
+         (global-diff-hl-mode t)
+         
+         (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
+           "Markers disappear and reapear is kind of annoying to me.")))
    #+END_SRC
 
 * Editing
@@ -1316,9 +1342,9 @@
 
          (use-package ibuffer-vc
            :commands ibuffer-vc-generate-filter-groups-by-vc-root
-           :init
+           :config
            (progn
-             (defun nox/ibuffer-apply-filter-groups ()
+             (defun td/ibuffer-apply-filter-groups ()
                "Combine my saved ibuffer filter groups with those generated
           by `ibuffer-vc-generate-filter-groups-by-vc-root'"
                (interactive)
@@ -1332,7 +1358,7 @@
                      (pop-to-buffer ibuf)
                      (ibuffer-update nil t)))))
 
-             (add-hook 'ibuffer-hook 'nox/ibuffer-apply-filter-groups)))))
+             (add-hook 'ibuffer-hook 'td/ibuffer-apply-filter-groups)))))
    #+END_SRC
 
    Clean up buffers periodically:
@@ -1425,17 +1451,31 @@
    #+end_src
 
 * Programming
+** Compilation
 
   #+name: programming
   #+begin_src emacs-lisp :tangle no
-    (defun recompile-with-last-configuration ()
-      (interactive)
-      (save-some-buffers)
-      (when compilation-last-buffer
-        (with-current-buffer compilation-last-buffer
-          (call-interactively 'recompile))))
+    (use-package compile
+      :defer t
+      :init
+      (progn
+        (defun recompile-with-last-configuration ()
+          (interactive)
+          (save-some-buffers)
+          (when compilation-last-buffer
+            (with-current-buffer compilation-last-buffer
+              (call-interactively 'recompile))))
+        (bind-key "C-c m" 'recompile-with-last-configuration))
+      :config
+      (progn
+        (setq compilation-scroll-output t)
 
-    (bind-key "C-c m" 'recompile-with-last-configuration)
+        (defun td/colorize-compilation-buffer ()
+          (toggle-read-only)
+          (ansi-color-apply-on-region (point-min) (point-max))
+          (toggle-read-only))
+
+        (add-hook 'compilation-filter-hook #'td/colorize-compilation-buffer)))
   #+end_src
 
 ** Syntax Checking
@@ -1472,10 +1512,9 @@
           (defun eldoc--message-command-p (command)
             (eq command 'eldoc-message-now))
 
-          (bind-key "C-c l" #'eldoc-message-now)
+          (bind-key "C-c d" #'eldoc-message-now)
 
           (eldoc-add-command 'eldoc-message-now)))
-
     #+END_SRC
 
 ** Ruby
@@ -1905,6 +1944,32 @@
    documents. To insert a structural element, type a =<=, followed by a
    template selector and =<TAB>=.
 
+** Babel
+
+   =org-babel= allows me to embed and evaluate code inside org files. It is
+   quite useful but also impose some security risks, so I only enables a
+   handful number of languages.
+
+   #+NAME: org
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package ob-core
+       :defer t
+       :config
+       (progn
+         (org-babel-do-load-languages
+          'org-babel-load-languages
+          '((calc . t)
+            (http . t)
+            (python . t)
+            (sql . t)
+            (sqlite . t)))
+
+         (defun td/org-babel-whitelist (lang body)
+           (not (string= lang "http")))
+
+         (setq org-confirm-babel-evaluate #'td/org-babel-whitelist)))
+   #+END_SRC
+
 ** Key Bindings
 
 *** Hierarchy
@@ -2169,7 +2234,7 @@
    #+begin_src emacs-lisp :tangle no
      (use-package emms
        :defer t
-       :init
+       :config
        (progn
          (require 'emms-setup)
 
@@ -2234,9 +2299,7 @@
   - [[http://nschum.de/src/emacs/kill-ring-search/][kill-ring-search]] seems to be pretty useful. I remember using Unite
     Yankring plugin years ago.
   - [[http://nschum.de/src/emacs/rotate-text/][rotate-text]] is also interesting.
-  - diff-hl
   - eldoc on demand
-  - circe for IRC
   - tags
   - async
-  - adapt prelude's key bindings
+  - Hydra for keymap management?

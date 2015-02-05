@@ -10,8 +10,10 @@
 (setq td/packages
       '(ace-jump-mode
         ag
-        ant
+        alchemist
         anzu
+        apache-mode
+        aria2
         async
         base16-theme
         benchmark-init
@@ -20,43 +22,43 @@
         clojure-mode
         comment-dwim-2
         company
+        company-statistics
         dash
         deft
         diff-hl
         diminish
+        dockerfile-mode
+        elixir-mode
         emmet-mode
+        emms
         exec-path-from-shell
         expand-region
         f
         fish-mode
         flx
         flx-ido
-        ;; hideshowvis
+        hideshowvis
         flycheck
-        flycheck-cask
         fringe-helper
         gitconfig-mode
         groovy-mode
         highlight-escape-sequences
         highlight-parentheses
-        http
         ibuffer-vc
         ido-ubiquitous
         ido-vertical-mode
+        jasminejs-mode
         js2-mode
         json-mode
         magit
         markdown-mode
         multiple-cursors
-        noflet
-        origami
+        ob-http
         php-mode
+        phpunit
         popwin
-        prodigy
         projectile
-        rainbow-delimiters
         rainbow-mode
-        request
         s
         scss-mode
         smart-mode-line

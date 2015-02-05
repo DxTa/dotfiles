@@ -13,7 +13,9 @@
         org-cycle
         org-delete-char
         org-self-insert-command
+        org-yank
         sgml-slash
+        smex
         sp--self-insert-command
         sp-forward-slurp-sexp
         td/join-next-line
