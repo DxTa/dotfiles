@@ -37,11 +37,12 @@
         fish-mode
         flx
         flx-ido
-        hideshowvis
         flycheck
         fringe-helper
+        fullframe
         gitconfig-mode
         groovy-mode
+        hideshowvis
         highlight-escape-sequences
         highlight-parentheses
         ibuffer-vc

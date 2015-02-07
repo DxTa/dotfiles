@@ -185,6 +185,13 @@
      (load custom-file 'noerror)
    #+END_SRC
 
+   Define a custom keymap to be used later on.
+
+   #+NAME: init-before
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (bind-keys :prefix-map td/custom-map :prefix "C-c b")
+   #+END_SRC
+
 ** Fix
 
    In Emacs 24.4, there's a bug that breaks every ~cc-mode~ derived,
@@ -437,18 +444,45 @@
          (define-fringe-bitmap 'td/diff-hl-bmp [192] 1 16 '(top t))
 
          (defun td/diff-hl-bmp (type pos) 'td/diff-hl-bmp)
-         
+
          (setq diff-hl-draw-borders nil
                diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
 
          (set-face-attribute 'diff-hl-insert nil :background nil :foreground "#81af34")
          (set-face-attribute 'diff-hl-delete nil :background nil :foreground "#ff0000")
          (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
-         
+
          (global-diff-hl-mode t)
-         
+
          (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
            "Markers disappear and reapear is kind of annoying to me.")))
+   #+END_SRC
+
+** Frame
+
+   #+NAME: appearance
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package fullframe
+       :config
+       (progn
+         (fullframe magit-status magit-mode-quit-window)
+         (fullframe ibuffer ibuffer-quit)
+
+         (defvar td/last-window-configuration nil
+           "Last window configuration.")
+
+         ;; Ediff has multiple frames, and does not play nice with fullframe API
+         (defun td/store-window-configuration ()
+           "Store current window configuration."
+           (setq td/last-window-configuration (current-window-configuration)))
+
+         (defun td/restore-window-configuration ()
+           "Restore current window configuration."
+           (set-window-configuration td/last-window-configuration)))
+
+         (add-hook 'ediff-before-setup-hook #'td/store-window-configuration)
+         (add-hook 'ediff-quit-hook #'td/restore-window-configuration 'append)
+         (add-hook 'ediff-suspend-hook #'td/restore-window-configuration 'append)))
    #+END_SRC
 
 * Editing
@@ -1020,6 +1054,11 @@
      (defun write-timestamped-current-file-copy ()
        (interactive)
        (write-timestamped-file-copy (buffer-file-name)))
+
+     (bind-keys :map td/custom-map
+                ("r" . rename-current-buffer-file)
+                ("d" . delete-current-buffer-file)
+                ("t" . write-timestamped-current-file-copy))
    #+END_SRC
 
 ** Snippets
@@ -1101,8 +1140,7 @@
                   company-capf
                   company-dabbrev-code
                   company-keywords
-                  company-css
-                  company-restclient)))
+                  company-css)))
          (global-company-mode t))
        :config
        (progn
@@ -1369,8 +1407,7 @@
        (interactive)
        (switch-to-buffer (other-buffer (current-buffer) 1)))
 
-     (bind-keys :prefix-map td/buffer-map
-                :prefix "C-c b"
+     (bind-keys :map td/custom-map
                 ("b" . td/recent-buffer))
    #+end_src
 
@@ -2074,7 +2111,7 @@
              (td/find-eshell)
              (eshell/cd cwd)))
 
-         (bind-keys :map td/buffer-map
+         (bind-keys :map td/custom-map
                     ("t" . td/find-eshell)
                     ("s" . td/find-eshell-default-directory))
          :config
@@ -2182,18 +2219,6 @@
    #+name: management
    #+begin_src emacs-lisp :tangle no
 
-   #+end_src
-
-** Perspective
-
-   #+name: management
-   #+begin_src emacs-lisp :tangle no
-     ;; (use-package persp-mode
-     ;;   :defer t
-     ;;   :idle
-     ;;   (progn
-     ;;     (setq persp-keymap-prefix (kbd "C-x p"))
-     ;;     (persp-mode t)))
    #+end_src
 
 ** Aria2
