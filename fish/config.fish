@@ -72,6 +72,8 @@ prepend_to_path "$HOME/Applications/Emacs.app/Contents/MacOS/bin-x86_64-10_9"
 prepend_to_path "$HOME/.rbenv/shims"
 prepend_to_path "$HOME/.local/bin"
 
+set -g -x NIX_LINK "$HOME/.nix-profile"
+
 set BROWSER open
 
 set -g -x fish_greeting ''

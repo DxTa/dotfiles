@@ -482,7 +482,7 @@
 
          (add-hook 'ediff-before-setup-hook #'td/store-window-configuration)
          (add-hook 'ediff-quit-hook #'td/restore-window-configuration 'append)
-         (add-hook 'ediff-suspend-hook #'td/restore-window-configuration 'append)))
+         (add-hook 'ediff-suspend-hook #'td/restore-window-configuration 'append))
    #+END_SRC
 
 * Editing
@@ -929,17 +929,18 @@
 
      (defun open-thing-at-point ()
        (interactive)
-       (-when-let (url (thing-at-point 'url))
-         (browse-url url))
-       (-when-let (email (thing-at-point 'email))
-         (browse-url (format "mailto:%s" email)))
-       (-when-let (path (thing-at-point 'filename))
-         (if (file-exists-p path)
-             (find-file path)
-           (if (file-exists-p (concat path ".el"))
-               (find-file (concat path ".el"))
-             (when (y-or-n-p (format "Creat %s?" path))
-               (find-file path))))))
+       (cond
+        ((-when-let (url (thing-at-point 'url))
+           (browse-url url)))
+        ((-when-let (email (thing-at-point 'email))
+           (browse-url (format "mailto:%s" email))))
+        ((-when-let (path (thing-at-point 'filename))
+           (if (file-exists-p path)
+               (find-file path)
+             (if (file-exists-p (concat path ".el"))
+                 (find-file (concat path ".el"))
+               (when (y-or-n-p (format "Create %s?" path))
+                 (find-file path))))))))
 
      (bind-key "M-o" 'open-thing-at-point)
 
@@ -1565,35 +1566,8 @@
                ("Vagrantfile$" . ruby-mode)))
     #+END_SRC
 
-** TODO Java
-
-   #+name: programming
-   #+begin_src emacs-lisp :tangle no
-     ;; (use-package semantic-mode
-     ;;   :idle (semantic-mode 1)
-     ;;   (setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
-     ;;                                     global-semanticdb-minor-mode
-     ;;                                     global-semantic-idle-summary-mode
-     ;;                                     global-semantic-mru-bookmark-mode)))
-
-     ;; (use-package malabar-mode
-     ;;   :mode ("\\.java\\'" . malabar-mode)
-     ;;   :config
-     ;;   (progn
-     ;;     (setq malabar-groovy-lib-dir "/path/to/malabar/lib")))
-
-     ;; (load-file "~/Projects/cedet/cedet-devel-load.el")
-     ;; (add-to-list 'load-path "~/Projects/malabar-mode/src/main/lisp")
-
-     ;; (load "malabar-mode")
-
-     ;; (eval-after-load 'inf-groovy
-     ;;   (add-hook 'inf-groovy-load-hook 'flycheck-mode))
-     ;; (eval-after-load 'java-mode
-     ;;   (add-hook 'java-mode-hook   'flycheck-mode))
-   #+end_src
-
-** TODO JavaScript/TypeScript/CoffeeScript
+** TODO Elixir
+** JavaScript/TypeScript/CoffeeScript
 
    This section contains configuration for both ~js-mode~ and
    ~js2-mode~. I use ~js-mode~ for all JavaScript editing, however for
@@ -1624,7 +1598,8 @@
           js2-bounce-indent-p nil
           js2-include-node-externs t
           js2-global-externs
-          '("jQuery" "Zepto" "$" "location" "Image" "describe" "it" "goog"))))
+          '("jQuery" "Zepto" "$" "location" "Image" "describe" "it" "goog"
+            "define" "exports"))))
    #+end_src
 
 ** TODO Clojure
@@ -1716,6 +1691,13 @@
          (setq scss-compile-at-save nil
                css-indent-offset 2)
          (add-hook 'scss-mode-hook #'td/css-imenu-expressions)))
+
+     (use-package less-css-mode
+       :mode "\\.less\\'"
+       :init
+       (progn
+         ;; TODO: customize `less-css-indent-line' to support nested ruleset
+         (add-hook 'less-css-mode-hook #'td/css-imenu-expressions)))
    #+end_src
 
 ** Markdown
@@ -2319,7 +2301,6 @@
   - [[http://nschum.de/src/emacs/kill-ring-search/][kill-ring-search]] seems to be pretty useful. I remember using Unite
     Yankring plugin years ago.
   - [[http://nschum.de/src/emacs/rotate-text/][rotate-text]] is also interesting.
-  - eldoc on demand
   - tags
   - async
   - Hydra for keymap management?

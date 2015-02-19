@@ -23,6 +23,7 @@
         comment-dwim-2
         company
         company-statistics
+        csv-mode
         dash
         deft
         diff-hl
