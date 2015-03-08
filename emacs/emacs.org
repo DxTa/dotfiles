@@ -219,7 +219,7 @@
            '((left-fringe . 16) (right-fringe . 0)
              (border-width . 0)
              (internal-border-width . 0)
-             (width . 120) (height . 44)
+             (width . 150) (height . 44)
              (font . "Inconsolata 16")))
 
      ;; Fallback font for missing Unicode glyph
@@ -242,7 +242,7 @@
      (let ((display-table
             (or standard-display-table
                 (setq standard-display-table (make-display-table)))))
-       (set-display-table-slot display-table 'truncation ?�)
+       (set-display-table-slot display-table 'truncation ?¬)
        (set-display-table-slot display-table 'vertical-border ?\s)
        (set-window-display-table (selected-window) display-table))
    #+END_SRC
@@ -418,6 +418,8 @@
        :idle (popwin-mode 1)
        :config
        (progn
+         (bind-key "C-x p" popwin:keymap)
+
          (mapc (lambda (c)
                  (add-to-list 'popwin:special-display-config c))
                '((occur-mode :noselect nil)
@@ -1072,8 +1074,7 @@
        :commands yas-global-mode
        :init
        (progn
-         (setq yas-snippet-dirs
-                       '("~/.emacs.d/snippets"))
+         (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
          (yas-global-mode t))
        :config
        (progn
@@ -1137,7 +1138,7 @@
        :init
        (progn
          (setq company-backends
-               '((company-yasnippet
+               '((;company-yasnippet
                   company-capf
                   company-dabbrev-code
                   company-keywords
@@ -1229,8 +1230,6 @@
          (setq ido-save-directory-list-file
                (expand-file-name "ido.last" td/data-directory)
                ido-enable-flex-matching t
-               ido-use-virtual-buffers t
-                                             ; Do not prompt when creating new file
                ido-create-new-buffer 'always
                ido-case-fold t
                ido-file-extensions-order
@@ -1518,8 +1517,7 @@
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package flycheck
-       :commands global-flycheck-mode
-       :idle (global-flycheck-mode 1)
+       :commands (global-flycheck-mode flycheck-mode)
        :config
        (setq-default flycheck-disabled-checkers
                      '(html-tidy go-build emacs-lisp-checkdoc)))
@@ -1605,6 +1603,23 @@
 ** TODO Clojure
 
 ** TODO Python
+
+    #+NAME: programming
+    #+BEGIN_SRC emacs-lisp :tangle no
+      (use-package python
+        :config
+        (progn
+          (setq python-indent-guess-indent-offset nil)))
+
+      (use-package virtualenvwrapper
+        :commands venv-workon
+        :config
+        (progn
+          ;; (venv-initialize-interactive-shells)
+          (venv-initialize-eshell)
+          (setq-default mode-line-format
+                        (cons '(:exec venv-current-name) mode-line-format))))
+    #+END_SRC
 
 ** PHP
 
@@ -1764,6 +1779,16 @@
            (setq-local tab-width 2))
 
          (add-hook 'fish-mode-hook #'td/setup-fish-mode)))
+   #+end_src
+
+** Shell
+
+   #+name: programming
+   #+begin_src emacs-lisp :tangle no
+     (use-package sh-script
+       :defer t
+       :config
+       (setq sh-basic-offset 2))
    #+end_src
 
 * Org
@@ -2243,11 +2268,29 @@
          (emms-standard)
          (emms-default-players)
 
-         (setq emms-source-file-default-directory "~/Music/")
+         (setq emms-source-file-default-directory "~/Music/"
+               emms-info-asynchronously t
+               emms-show-format "♫ %s"
+               emms-repeat-playlist t)
 
-         (require 'emms-player-mpv-quiet)
-         (setq emms-player-mpv-quiet-command "/Users/tung/Applications/Mpv.app/Contents/MacOS/mpv")
-         (add-to-list 'emms-player-list 'emms-player-mpv-quiet)))
+         (require 'emms-mode-line)
+         (require 'emms-mode-line-icon)
+         (setq emms-mode-line-format " [%s] ")
+         (emms-mode-line 1)
+
+         ;; (require 'emms-player-mpv)
+         ;; (add-to-list 'emms-player-list 'emms-player-mpv)
+
+         (define-emms-simple-player afplay '(file)
+           (regexp-opt '(".mp3" ".m4a" ".aac"))
+           "afplay")
+         (setq emms-player-list `(,emms-player-afplay))))
+
+     (use-package emms-browser
+       :bind (("<f7>" . emms-smart-browse))
+       :config
+       (setq emms-browser-covers
+             '("cover_small.jpg" "cover_medium.jpg" "cover.jpg")))
    #+end_src
 
 * Configuration Layout
