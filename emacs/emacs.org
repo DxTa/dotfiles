@@ -210,6 +210,8 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq default-frame-alist
            '((left-fringe . 16) (right-fringe . 0)
+             (border-width . 0)
+             (internal-border-width . 0)
              (width . 120) (height . 44)
              (font . "Inconsolata 16")))
 
@@ -243,7 +245,7 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (load-theme 'base16-railscasts t)
+     (load-theme 'adwaita t)
      ;; (load-theme 'custom t)
    #+END_SRC
 
@@ -388,7 +390,6 @@
      ;;       (unless hs-minor-mode
      ;;         (hs-minor-mode t))
      ;;       (hs-toggle-hiding))
-
      ;;     (bind-key "C-c C-SPC" 'td/toggle-hiding-on-demand)))
    #+end_src
 
@@ -424,6 +425,30 @@
                  (shell-mode :height 15)
                  (ag-mode :height 15)))
          ))
+   #+END_SRC
+
+** Diff-hl
+
+   #+NAME: appearance
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package diff-hl
+       :init
+       (progn
+         (define-fringe-bitmap 'td/diff-hl-bmp [192] 1 16 '(top t))
+
+         (defun td/diff-hl-bmp (type pos) 'td/diff-hl-bmp)
+         
+         (setq diff-hl-draw-borders nil
+               diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
+
+         (set-face-attribute 'diff-hl-insert nil :background nil :foreground "#81af34")
+         (set-face-attribute 'diff-hl-delete nil :background nil :foreground "#ff0000")
+         (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
+         
+         (global-diff-hl-mode t)
+         
+         (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
+           "Markers disappear and reapear is kind of annoying to me.")))
    #+END_SRC
 
 * Editing
@@ -643,38 +668,33 @@
      (add-hook 'prog-mode-hook 'turn-on-auto-fill)
    #+END_SRC
 
-** TODO Spelling
+** Spell checking
 
    Use aspell for spell checking. Installation:
 
-   | Platform  | Command                  |
-   |-----------+--------------------------|
-   | Mac OS X  | =brew install hunspell=    |
-   | Archlinux | =sudo pacman - S hunspell= |
+   | Platform  | Command                |
+   |-----------+------------------------|
+   | Mac OS X  | =brew install aspell=    |
+   | Archlinux | =sudo pacman - S aspell= |
 
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
-     (when (executable-find "hunspell")
+     (when (executable-find "aspell")
        (use-package ispell
-         :defer t
          :bind ("<f8>" . ispell-word)
-         :init (setq-default ispell-program-name "hunspell"
+         :init (setq-default ispell-program-name "aspell"
+                             ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")
                              ispell-skip-html t
                              ispell-silently-savep t
-                             ispell-really-hunspell t))
+                             ispell-really-aspell t))
 
        (use-package flyspell
          :defer t
-         :idle (td/setup-flyspell)
+         :init (add-hook 'text-mode-hook 'flyspell-mode)
          :config
          (progn
            (require 'flyspell-ignore-faces)
-           (put 'org-mode 'flyspell-mode-predicate 'td/flyspell-check-p)))
-
-       (defun td/setup-flyspell ()
-         (interactive)
-         ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-         (add-hook 'text-mode-hook 'flyspell-mode)))
+           (put 'org-mode 'flyspell-mode-predicate 'td/flyspell-check-p))))
    #+END_SRC
 
 ** Parentheses
@@ -889,6 +909,51 @@
 
      (bind-key "M-o" 'open-thing-at-point)
 
+     (defun char-upcasep (letter)
+       (eq letter (upcase letter)))
+
+     ;; TOOD: find appropriate key binding for these functions
+
+     (defun capitalize-word-toggle ()
+       (interactive)
+       (let ((start (car (save-excursion
+                           (backward-word)
+                           (bounds-of-thing-at-point 'symbol)))))
+         (if start
+             (save-excursion
+               (goto-char start)
+               (funcall (if (char-upcasep (char-after))
+                            'downcase-region
+                          'upcase-region)
+                        start (1+ start)))
+           (capitalize-word -1))))
+
+     (defun upcase-word-toggle ()
+       (interactive)
+       (let ((bounds (bounds-of-thing-at-point 'symbol))
+             beg end
+             (regionp (if (eq this-command last-command)
+                          (get this-command 'regionp)
+                        (put this-command 'regionp nil))))
+         (cond
+          ((or (region-active-p) regionp)
+           (setq beg (region-beginning)
+                 end (region-end))
+           (put this-command 'regionp t))
+          (bounds
+           (setq beg (car bounds)
+                 end (cdr bounds)))
+          (t
+           (setq beg (point)
+                 end (1+ beg))))
+         (save-excursion
+           (goto-char (1- beg))
+           (and (re-search-forward "[A-Za-z]" end t)
+                (funcall (if (char-upcasep (char-before))
+                             'downcase-region
+                           'upcase-region)
+                         beg end)))))
+
 
      (defun find-file-sudo (&optional arg)
        (interactive)
@@ -1033,7 +1098,8 @@
        (progn
          (setq company-backends
                '((company-yasnippet
-                  company-dabbrev-code company-keywords
+                  company-dabbrev-code
+                  company-keywords
                   company-capf
                   ;; company-inf-python
                   ;; company-go
@@ -1050,12 +1116,13 @@
 
          (setq completion-cycle-threshold 5)
 
-         (setq company-idle-delay nil
+         (setq company-idle-delay 0.2
                company-auto-complete t
                company-selection-wrap-around t
                company-echo-delay 0
                company-tooltip-align-annotations t
                company-show-numbers t
+               company-minimum-prefix-length 4
 
                company-auto-complete-chars
                '(?\ ?\( ?\) ?. ?\" ?$ ?\' ?< ?> ?| ?!)
@@ -1064,7 +1131,7 @@
                '(company-sort-by-occurrence)
 
                company-frontends
-               '(company-pseudo-tooltip-unless-just-one-frontend
+               '(;; company-pseudo-tooltip-unless-just-one-frontend
                  company-echo-metadata-frontend
                  company-preview-frontend))
 
@@ -1275,9 +1342,9 @@
 
          (use-package ibuffer-vc
            :commands ibuffer-vc-generate-filter-groups-by-vc-root
-           :init
+           :config
            (progn
-             (defun nox/ibuffer-apply-filter-groups ()
+             (defun td/ibuffer-apply-filter-groups ()
                "Combine my saved ibuffer filter groups with those generated
           by `ibuffer-vc-generate-filter-groups-by-vc-root'"
                (interactive)
@@ -1291,7 +1358,7 @@
                      (pop-to-buffer ibuf)
                      (ibuffer-update nil t)))))
 
-             (add-hook 'ibuffer-hook 'nox/ibuffer-apply-filter-groups)))))
+             (add-hook 'ibuffer-hook 'td/ibuffer-apply-filter-groups)))))
    #+END_SRC
 
    Clean up buffers periodically:
@@ -1384,17 +1451,31 @@
    #+end_src
 
 * Programming
+** Compilation
 
   #+name: programming
   #+begin_src emacs-lisp :tangle no
-    (defun recompile-with-last-configuration ()
-      (interactive)
-      (save-some-buffers)
-      (when compilation-last-buffer
-        (with-current-buffer compilation-last-buffer
-          (call-interactively 'recompile))))
+    (use-package compile
+      :defer t
+      :init
+      (progn
+        (defun recompile-with-last-configuration ()
+          (interactive)
+          (save-some-buffers)
+          (when compilation-last-buffer
+            (with-current-buffer compilation-last-buffer
+              (call-interactively 'recompile))))
+        (bind-key "C-c m" 'recompile-with-last-configuration))
+      :config
+      (progn
+        (setq compilation-scroll-output t)
 
-    (bind-key "C-c m" 'recompile-with-last-configuration)
+        (defun td/colorize-compilation-buffer ()
+          (toggle-read-only)
+          (ansi-color-apply-on-region (point-min) (point-max))
+          (toggle-read-only))
+
+        (add-hook 'compilation-filter-hook #'td/colorize-compilation-buffer)))
   #+end_src
 
 ** Syntax Checking
@@ -1431,10 +1512,9 @@
           (defun eldoc--message-command-p (command)
             (eq command 'eldoc-message-now))
 
-          (bind-key "C-c l" #'eldoc-message-now)
+          (bind-key "C-c d" #'eldoc-message-now)
 
           (eldoc-add-command 'eldoc-message-now)))
-
     #+END_SRC
 
 ** Ruby
@@ -1555,7 +1635,9 @@
        :config
        (progn
          (setq web-mode-markup-indent-offset 2)
-         (add-hook 'web-mode-hook #'turn-off-auto-fill)))
+         (add-hook 'web-mode-hook #'turn-off-auto-fill)
+         (add-to-list 'web-mode-imenu-regexp-list
+                       '(" \\(ng-[a-z]*\\)=\"\\([a-zA-Z0-9]*\\)" 1 2 "="))))
    #+end_src
 
 
@@ -1655,6 +1737,21 @@
          (bind-key "C-c C-p" 'nxml-where)))
    #+end_src
 
+** Fish
+
+   #+name: programming
+   #+begin_src emacs-lisp :tangle no
+     (use-package fish-mode
+       :mode (("\\.fish$" . fish-mode))
+       :config
+       (progn
+
+         (defun td/setup-fish-mode ()
+           (setq-local tab-width 2))
+
+         (add-hook 'fish-mode-hook #'td/setup-fish-mode)))
+   #+end_src
+
 * Org
 
 ** Basic Settings
@@ -1664,26 +1761,22 @@
      (use-package org
        :config
        (progn
-         (setq org-directory "~/Dropbox/Notes/"
-               org-default-notes-file (expand-file-name "agenda.org" org-directory))
+         (setq org-directory "~/Documents/"
+               org-default-notes-file (expand-file-name "inbox.org" org-directory))
 
          (setq org-capture-templates
                '(("t" "To-do" entry
                   (file+headline "" "Inbox")
-                  "* TODO %u %^{Task}"
+                  "* TODO %u %?"
                   :clock-keep t :kill-buffer t)
-                 ("d" "To-do (done)" entry
-                  (file+headline "" "Inbox")
-                  "* DONE %u %^{Task}"
+                 ("r" "Links to read" checkitem
+                  (file+headline "" "Reading list")
+                  "[ ] %?"
                   :clock-keep t :kill-buffer t)
-                 ("u" "Quick to-do" entry
-                  (file+headline "" "Inbox")
-                  "* TODO %^{Task}\n  SCHEDULED: %t"
-                  :clock-keep t :kill-buffer t :immediate-finish t)
-                 ("p" "TeamworkPM task" entry
-                  (file+headline "~/org/bigtech.org" "Tasks")
-                  "* TODO %^{TWPMLink}p%^{Task}"
-                  :clock-keep t :clock-in t :immediate-finish t)))
+                 ("l" "Download" checkitem
+                  (file+headline "" "Download")
+                  "[ ] %?"
+                  :clock-keep t :kill-buffer t)))
 
          (setq org-goto-interface 'outline-path-completion
                org-log-done 'time
@@ -1851,6 +1944,32 @@
    documents. To insert a structural element, type a =<=, followed by a
    template selector and =<TAB>=.
 
+** Babel
+
+   =org-babel= allows me to embed and evaluate code inside org files. It is
+   quite useful but also impose some security risks, so I only enables a
+   handful number of languages.
+
+   #+NAME: org
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package ob-core
+       :defer t
+       :config
+       (progn
+         (org-babel-do-load-languages
+          'org-babel-load-languages
+          '((calc . t)
+            (http . t)
+            (python . t)
+            (sql . t)
+            (sqlite . t)))
+
+         (defun td/org-babel-whitelist (lang body)
+           (not (string= lang "http")))
+
+         (setq org-confirm-babel-evaluate #'td/org-babel-whitelist)))
+   #+END_SRC
+
 ** Key Bindings
 
 *** Hierarchy
@@ -1919,6 +2038,23 @@
    #+END_SRC
 
 * Management
+
+** Deft
+
+   I use =Deft= to manage my =org-mode= files.
+
+   #+NAME: management
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package deft
+       :bind ("C-c b d" . deft)
+       :config
+       (progn
+         (setq deft-extension "org"
+               deft-text-mode 'org-mode
+               deft-directory "~/Documents"
+               deft-strip-title-regexp "\\(?:^%+\\|#\\+[[:alpha:]]+:\\|^[#* ]+\\|-\\*-[[:alpha:]]+-\\*-\\|#+$\\)")))
+   #+END_SRC
+
 ** Shell
 
    #+name: management
@@ -2092,6 +2228,26 @@
          (advice-add 'aria2--is-aria-process-p :around #'td/aria2--is-aria-process-p)))
    #+end_src
 
+** EMMS
+
+   #+name: management
+   #+begin_src emacs-lisp :tangle no
+     (use-package emms
+       :defer t
+       :config
+       (progn
+         (require 'emms-setup)
+
+         (emms-standard)
+         (emms-default-players)
+
+         (setq emms-source-file-default-directory "~/Music/")
+
+         (require 'emms-player-mpv-quiet)
+         (setq emms-player-mpv-quiet-command "/Users/tung/Applications/Mpv.app/Contents/MacOS/mpv")
+         (add-to-list 'emms-player-list 'emms-player-mpv-quiet)))
+   #+end_src
+
 * Configuration Layout
 
   Here we define the =emacs.el= file that gets generated by the source
@@ -2143,9 +2299,7 @@
   - [[http://nschum.de/src/emacs/kill-ring-search/][kill-ring-search]] seems to be pretty useful. I remember using Unite
     Yankring plugin years ago.
   - [[http://nschum.de/src/emacs/rotate-text/][rotate-text]] is also interesting.
-  - diff-hl
   - eldoc on demand
-  - circe for IRC
   - tags
   - async
-  - adapt prelude's key bindings
+  - Hydra for keymap management?

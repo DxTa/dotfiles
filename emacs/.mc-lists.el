@@ -9,13 +9,19 @@
         dabbrev-expand
         end-of-visual-line
         indent-for-tab-command
+        org-beginning-of-line
+        org-cycle
+        org-delete-char
         org-self-insert-command
+        org-yank
         sgml-slash
+        smex
         sp--self-insert-command
         sp-forward-slurp-sexp
         td/join-next-line
         td/kill-region-or-word
         yas-expand
+        zap-up-to-char
         ))
 
 (setq mc/cmds-to-run-once

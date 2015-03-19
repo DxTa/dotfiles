@@ -1,78 +1,82 @@
 [user]
-  name = Tung Dao
-  email = me@tungdao.com
+        name = Tung Dao
+        email = me@tungdao.com
 [github]
-  user = tungd
+        user = tungd
 [credential]
-  helper = osxkeychain
-  helper = gnome-keyring
+        helper = osxkeychain
+        helper = gnome-keyring
 [core]
-  excludesfile = ~/.gitignore
-  whitespace = trailing-space,space-before-tab
+        excludesfile = /Users/tung/.gitignore_global
+        whitespace = trailing-space,space-before-tab
 [color]
-  ui = auto
+        ui = auto
 [branch]
-  autosetupmerge = true
+        autosetupmerge = true
 [branch "master"]
-  mergeoptions =--no-ff
+        mergeoptions =--no-ff
 [branch "dev"]
-  mergeoptions =--no-ff
+        mergeoptions =--no-ff
 [branch "development"]
-  mergeoptions =--no-ff
+        mergeoptions =--no-ff
 [advice]
-  statusHints = false
+        statusHints = false
 [push]
-  default = tracking
+        default = tracking
 [merge]
-  stat = true
+        stat = true
 [rerere]
-  enabled = true
+        enabled = true
 [diff]
-  renames = copies
+        renames = copies
 [apply]
-  whitespace = nowarn
+        whitespace = nowarn
 [alias]
-  st = status -sb
-  ci = commit
-  ps = push
-  pl = pull
-  br = branch
-  co = checkout
-  df = diff
-  cl = clone
-  dfc = diff --cached
-  addall = add -A
-  aa = add -A
-  ap = add --patch
-  amend = commit --amend --reuse-message=HEAD
-  undo = reset --soft HEAD^
-  rank = !$HOME/cli/bin/git-rank-contributers
-  count = shortlog -sn
-  conflicts = diff --name-only --diff-filter=U
-  ls = log --oneline --decorate
-  lg = log --graph --all --decorate
-  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
-  ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
-  lf = log -u
-  lc = ls-files -u | awk '{print $4}' | sort -u
-  dl = log --numstat -1
-  dlc = diff --cached HEAD^
-  ignore = update-index --assume-unchanged
-  unignore = update-index --no-assume-unchanged
-  ignored = "!git ls-files -v | grep ^h | cut -c 3-"
-  bempty = checkout --orphan
-  snap = clone --depth 1
+        st = status -sb
+        ci = commit
+        ps = push
+        pl = pull
+        br = branch
+        co = checkout
+        df = diff
+        cl = clone
+        dfc = diff --cached
+        addall = add -A
+        aa = add -A
+        ap = add --patch
+        amend = commit --amend --reuse-message=HEAD
+        undo = reset --soft HEAD^
+        rank = !$HOME/cli/bin/git-rank-contributers
+        count = shortlog -sn
+        conflicts = diff --name-only --diff-filter=U
+        ls = log --oneline --decorate
+        lg = log --graph --all --decorate
+        ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
+        ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
+        lf = log -u
+        lc = ls-files -u | awk '{print $4}' | sort -u
+        dl = log --numstat -1
+        dlc = diff --cached HEAD^
+        ignore = update-index --assume-unchanged
+        unignore = update-index --no-assume-unchanged
+        ignored = "!git ls-files -v | grep ^h | cut -c 3-"
+        bempty = checkout --orphan
+        snap = clone --depth 1
 [url "git://github.com/"]
-  insteadOf = gh:
+        insteadOf = gh:
 [url "git@github.com:"]
-  insteadOf = wgh:
+        insteadOf = wgh:
 [url "git@bitbucket.org:"]
-  insteadOf = bb:
+        insteadOf = bb:
 [url "git@code.tungdao.com:/tungd/"]
-  insteadOf = tungd:
+        insteadOf = tungd:
 [difftool "sourcetree"]
-  cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-  path =
+        cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+        path =
 [mergetool "sourcetree"]
-  cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-  trustExitCode = true
+        cmd = /Users/tung/Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+        trustExitCode = true
+[filter "media"]
+        required = true
+        clean = git media clean %f
+        smudge = git media smudge %f
