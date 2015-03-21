@@ -134,9 +134,9 @@
    #+NAME: init-after
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package server
-       :defer t
+       :defer 1
        :commands server-running-p
-       :idle
+       :config
        (progn
          (unless (server-running-p) (server-start))))
    #+END_SRC
@@ -335,8 +335,8 @@
    #+name: appearance
    #+begin_src emacs-lisp :tangle no
      (use-package highlight-parentheses
-       :defer t
-       :idle (global-highlight-parentheses-mode t))
+       :defer 1
+       :config (global-highlight-parentheses-mode t))
    #+end_src
 
    Highlight matching parenthesis, brace, etc.
@@ -344,16 +344,16 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package paren
-       :defer t
+       :defer 1
        :init (setq-default show-paren-delay 0)
-       :idle (show-paren-mode t))
+       :config (show-paren-mode t))
    #+END_SRC
 
   #+name: appearance
   #+begin_src emacs-lisp :tangle no
     (use-package highlight-escape-sequences
-      :defer t
-      :idle (hes-mode t))
+      :defer 1
+      :config (hes-mode t))
   #+end_src
 
 ** Color Names and Codes
@@ -415,7 +415,7 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package popwin
        :commands popwin-mode
-       :idle (popwin-mode 1)
+       :defer 1
        :config
        (progn
          (bind-key "C-x p" popwin:keymap)
@@ -433,7 +433,8 @@
                  ("*cider-macroexpansion*" :height 15 :stick t)
                  (shell-mode :height 15)
                  (ag-mode :height 15)))
-         ))
+
+         (popwin-mode 1)))
    #+END_SRC
 
 ** Diff-hl
@@ -441,10 +442,10 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package diff-hl
-       :init
+       :defer 1
+       :config
        (progn
          (define-fringe-bitmap 'td/diff-hl-bmp [192] 1 16 '(top t))
-
          (defun td/diff-hl-bmp (type pos) 'td/diff-hl-bmp)
 
          (setq diff-hl-draw-borders nil
@@ -454,10 +455,10 @@
          (set-face-attribute 'diff-hl-delete nil :background nil :foreground "#ff0000")
          (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
 
-         (global-diff-hl-mode t)
-
          (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
-           "Markers disappear and reapear is kind of annoying to me.")))
+           "Markers disappear and reapear is kind of annoying to me.")
+
+         (global-diff-hl-mode t)))
    #+END_SRC
 
 ** Frame
@@ -1117,8 +1118,8 @@
   #+name: navigation-completion
   #+begin_src emacs-lisp :tangle no
     (use-package which-func
-      :defer t
-      :idle
+      :defer 1
+      :config
       (which-function-mode t))
 
     (use-package imenu
@@ -2204,14 +2205,15 @@
    #+name: management
    #+begin_src emacs-lisp :tangle no
      (use-package recentf
-       :defer t
-       :idle (recentf-mode t)
+       :defer 1
        :config
        (progn
          (setq recentf-auto-cleanup "9:00pm"
                recentf-max-saved-items 256)
 
-         (add-hook 'server-visit-hook #'recentf-save-list)))
+         (add-hook 'server-visit-hook #'recentf-save-list)
+
+         (recentf-mode t)))
    #+end_src
 
 ** TODO Prodigy
