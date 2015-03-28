@@ -10,10 +10,8 @@
 (setq td/packages
       '(ace-jump-mode
         ag
-        alchemist
         anzu
         apache-mode
-        aria2
         async
         base16-theme
         benchmark-init
@@ -29,17 +27,14 @@
         diff-hl
         diminish
         dockerfile-mode
-        elixir-mode
         emmet-mode
         emms
         exec-path-from-shell
         expand-region
         f
-        fish-mode
         flx
         flx-ido
         flycheck
-        fringe-helper
         fullframe
         gitconfig-mode
         groovy-mode
