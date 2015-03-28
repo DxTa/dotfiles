@@ -59,6 +59,7 @@
         php-mode
         phpunit
         popwin
+        pyvenv
         projectile
         rainbow-mode
         s

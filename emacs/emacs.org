@@ -219,8 +219,9 @@
            '((left-fringe . 16) (right-fringe . 0)
              (border-width . 0)
              (internal-border-width . 0)
-             (width . 150) (height . 44)
-             (font . "Inconsolata 16")))
+             (left . 256)
+             (width . 128) (height . 35)
+             (font . "Fira Mono 13")))
 
      ;; Fallback font for missing Unicode glyph
      ;; (set-fontset-font
@@ -252,7 +253,7 @@
 
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
-     (load-theme 'adwaita t)
+     (load-theme 'solarized-dark t)
      ;; (load-theme 'custom t)
    #+END_SRC
 
@@ -451,9 +452,13 @@
          (setq diff-hl-draw-borders nil
                diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
 
-         (set-face-attribute 'diff-hl-insert nil :background nil :foreground "#81af34")
-         (set-face-attribute 'diff-hl-delete nil :background nil :foreground "#ff0000")
-         (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
+         ;; (set-face-attribute 'diff-hl-insert nil :background nil :foreground "#81af34")
+         ;; (set-face-attribute 'diff-hl-delete nil :background nil :foreground "#ff0000")
+         ;; (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
+
+         (set-face-attribute 'diff-hl-insert nil :background nil)
+         (set-face-attribute 'diff-hl-delete nil :background nil)
+         (set-face-attribute 'diff-hl-change nil :background nil)
 
          (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
            "Markers disappear and reapear is kind of annoying to me.")
@@ -1653,6 +1658,7 @@
               ("\\.erb\\'" . web-mode)
               ("\\.mustache\\'" . web-mode)
               ("\\.djhtml\\'" . web-mode)
+              ("\\.jinja2\\'" . web-mode)
               ("\\.html?" . web-mode)
               ("\\.hbs\\'" . web-mode))
        :config
@@ -1788,8 +1794,8 @@
    #+begin_src emacs-lisp :tangle no
      (use-package sh-script
        :defer t
-       :config
-       (setq sh-basic-offset 2))
+       :init
+       (setq-default sh-basic-offset 2))
    #+end_src
 
 * Org

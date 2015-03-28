@@ -27,13 +27,7 @@ if [ "$OS" = "darwin" ]; then
 fi
 
 # Editor
-if [ "$OS" = "linux" ]; then
-  export EDITOR=vim
-  # Workaround for GVim iBus bug
-  # gvim='gvim -f'
-else
-  export EDITOR='mvim -v'
-fi
+export EDITOR=vim
 
 # Homebrew
 if [ -e $LOCAL/bin/brew ]; then
@@ -61,10 +55,13 @@ if [ -d $HOME/.local/opt/pyenv ]; then
 fi
 if [ -d $HOME/.pyenv ]; then
   export PYENV_ROOT=$HOME/.pyenv
-  export PATH=$HOME/.pyenv/bin:$PATH  
 fi
 
-if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
+if [[ -d $PYENV_ROOT ]];then
+  PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+  # eval "$(pyenv virtualenv-init -)"
+fi
 
 # Node
 [[ -s "$HOME/.nvm/nvm.sh" ]] && . "$HOME/.nvm/nvm.sh"
