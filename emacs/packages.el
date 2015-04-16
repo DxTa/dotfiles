@@ -29,6 +29,8 @@
         dockerfile-mode
         emmet-mode
         emms
+        emms-player-mpv
+        es-mode
         exec-path-from-shell
         expand-region
         f
@@ -47,7 +49,6 @@
         jasminejs-mode
         js2-mode
         json-mode
-        magit
         markdown-mode
         multiple-cursors
         ob-http

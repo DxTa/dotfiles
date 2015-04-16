@@ -476,7 +476,6 @@
      (use-package fullframe
        :config
        (progn
-         (fullframe magit-status magit-mode-quit-window)
          (fullframe ibuffer ibuffer-quit)
 
          (defvar td/last-window-configuration nil
@@ -806,9 +805,15 @@
 
 ** Selecting (Marking)
 
+   For easier marking, I use =expand-region=. To interact with those marks, I
+   use =multiple-cursor=.
+
    #+name: editing
    #+begin_src emacs-lisp :tangle no
      (pending-delete-mode t)
+
+     (setq kill-ring-max 4096
+           kill-whole-line t)
 
      (use-package expand-region
        :bind ("M--" . er/expand-region))
@@ -1249,6 +1254,7 @@
                flx-ido-threshold 2048)
 
          (add-to-list 'ido-ignore-files "\\.DS_Store")
+         (add-to-list 'ido-ignore-files "__pycache__")
 
          (defun td/minibuffer-home ()
            (interactive)
@@ -1270,6 +1276,8 @@
                   (line (ido-completing-read "Line: " choices)))
              (push-mark)
              (goto-line (+ 1 (-elem-index line lines)))))
+
+         (bind-key "C-c l" #'ido-goto-line)
 
          (defun td/ido-hook ()
            (bind-keys :map ido-completion-map
@@ -1450,18 +1458,11 @@
                ;; displays the current project anyway.
                projectile-mode-line " Proj")
 
-         ;; (defadvice projectile-mode (before maybe-use-cache activate)
-         ;;   (when
-         ;;       (--any? (and it (file-remote-p it))
-         ;;               (list
-         ;;                (buffer-file-name)
-         ;;                list-buffers-directory
-         ;;                default-directory))
-         ;;     (setq-local projectile-enable-caching t)))
-
          (bind-keys ("M-l" . projectile-find-file)
                     ([remap projectile-ack] . projectile-ag)
-                    ([remap projectile-grep] . projectile-ag))))
+                    ([remap projectile-grep] . projectile-ag))
+
+         (add-to-list 'projectile-globally-ignored-directories "__pycache__")))
 
      (use-package wgrep
        :defer t
@@ -1844,7 +1845,7 @@
         :commands (org-agenda org-agenda-list)
         :config
         (setq org-agenda-files
-              '("~/Documents/inbox.org" "~/Documents/archives.org")
+              '("~/Documents/inbox.org" "~/Documents/projects.org" "~/Documents/archives.org")
               org-agenda-skip-unavailable-files t
               org-agenda-skip-deadline-if-done nil
               org-agenda-skip-scheduled-if-done nil
@@ -2139,7 +2140,7 @@
                         (t "xdg-open"))
                       (format " %s" args))))
 
-           (setq eshell-prompt-function 'td/eshell-prompt
+           (setq eshell-prompt-function #'td/eshell-prompt
                  eshell-prompt-regexp "^[^#$\\n]*[#$] "
                  eshell-highlight-prompt nil))))
    #+end_src
@@ -2236,9 +2237,6 @@
          (require 'emms-mode-line-icon)
          (setq emms-mode-line-format " [%s] ")
          (emms-mode-line 1)
-
-         ;; (require 'emms-player-mpv)
-         ;; (add-to-list 'emms-player-list 'emms-player-mpv)
 
          (define-emms-simple-player afplay '(file)
            (regexp-opt '(".mp3" ".m4a" ".aac"))
