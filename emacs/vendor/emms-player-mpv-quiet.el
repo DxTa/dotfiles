@@ -19,7 +19,7 @@
 
 (emms-player-set emms-player-mpv-quiet
                  'pause
-                 'emms-player-mpv-pause)
+                 'emms-player-mplayer-pause)
 
 ;;; Pause is also resume for mpv
 (emms-player-set emms-player-mpv-quiet
@@ -28,11 +28,11 @@
 
 (emms-player-set emms-player-mpv-quiet
                  'seek
-                 'emms-player-mpv-seek)
+                 'emms-player-mplayer-seek)
 
 (emms-player-set emms-player-mpv-quiet
                  'seek-to
-                 'emms-player-mpv-seek-to)
+                 'emms-player-mplayer-seek-to)
 
 (provide 'emms-player-mpv-quiet)
 ;;; emms-player-mpv-quiet.el ends here

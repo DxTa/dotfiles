@@ -1,4 +1,4 @@
-
+let mapleader=","
 inoremap # X<BS>#
 inoremap <m-a> @
 inoremap <m-h> <space>=><space>

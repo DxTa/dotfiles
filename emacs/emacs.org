@@ -134,9 +134,9 @@
    #+NAME: init-after
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package server
-       :defer t
+       :defer 1
        :commands server-running-p
-       :idle
+       :config
        (progn
          (unless (server-running-p) (server-start))))
    #+END_SRC
@@ -175,6 +175,12 @@
    encrypted using GnuPG. The file is kept in ~.netrc~ format, so that it can
    be used automagically by Tramp.
 
+   #+NAME: init-after
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (setq user-full-name "Tung Dao"
+           user-mail-address "me@tungdao.com")
+   #+END_SRC
+
 ** Custom
 
    Set alternative location for =custom-set-variables= and =custom-set-faces=:
@@ -183,6 +189,13 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
      (load custom-file 'noerror)
+   #+END_SRC
+
+   Define a custom keymap to be used later on.
+
+   #+NAME: init-before
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (bind-keys :prefix-map td/custom-map :prefix "C-c b")
    #+END_SRC
 
 ** Fix
@@ -212,8 +225,11 @@
            '((left-fringe . 16) (right-fringe . 0)
              (border-width . 0)
              (internal-border-width . 0)
-             (width . 120) (height . 44)
-             (font . "Inconsolata 16")))
+             (left . 256)
+             (width . 120) (height . 34)
+             (font . "Fira Mono 14")))
+
+     (setq-default cursor-type '(bar . 3))
 
      ;; Fallback font for missing Unicode glyph
      ;; (set-fontset-font
@@ -235,7 +251,7 @@
      (let ((display-table
             (or standard-display-table
                 (setq standard-display-table (make-display-table)))))
-       (set-display-table-slot display-table 'truncation ?�)
+       (set-display-table-slot display-table 'truncation ?¬)
        (set-display-table-slot display-table 'vertical-border ?\s)
        (set-window-display-table (selected-window) display-table))
    #+END_SRC
@@ -289,7 +305,10 @@
      (setq inhibit-startup-screen t)
 
      ;; Set message for *scratch* buffer
-     (setq initial-scratch-message ";; Hello, Tung.\n")
+     (setq initial-scratch-message
+           (concat ";; Hello, Tung.\n"
+                   ";; Kẻ thất bại chỉ có một loại,\n"
+                   ";; chính là loại người từ bỏ trước khi đạt tới thành công.\n"))
 
      ;; Use ANSI color in shell
      (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
@@ -328,8 +347,8 @@
    #+name: appearance
    #+begin_src emacs-lisp :tangle no
      (use-package highlight-parentheses
-       :defer t
-       :idle (global-highlight-parentheses-mode t))
+       :defer 1
+       :config (global-highlight-parentheses-mode t))
    #+end_src
 
    Highlight matching parenthesis, brace, etc.
@@ -337,16 +356,16 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package paren
-       :defer t
+       :defer 1
        :init (setq-default show-paren-delay 0)
-       :idle (show-paren-mode t))
+       :config (show-paren-mode t))
    #+END_SRC
 
   #+name: appearance
   #+begin_src emacs-lisp :tangle no
     (use-package highlight-escape-sequences
-      :defer t
-      :idle (hes-mode t))
+      :defer 1
+      :config (hes-mode t))
   #+end_src
 
 ** Color Names and Codes
@@ -408,9 +427,11 @@
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package popwin
        :commands popwin-mode
-       :idle (popwin-mode 1)
+       :defer 1
        :config
        (progn
+         (bind-key "C-x p" popwin:keymap)
+
          (mapc (lambda (c)
                  (add-to-list 'popwin:special-display-config c))
                '((occur-mode :noselect nil)
@@ -424,7 +445,8 @@
                  ("*cider-macroexpansion*" :height 15 :stick t)
                  (shell-mode :height 15)
                  (ag-mode :height 15)))
-         ))
+
+         (popwin-mode 1)))
    #+END_SRC
 
 ** Diff-hl
@@ -432,23 +454,53 @@
    #+NAME: appearance
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package diff-hl
-       :init
+       :defer 1
+       :config
        (progn
          (define-fringe-bitmap 'td/diff-hl-bmp [192] 1 16 '(top t))
-
          (defun td/diff-hl-bmp (type pos) 'td/diff-hl-bmp)
-         
+
          (setq diff-hl-draw-borders nil
                diff-hl-fringe-bmp-function #'td/diff-hl-bmp)
 
          (set-face-attribute 'diff-hl-insert nil :background nil :foreground "#81af34")
          (set-face-attribute 'diff-hl-delete nil :background nil :foreground "#ff0000")
          (set-face-attribute 'diff-hl-change nil :background nil :foreground "#deae3e")
-         
-         (global-diff-hl-mode t)
-         
+
+         ;; (set-face-attribute 'diff-hl-insert nil :background nil)
+         ;; (set-face-attribute 'diff-hl-delete nil :background nil)
+         ;; (set-face-attribute 'diff-hl-change nil :background nil)
+
          (defun diff-hl-overlay-modified (ov after-p beg end &optional len)
-           "Markers disappear and reapear is kind of annoying to me.")))
+           "Markers disappear and reapear is kind of annoying to me.")
+
+         (global-diff-hl-mode t)))
+   #+END_SRC
+
+** Frame
+
+   #+NAME: appearance
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package fullframe
+       :config
+       (progn
+         (fullframe ibuffer ibuffer-quit)
+
+         (defvar td/last-window-configuration nil
+           "Last window configuration.")
+
+         ;; Ediff has multiple frames, and does not play nice with fullframe API
+         (defun td/store-window-configuration ()
+           "Store current window configuration."
+           (setq td/last-window-configuration (current-window-configuration)))
+
+         (defun td/restore-window-configuration ()
+           "Restore current window configuration."
+           (set-window-configuration td/last-window-configuration)))
+
+         (add-hook 'ediff-before-setup-hook #'td/store-window-configuration)
+         (add-hook 'ediff-quit-hook #'td/restore-window-configuration 'append)
+         (add-hook 'ediff-suspend-hook #'td/restore-window-configuration 'append))
    #+END_SRC
 
 * Editing
@@ -761,9 +813,15 @@
 
 ** Selecting (Marking)
 
+   For easier marking, I use =expand-region=. To interact with those marks, I
+   use =multiple-cursor=.
+
    #+name: editing
    #+begin_src emacs-lisp :tangle no
      (pending-delete-mode t)
+
+     (setq kill-ring-max 4096
+           kill-whole-line t)
 
      (use-package expand-region
        :bind ("M--" . er/expand-region))
@@ -895,17 +953,18 @@
 
      (defun open-thing-at-point ()
        (interactive)
-       (-when-let (url (thing-at-point 'url))
-         (browse-url url))
-       (-when-let (email (thing-at-point 'email))
-         (browse-url (format "mailto:%s" email)))
-       (-when-let (path (thing-at-point 'filename))
-         (if (file-exists-p path)
-             (find-file path)
-           (if (file-exists-p (concat path ".el"))
-               (find-file (concat path ".el"))
-             (when (y-or-n-p (format "Creat %s?" path))
-               (find-file path))))))
+       (cond
+        ((-when-let (url (thing-at-point 'url))
+           (browse-url url)))
+        ((-when-let (email (thing-at-point 'email))
+           (browse-url (format "mailto:%s" email))))
+        ((-when-let (path (thing-at-point 'filename))
+           (if (file-exists-p path)
+               (find-file path)
+             (if (file-exists-p (concat path ".el"))
+                 (find-file (concat path ".el"))
+               (when (y-or-n-p (format "Create %s?" path))
+                 (find-file path))))))))
 
      (bind-key "M-o" 'open-thing-at-point)
 
@@ -1020,6 +1079,11 @@
      (defun write-timestamped-current-file-copy ()
        (interactive)
        (write-timestamped-file-copy (buffer-file-name)))
+
+     (bind-keys :map td/custom-map
+                ("r" . rename-current-buffer-file)
+                ("d" . delete-current-buffer-file)
+                ("t" . write-timestamped-current-file-copy))
    #+END_SRC
 
 ** Snippets
@@ -1032,8 +1096,7 @@
        :commands yas-global-mode
        :init
        (progn
-         (setq yas-snippet-dirs
-                       '("~/.emacs.d/snippets"))
+         (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
          (yas-global-mode t))
        :config
        (progn
@@ -1076,8 +1139,8 @@
   #+name: navigation-completion
   #+begin_src emacs-lisp :tangle no
     (use-package which-func
-      :defer t
-      :idle
+      :defer 1
+      :config
       (which-function-mode t))
 
     (use-package imenu
@@ -1097,17 +1160,12 @@
        :init
        (progn
          (setq company-backends
-               '((company-yasnippet
-                  company-dabbrev-code
-                  company-keywords
+               '(company-anaconda
+                 company-css
+                 (;company-yasnippet
                   company-capf
-                  ;; company-inf-python
-                  ;; company-go
-                  company-css
-                  ;; company-c-headers
-                  ;; company-php-reflection
-                  company-restclient
-                  company-clang)))
+                  company-dabbrev-code
+                  company-keywords)))
          (global-company-mode t))
        :config
        (progn
@@ -1117,12 +1175,12 @@
          (setq completion-cycle-threshold 5)
 
          (setq company-idle-delay 0.2
-               company-auto-complete t
+               company-auto-complete nil
                company-selection-wrap-around t
                company-echo-delay 0
                company-tooltip-align-annotations t
                company-show-numbers t
-               company-minimum-prefix-length 4
+               company-minimum-prefix-length 3
 
                company-auto-complete-chars
                '(?\ ?\( ?\) ?. ?\" ?$ ?\' ?< ?> ?| ?!)
@@ -1131,9 +1189,9 @@
                '(company-sort-by-occurrence)
 
                company-frontends
-               '(;; company-pseudo-tooltip-unless-just-one-frontend
+               '(company-pseudo-tooltip-unless-just-one-frontend
                  company-echo-metadata-frontend
-                 company-preview-frontend))
+                 company-preview-if-just-one-frontend))
 
          (bind-keys :prefix-map td/completion-map
                     :prefix "M-;"
@@ -1195,8 +1253,6 @@
          (setq ido-save-directory-list-file
                (expand-file-name "ido.last" td/data-directory)
                ido-enable-flex-matching t
-               ido-use-virtual-buffers t
-                                             ; Do not prompt when creating new file
                ido-create-new-buffer 'always
                ido-case-fold t
                ido-file-extensions-order
@@ -1207,6 +1263,7 @@
                flx-ido-threshold 2048)
 
          (add-to-list 'ido-ignore-files "\\.DS_Store")
+         (add-to-list 'ido-ignore-files "__pycache__")
 
          (defun td/minibuffer-home ()
            (interactive)
@@ -1228,6 +1285,8 @@
                   (line (ido-completing-read "Line: " choices)))
              (push-mark)
              (goto-line (+ 1 (-elem-index line lines)))))
+
+         (bind-key "C-c l" #'ido-goto-line)
 
          (defun td/ido-hook ()
            (bind-keys :map ido-completion-map
@@ -1294,8 +1353,8 @@
 
    For more intensive buffer switching and buffer management, we use
    ibuffer, which displays a listing in its own
-   buffer. ~ibuffer-saved-filter-groups~ defines rules for grouping
-   buffers under categories ("filter groups").
+   buffer. ~ibuffer-saved-filter-groups~ defines rules for grouping buffers
+   under categories ("filter groups").
 
    The [[https://github.com/purcell/ibuffer-vc][ibuffer-vc]] package generates filter groups for consumption by
    ibuffer that categorize buffers by version control repository root.
@@ -1374,8 +1433,7 @@
        (interactive)
        (switch-to-buffer (other-buffer (current-buffer) 1)))
 
-     (bind-keys :prefix-map td/buffer-map
-                :prefix "C-c b"
+     (bind-keys :map td/custom-map
                 ("b" . td/recent-buffer))
    #+end_src
 
@@ -1409,26 +1467,16 @@
                ;; displays the current project anyway.
                projectile-mode-line " Proj")
 
-         ;; (defadvice projectile-mode (before maybe-use-cache activate)
-         ;;   (when
-         ;;       (--any? (and it (file-remote-p it))
-         ;;               (list
-         ;;                (buffer-file-name)
-         ;;                list-buffers-directory
-         ;;                default-directory))
-         ;;     (setq-local projectile-enable-caching t)))
-
          (bind-keys ("M-l" . projectile-find-file)
                     ([remap projectile-ack] . projectile-ag)
-                    ([remap projectile-grep] . projectile-ag))))
+                    ([remap projectile-grep] . projectile-ag))
+
+         (add-to-list 'projectile-globally-ignored-directories "__pycache__")))
 
      (use-package wgrep
        :defer t
        :init (add-hook 'ag-mode-hook #'wgrep-setup))
    #+END_SRC
-
-   TODO: command to find all the todos and fixmes in current project
-   (use grep)
 
    #+name: navigation-completion
    #+begin_src emacs-lisp :tangle no
@@ -1441,6 +1489,10 @@
                0 font-lock-preprocessor-face t))))
 
      (add-hook 'prog-mode-hook #'td/custom-font-lock-hightlights)
+
+     (defun td/occur-todos ()
+       (interactive)
+       (occur "TODO"))
    #+end_src
 
 ** Tag
@@ -1451,6 +1503,34 @@
    #+end_src
 
 * Programming
+
+  #+name: programming
+  #+BEGIN_SRC emacs-lisp :tangle no
+    (use-package indent-guide
+      :commands (indent-guide-mode)
+      :init
+      (add-hook 'python-mode-hook #'indent-guide-mode))
+
+    (use-package electric-case
+      :init
+      (progn
+
+        (setq electric-case-convert-calls t)
+
+        (defun td/electric-case-js-init ()
+          "TODO: documentation."
+          )
+
+        (defun td/electric-case-python-init ()
+          "TODO: documentation."
+          )
+
+        (add-hook 'java-mode-hook #'electric-case-java-init)
+        ;; (add-hook 'js2-mode-hook #'electric-case-java-init)
+        ;; (add-hook 'js-mode-hook #'electric-case-java-init)
+        (add-hook 'python-mode-hook #'td/electric-case-python-init)))
+  #+END_SRC
+
 ** Compilation
 
   #+name: programming
@@ -1465,6 +1545,7 @@
           (when compilation-last-buffer
             (with-current-buffer compilation-last-buffer
               (call-interactively 'recompile))))
+
         (bind-key "C-c m" 'recompile-with-last-configuration))
       :config
       (progn
@@ -1485,8 +1566,7 @@
    #+NAME: editing
    #+BEGIN_SRC emacs-lisp :tangle no
      (use-package flycheck
-       :commands global-flycheck-mode
-       :idle (global-flycheck-mode 1)
+       :commands (global-flycheck-mode flycheck-mode)
        :config
        (setq-default flycheck-disabled-checkers
                      '(html-tidy go-build emacs-lisp-checkdoc)))
@@ -1533,39 +1613,11 @@
                ("Vagrantfile$" . ruby-mode)))
     #+END_SRC
 
-** TODO Java
+** JavaScript
 
-   #+name: programming
-   #+begin_src emacs-lisp :tangle no
-     ;; (use-package semantic-mode
-     ;;   :idle (semantic-mode 1)
-     ;;   (setq semantic-default-submodes '(global-semantic-idle-scheduler-mode
-     ;;                                     global-semanticdb-minor-mode
-     ;;                                     global-semantic-idle-summary-mode
-     ;;                                     global-semantic-mru-bookmark-mode)))
-
-     ;; (use-package malabar-mode
-     ;;   :mode ("\\.java\\'" . malabar-mode)
-     ;;   :config
-     ;;   (progn
-     ;;     (setq malabar-groovy-lib-dir "/path/to/malabar/lib")))
-
-     ;; (load-file "~/Projects/cedet/cedet-devel-load.el")
-     ;; (add-to-list 'load-path "~/Projects/malabar-mode/src/main/lisp")
-
-     ;; (load "malabar-mode")
-
-     ;; (eval-after-load 'inf-groovy
-     ;;   (add-hook 'inf-groovy-load-hook 'flycheck-mode))
-     ;; (eval-after-load 'java-mode
-     ;;   (add-hook 'java-mode-hook   'flycheck-mode))
-   #+end_src
-
-** TODO JavaScript/TypeScript/CoffeeScript
-
-   This section contains configuration for both ~js-mode~ and
-   ~js2-mode~. I use ~js-mode~ for all JavaScript editing, however for
-   mixed JavaScript and HTML I use ~mmm-mode~ with ~js-mode~ instead.
+   This section contains configuration for both ~js-mode~ and ~js2-mode~. I
+   used to use =js-mode= for editing all JavaScript files, but I now use
+   =js2-mode=.
 
    #+name: programming
    #+begin_src emacs-lisp :tangle no
@@ -1592,12 +1644,28 @@
           js2-bounce-indent-p nil
           js2-include-node-externs t
           js2-global-externs
-          '("jQuery" "Zepto" "$" "location" "Image" "describe" "it" "goog"))))
+          '("jQuery" "Zepto" "$" "location" "Image" "describe" "it" "goog"
+            "require" "define" "exports"))))
    #+end_src
 
-** TODO Clojure
+** Python
 
-** TODO Python
+    #+NAME: programming
+    #+BEGIN_SRC emacs-lisp :tangle no
+      (use-package python
+        :config
+        (progn
+          (setq python-indent-guess-indent-offset nil)
+
+          (defun td/setup-python ()
+            (interactive)
+            (anaconda-mode t)
+            (eldoc-mode t)
+            ;; (add-to-list 'company-backends 'company-anaconda)
+            )
+
+          (add-hook 'python-mode-hook #'td/setup-python)))
+    #+END_SRC
 
 ** PHP
 
@@ -1630,6 +1698,7 @@
               ("\\.erb\\'" . web-mode)
               ("\\.mustache\\'" . web-mode)
               ("\\.djhtml\\'" . web-mode)
+              ("\\.jinja2\\'" . web-mode)
               ("\\.html?" . web-mode)
               ("\\.hbs\\'" . web-mode))
        :config
@@ -1684,6 +1753,13 @@
          (setq scss-compile-at-save nil
                css-indent-offset 2)
          (add-hook 'scss-mode-hook #'td/css-imenu-expressions)))
+
+     (use-package less-css-mode
+       :mode "\\.less\\'"
+       :init
+       (progn
+         ;; TODO: customize `less-css-indent-line' to support nested ruleset
+         (add-hook 'less-css-mode-hook #'td/css-imenu-expressions)))
    #+end_src
 
 ** Markdown
@@ -1752,6 +1828,16 @@
          (add-hook 'fish-mode-hook #'td/setup-fish-mode)))
    #+end_src
 
+** Shell
+
+   #+name: programming
+   #+begin_src emacs-lisp :tangle no
+     (use-package sh-script
+       :defer t
+       :init
+       (setq-default sh-basic-offset 2))
+   #+end_src
+
 * Org
 
 ** Basic Settings
@@ -1786,25 +1872,14 @@
                org-return-follows-link t
                org-catch-invisible-edits 'show-and-error)
 
-         (setq org-todo-keywords '((sequence
-                                    "TODO(t)"
-                                    "STARTED(s!)"
-                                    "WAITING(w@/!)"
-                                    "|"
-                                    "CANCELED(c@)"
-                                    "DONE(d!)"
-                                    )))
-
-         (setq org-hide-leading-stars t)
-
-         ;; Code blocks
-         (org-babel-do-load-languages
-          'org-babel-load-languages
-          '((emacs-lisp . t)
-            (sh . t)))
+         (setq org-todo-keywords
+               '((sequence "TODO(t)" "STARTED(s!)" "WAITING(w@/!)"
+                           "|" "CANCELED(c@)" "DONE(d!)")))
 
          (setq org-src-fontify-natively t
-               org-src-tab-acts-natively t)))
+               org-src-tab-acts-natively t)
+
+         (setq org-hide-leading-stars t)))
    #+END_SRC
 
 ** Agenda
@@ -1817,7 +1892,7 @@
         :commands (org-agenda org-agenda-list)
         :config
         (setq org-agenda-files
-              '("~/Dropbox/gtd.org" "~/Dropbox/archives.org")
+              '("~/Documents/inbox.org" "~/Documents/projects.org" "~/Documents/archives.org")
               org-agenda-skip-unavailable-files t
               org-agenda-skip-deadline-if-done nil
               org-agenda-skip-scheduled-if-done nil
@@ -1962,10 +2037,12 @@
             (http . t)
             (python . t)
             (sql . t)
-            (sqlite . t)))
+            (sqlite . t)
+            (elasticsearch . t)))
 
          (defun td/org-babel-whitelist (lang body)
-           (not (string= lang "http")))
+           (not (or (string= lang "http")
+                    (string= lang "es"))))
 
          (setq org-confirm-babel-evaluate #'td/org-babel-whitelist)))
    #+END_SRC
@@ -2079,7 +2156,7 @@
              (td/find-eshell)
              (eshell/cd cwd)))
 
-         (bind-keys :map td/buffer-map
+         (bind-keys :map td/custom-map
                     ("t" . td/find-eshell)
                     ("s" . td/find-eshell-default-directory))
          :config
@@ -2112,7 +2189,7 @@
                         (t "xdg-open"))
                       (format " %s" args))))
 
-           (setq eshell-prompt-function 'td/eshell-prompt
+           (setq eshell-prompt-function #'td/eshell-prompt
                  eshell-prompt-regexp "^[^#$\\n]*[#$] "
                  eshell-highlight-prompt nil))))
    #+end_src
@@ -2165,67 +2242,26 @@
    #+name: management
    #+begin_src emacs-lisp :tangle no
      (use-package recentf
-       :defer t
-       :idle (recentf-mode t)
+       :defer 1
        :config
        (progn
          (setq recentf-auto-cleanup "9:00pm"
                recentf-max-saved-items 256)
 
-         (add-hook 'server-visit-hook #'recentf-save-list)))
-   #+end_src
+         (add-hook 'server-visit-hook #'recentf-save-list)
 
-** TODO Prodigy
+         (add-to-list 'recentf-exclude "elpa")
 
-   Define the services automatically after enter a project.
-   We might hook in projectile project change, and look for known service
-   definition files, for example Gulp, Grunt, RackUp, Foreman
+         (defun recentf-ido-find-file ()
+           "Find a recent file using Ido."
+           (interactive)
+           (let ((file (ido-completing-read "Recent file: " recentf-list nil t)))
+             (when file
+               (find-file file))))
 
-   (Gulpfile.js, Gulpfile.coffee, gruntfile.js, gruntfile.coffee,
-   config.ru, Procfile, )
+         (bind-key "C-c ;" #'recentf-ido-find-file)
 
-   #+name: management
-   #+begin_src emacs-lisp :tangle no
-
-   #+end_src
-
-** Perspective
-
-   #+name: management
-   #+begin_src emacs-lisp :tangle no
-     ;; (use-package persp-mode
-     ;;   :defer t
-     ;;   :idle
-     ;;   (progn
-     ;;     (setq persp-keymap-prefix (kbd "C-x p"))
-     ;;     (persp-mode t)))
-   #+end_src
-
-** Aria2
-
-   [[http://aria2.sourceforge.net][Aria]]2 is my download manager of choice, and I controll it from Emacs
-   using the ~aria2~ package. Unfortunately, this package requires
-   ~process-attributes~, which is not supported on Mac OS X.
-
-
-   #+name: management
-   #+begin_src emacs-lisp :tangle no
-     (use-package aria2
-       :defer t
-       :config
-       (progn
-         (defun td/aria2--is-aria-process-p (fn pid)
-           (if (eq system-type 'darwin)
-               (let* ((cmd (format "ps -o user='',comm='' %d" pid))
-                      (data (split-string (shell-command-to-string cmd)))
-                      (user (car data))
-                      (comm (cadr data)))
-                 (and
-                  (string= (executable-find "aria2c") comm)
-                  (string= (user-real-login-name) user)))
-             (funcall fn pid)))
-
-         (advice-add 'aria2--is-aria-process-p :around #'td/aria2--is-aria-process-p)))
+         (recentf-mode t)))
    #+end_src
 
 ** EMMS
@@ -2241,12 +2277,39 @@
          (emms-standard)
          (emms-default-players)
 
-         (setq emms-source-file-default-directory "~/Music/")
+         (setq emms-source-file-default-directory "~/Music/"
+               emms-info-asynchronously t
+               emms-show-format "♫ %s"
+               emms-repeat-playlist t)
 
-         (require 'emms-player-mpv-quiet)
-         (setq emms-player-mpv-quiet-command "/Users/tung/Applications/Mpv.app/Contents/MacOS/mpv")
-         (add-to-list 'emms-player-list 'emms-player-mpv-quiet)))
+         (require 'emms-mode-line)
+         (require 'emms-mode-line-icon)
+         (setq emms-mode-line-format " [%s] ")
+         (emms-mode-line 1)
+
+         (define-emms-simple-player afplay '(file)
+           (regexp-opt '(".mp3" ".m4a" ".aac"))
+           "afplay")
+         (setq emms-player-list `(,emms-player-afplay))))
+
+     (use-package emms-browser
+       :bind (("<f7>" . emms-smart-browse))
+       :config
+       (setq emms-browser-covers
+             '("cover_small.jpg" "cover_medium.jpg" "cover.jpg")))
    #+end_src
+
+** Evernote
+
+   #+NAME: management
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package epic
+       :commands (epic-create-note-from-region
+       epic-insert-selected-note-as-org-links
+       epic-create-note-from-org-buffer)
+       :config
+       (setq epic-evernote-mail-address "tungd.5740caa@m.evernote.com"))
+   #+END_SRC
 
 * Configuration Layout
 
@@ -2299,7 +2362,6 @@
   - [[http://nschum.de/src/emacs/kill-ring-search/][kill-ring-search]] seems to be pretty useful. I remember using Unite
     Yankring plugin years ago.
   - [[http://nschum.de/src/emacs/rotate-text/][rotate-text]] is also interesting.
-  - eldoc on demand
   - tags
   - async
   - Hydra for keymap management?

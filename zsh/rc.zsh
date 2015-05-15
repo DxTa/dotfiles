@@ -20,8 +20,7 @@ fi
 
 # Handy variable
 export CLI=$HOME/Projects/dotfiles
-export TODO="$HOME/Dropbox/GTD/@Projects.taskpaper"
-
+export WORK=$HOME/Projects
 
 # Remote
 if [[ -z $SSH_CONNECTION ]]; then
@@ -33,7 +32,6 @@ fi
 export CLICOLOR=1
 if [ "$OS" = "linux" ]; then
   alias ls='ls --color=auto'
-  # export LS_COLORS='no=00:di=35:fi=00:ln=00:ex=31:tw=34:ow=34:or=04'
 else
   alias ls='ls -G'
 fi
@@ -44,7 +42,7 @@ export GREP_OPTIONS='--color=auto' GREP_COLOR='1;32'
 stty -ixon
 
 # Navigation
-export CDPATH=.:$HOME:$HOME/Dropbox
+export CDPATH=.:$HOME:$WORK
 
 # This is gem
 export WORDCHARS='*?[]~&;!$%^<>'
@@ -57,7 +55,6 @@ fi
 
 # Utilities
 source $CLI/shell/tools.sh
-. $CLI/shell/n.sh
 . $CLI/shell/z.sh
 
 # Shell config and prompt
@@ -65,8 +62,8 @@ source $CLI/zsh/prompt.zsh
 
 
 autoload colors; colors;
-autoload -U url-quote-magic
-zle -N self-insert url-quote-magic
+# autoload -U url-quote-magic
+# zle -N self-insert url-quote-magic
 
 
 # History

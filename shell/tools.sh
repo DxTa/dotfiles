@@ -1,7 +1,7 @@
 
 # Local
-if [ -d $HOME/cli/bin ]; then
-  export PATH=$HOME/cli/bin:$PATH
+if [ -d $HOME/Projects/dotfiles/bin ]; then
+  export PATH=$HOME/Projects/dotfiles/bin:$PATH
 fi
 
 LOCAL=$HOME/.local
@@ -27,13 +27,7 @@ if [ "$OS" = "darwin" ]; then
 fi
 
 # Editor
-if [ "$OS" = "linux" ]; then
-  export EDITOR=vim
-  # Workaround for GVim iBus bug
-  # gvim='gvim -f'
-else
-  export EDITOR='mvim -v'
-fi
+export EDITOR=vim
 
 # Homebrew
 if [ -e $LOCAL/bin/brew ]; then
@@ -55,10 +49,28 @@ if [ -d $HOME/.rbenv ]; then
 fi
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
+# Python
+if [ -d $HOME/.local/opt/pyenv ]; then
+  export PYENV_ROOT=$HOME/.local/opt/pyenv
+fi
+if [ -d $HOME/.pyenv ]; then
+  export PYENV_ROOT=$HOME/.pyenv
+fi
+
+if [[ -d $PYENV_ROOT ]];then
+  PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+  # eval "$(pyenv virtualenv-init -)"
+fi
+
 # Node
 [[ -s "$HOME/.nvm/nvm.sh" ]] && . "$HOME/.nvm/nvm.sh"
 export NODE_PATH=$LOCAL/lib/node_modules:$NODE_PATH
 export PATH=$PATH:$HOME/.npm/bin
+
+if [ -d $HOME/Projects/dotfiles/bin ]; then
+  export CLOSURE_COMPILER_JAR=$LOCAL/jars/compiler.jar
+fi
 
 # Clojure
 if [ -d $LOCAL/clojurescript ]; then
@@ -177,6 +189,8 @@ alias e="emacsclient"
 es() {
   emacsclient -c -a "" "/sudo::$*"
 }
+
+
 
 # Mics.
 alias mk=make

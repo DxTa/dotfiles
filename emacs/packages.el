@@ -10,10 +10,8 @@
 (setq td/packages
       '(ace-jump-mode
         ag
-        alchemist
         anzu
         apache-mode
-        aria2
         async
         base16-theme
         benchmark-init
@@ -23,25 +21,26 @@
         comment-dwim-2
         company
         company-statistics
+        csv-mode
         dash
         deft
         diff-hl
         diminish
         dockerfile-mode
-        elixir-mode
         emmet-mode
         emms
+        emms-player-mpv
+        es-mode
         exec-path-from-shell
         expand-region
         f
-        fish-mode
         flx
         flx-ido
-        hideshowvis
         flycheck
-        fringe-helper
+        fullframe
         gitconfig-mode
         groovy-mode
+        hideshowvis
         highlight-escape-sequences
         highlight-parentheses
         ibuffer-vc
@@ -50,13 +49,13 @@
         jasminejs-mode
         js2-mode
         json-mode
-        magit
         markdown-mode
         multiple-cursors
         ob-http
         php-mode
         phpunit
         popwin
+        pyvenv
         projectile
         rainbow-mode
         s

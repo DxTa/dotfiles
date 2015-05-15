@@ -11,8 +11,6 @@
 #
 set -e
 
-COMPILER=$(locate compiler.jar | head -n 1)
-
 JAVA=java
 command -v drip >/dev/null 2>&1 && JAVA=drip
 
@@ -23,4 +21,4 @@ else
   ARGS="$@"
 fi
 
-DRIP_SHUTDOWN=30 $JAVA -cp $COMPILER com.google.javascript.jscomp.CommandLineRunner $ARGS
+DRIP_SHUTDOWN=30 $JAVA -cp $CLOSURE_COMPILER_JAR com.google.javascript.jscomp.CommandLineRunner $ARGS

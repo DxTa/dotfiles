@@ -1,3 +1,7 @@
+set -x -g DEISCTL_TUNNEL deis1.tecnote.net
+
+set -x -g LC_ALL en_US.UTF-8
+set -x -g LANG en_US.UTF-8
 
 function ef; vim ~/.config/fish/config.fish; end
 function eff; vim ~/.config/fish/functions; end
@@ -16,6 +20,8 @@ function ..;    cd ..; end
 function ...;   cd ../..; end
 function ....;  cd ../../..; end
 function .....; cd ../../../..; end
+
+function sshvcc; ssh -p 2215 -A ductm@123.30.234.10; end
 
 
 # Completions {{{
@@ -71,6 +77,8 @@ prepend_to_path "$HOME/Applications/Postgres.app/Contents/MacOS/bin"
 prepend_to_path "$HOME/Applications/Emacs.app/Contents/MacOS/bin-x86_64-10_9"
 prepend_to_path "$HOME/.rbenv/shims"
 prepend_to_path "$HOME/.local/bin"
+
+set -g -x NIX_LINK "$HOME/.nix-profile"
 
 set BROWSER open
 

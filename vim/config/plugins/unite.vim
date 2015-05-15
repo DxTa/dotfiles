@@ -3,25 +3,27 @@
 let g:unite_data_directory = expand("~/.vim/tmp/unite")
 let g:unite_source_history_yank_enable = 1
 let g:unite_enable_start_insert = 1
-nnoremap <leader>e :Unite -hide-status-line file<cr>
-nnoremap <leader>b :Unite -hide-status-line buffer<cr>
-nnoremap <leader>f :Unite -hide-status-line file<cr>
-nnoremap <leader>o :Unite -hide-status-line outline<cr>
-nnoremap <leader>t :Unite -hide-status-line outline<cr>
-nnoremap <leader>r :Unite -hide-status-line file_mru<cr>
-nnoremap <leader>s :Unite -hide-status-line session<cr>
-nnoremap <leader>l :Unite -hide-status-line line/fast<cr>
-nnoremap <leader>y :Unite -hide-status-line history/yank<cr>
-nnoremap <leader>j :Unite -hide-status-line jump<cr>
-nnoremap <leader>c :Unite -hide-status-line change<cr>
-nnoremap <leader>x :Unite -hide-status-line command<cr>
+nnoremap <leader>e :Unite file<cr>
+nnoremap <leader>b :Unite buffer<cr>
+nnoremap <leader>f :Unite file<cr>
+nnoremap <leader>o :Unite outline<cr>
+nnoremap <leader>t :Unite outline<cr>
+nnoremap <leader>r :Unite file_mru<cr>
+nnoremap <leader>s :Unite session<cr>
+nnoremap <leader>l :Unite line/fast<cr>
+nnoremap <leader>y :Unite history/yank<cr>
+nnoremap <leader>j :Unite jump<cr>
+nnoremap <leader>c :Unite change<cr>
+nnoremap <leader>x :Unite command<cr>
 
 nnoremap <leader>fn :Unite file -input=Dropbox/Notes/<cr>
-autocmd FileType unite call s:unite_custom_settings()
 
 function! s:unite_custom_settings()
-  map <buffer> <esc> <Plug>(unix_exit)
+  au InsertLeave <buffer> :UniteClose
+  " map <buffer> <esc> <Plug>(unix_exit)
 endfunction
+
+autocmd FileType unite call s:unite_custom_settings()
 
 " Projects mappings<leader> handles my common finding inside Rails/Kohana/WP projects
 nnoremap <leader>fj :call FindInMyProject('javascripts', 'js')<cr>

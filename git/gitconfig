@@ -1,13 +1,13 @@
 [user]
-        name = Tung Dao
-        email = me@tungdao.com
+        name = Minh Duc Ta
+        email = ductm310@gmail.com
 [github]
-        user = tungd
+        user = DxTa
 [credential]
         helper = osxkeychain
         helper = gnome-keyring
 [core]
-        excludesfile = /Users/tung/.gitignore_global
+        excludesfile = /Users/dxta/.gitignore_global
         whitespace = trailing-space,space-before-tab
 [color]
         ui = auto
@@ -68,14 +68,12 @@
         insteadOf = wgh:
 [url "git@bitbucket.org:"]
         insteadOf = bb:
-[url "git@code.tungdao.com:/tungd/"]
-        insteadOf = tungd:
 [difftool "sourcetree"]
-        cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-        path =
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
 [mergetool "sourcetree"]
-        cmd = /Users/tung/Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-        trustExitCode = true
+	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
 [filter "media"]
         required = true
         clean = git media clean %f

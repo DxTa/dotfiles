@@ -12,6 +12,7 @@
         org-beginning-of-line
         org-cycle
         org-delete-char
+        org-edit-src-save
         org-self-insert-command
         org-yank
         sgml-slash
