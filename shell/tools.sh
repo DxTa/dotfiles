@@ -79,10 +79,18 @@ if [ -d $LOCAL/clojurescript ]; then
 fi
 
 # Go
-if [ -d $HOME/Projects/go ]; then
-  export GOPATH=$HOME/Projects/go
-  export PATH=$GOPATH/bin:$PATH
-fi
+export GOPATH=$HOME/Go
+export GOROOT=/usr/local/opt/go/libexec
+export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:$GOROOT/bin
+gobinfnc(){
+  $GOPATH/bin/$1
+}
+alias gobin=gobinfnc
+# if [ -d $HOME/Projects/go ]; then
+  # export GOPATH=$HOME/Projects/go
+  # export PATH=$GOPATH/bin:$PATH
+# fi
 
 # Heroku
 if [ -d "/usr/local/heroku" ]; then
@@ -147,9 +155,9 @@ alias ....="cd ../../../"
 alias .....="cd ../../../"
 alias ......="cd ../../../../"
 
-md() {
-  mkdir -p "$1" && cd "$1";
-}
+# md() {
+  # mkdir -p "$1" && cd "$1";
+# }
 
 # git
 alias g=git
@@ -244,3 +252,31 @@ man() {
     LESS_TERMCAP_us=$'\E[04;38;5;146m' \
     man "$@"
 }
+
+alias sshvcc='ssh -p 2215 -A ductm@123.30.234.10'
+
+function f() { find . -iname "*$1*" ${@:2} }
+function r() { grep "$1" ${@:2} -R . }
+
+alias hibernate='sudo pmset -a hibernatemode 25'
+alias sleep='sudo pmset -a hibernatemode 0'
+alias safesleep='sudo pmset -a hibernatemode 3'
+alias smartsleep='sudo pmset -a hibernatemode 2'
+
+alias mtr='sudo /usr/local/Cellar/mtr/0.86/sbin/mtr'
+
+# export PATH=/usr/local/packer:$PATH
+export PATH=/Users/dxta/cli/scala/scala-2.11.7/bin:$PATH
+export VAGRANT_HOME=/Volumes/Data/.vagrant.d
+# OMNET++ Exports
+export PATH=$PATH:/Users/dxta/dev/omnetpp-4.6/bin
+export PATH=$PATH:/Users/dxta/bin
+
+# latex
+export PATH=$PATH:/Library/TeX/texbin
+# export PATH=$PATH:/Users/dxta/Tools/gradle/bin
+# export ANDROID_HOME=/Applications/Android Studio.app/sdk/
+
+export RUBYMOTION_ANDROID_NDK=/Users/dxta/.rubymotion-android/ndk
+export RUBYMOTION_ANDROID_SDK=/Users/dxta/.rubymotion-android/sdk
+

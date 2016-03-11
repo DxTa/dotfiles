@@ -1,13 +1,13 @@
 [user]
-        name = Minh Duc Ta
-        email = ductm310@gmail.com
+        name = Daniel Ta
+        email = daniel.ta@lekane.com
 [github]
         user = DxTa
 [credential]
         helper = osxkeychain
         helper = gnome-keyring
 [core]
-        excludesfile = /Users/dxta/.gitignore_global
+        excludesfile = /home/daniel/.gitignore_global
         whitespace = trailing-space,space-before-tab
 [color]
         ui = auto

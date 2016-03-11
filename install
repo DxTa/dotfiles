@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+CLI=/home/dxta/cli
 if [ -z "$PS1" ]; then
   echo -e "\033[0;31mYou should source this, not run it, for example: source ./install\033[m"
 else
@@ -15,9 +16,9 @@ else
 
   # source $HOME/cli/shell/init.sh
 
-  echo "source $CLI/shell/init.sh" >> ~/.bashrc
-  echo "source $CLI/shell/init.sh" >> ~/.zshrc
-  CLI=$HOME/Projects/dotfiles
+  #echo "source $CLI/shell/init.sh" >> ~/.bashrc
+  #echo "source $CLI/shell/init.sh" >> ~/.zshrc
+  CLI=$HOME/cli
 
   # vim
   link $CLI/vim/vimrc $HOME/.vimrc
@@ -32,9 +33,9 @@ else
   link $CLI/git/gitignore $HOME/.gitignore
 
   # ruby
-  link $CLI/ruby/gemrc $HOME/.gemrc
-  link $CLI/ruby/irbrc $HOME/.irbrc
-  link $CLI/ruby/pryrc $HOME/.pryrc
+  #link $CLI/ruby/gemrc $HOME/.gemrc
+  #link $CLI/ruby/irbrc $HOME/.irbrc
+  #link $CLI/ruby/pryrc $HOME/.pryrc
 
   # misc.
   link $CLI/tmux.conf $HOME/.tmux.conf
@@ -45,12 +46,11 @@ else
   # fi
 
   # if [ "$OS" = "linux" ]; then
-    # link $CLI/awesome $HOME/.config/awesome
-    # link $CLI/x/xinitrc $HOME/.xinitrc
-    # link $CLI/x/xresources $HOME/.xresources
-    # link $CLI/x/xmodmap $HOME/.xmodmap
-    # link $CLI/x/terminalrc $HOME/.config/xfce4/terminal/terminalrc
+  link $CLI/awesome $HOME/.config/awesome
+  link $CLI/x/xinitrc $HOME/.xinitrc
+  link $CLI/x/xresources $HOME/.xresources
+  link $CLI/x/xmodmap $HOME/.xmodmap
+  link $CLI/x/terminalrc $HOME/.config/xfce4/terminal/terminalrc
     # cat $CLI/Custom.css > "$HOME/.config/chromium/Default/User StyleSheets/Custom.css"
   # fi
 fi
-

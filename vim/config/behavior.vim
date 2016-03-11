@@ -53,6 +53,7 @@ nnoremap <leader>w :setlocal wrap!<cr>
 set noequalalways
 set splitbelow splitright
 " set winwidth=90 winheight=24
+" set winwidth=90
 noremap <f2> :vsp<cr>:bn<cr>
 noremap <f3> :sp<cr>:bn<cr>
 noremap <f4> :close<cr>

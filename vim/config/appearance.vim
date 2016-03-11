@@ -15,10 +15,17 @@ set statusline+=%-14.(\ \ %l,%c%)\ %P\ [%L]
 set display+=lastline
 set synmaxcol=350
 
+
 highlight SpellBad term=underline gui=underline
 
 set background=dark
 colorscheme badwolf
+
+set cursorcolumn
+set cursorline
+set number
+set columns=120
+set guicursor+=a:Cursor-blinkon0
 
 if has('gui_running')
   set guioptions=ceg
@@ -26,20 +33,21 @@ if has('gui_running')
   set vb t_vb=
   set numberwidth=5
   set guicursor+=a:Cursor-blinkon0
-  set columns=100
+  set columns=120
   set lines=40
-  " set cursorline
-  " set number
+  set cursorcolumn
+  set cursorline
+  set number
 
   set background=dark
-  colorscheme badwolf
+  colorscheme desert
 
   if has("gui_gtk2")
     set guifont=DejaVu\ Sans\ Mono\ 11
     " set guifont=M+\ 2m\ 11
   elseif has("gui_macvim") || has("gui_mac")
     set macmeta
-    set guifont=M+\ 2m:h14
+    set guifont=Monaco:h11
   elseif has("gui_win32")
     set guifont=Consolas:h11
   end

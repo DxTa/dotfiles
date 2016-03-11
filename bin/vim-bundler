@@ -48,10 +48,14 @@ bundles = [
   # HTML/Markdown
   ["vim-pandoc/vim-pandoc", "pandoc"],
   ["othree/html5.vim", "html"],
-  ["mattn/zencoding-vim"]
+  ["mattn/zencoding-vim"],
 
   # Go
+  ["fatih/vim-go"],
   # Rust
+  # React
+  ["mxw/vim-jsx"],
+  ["scrooloose/syntastic"]
 ]
 
 require 'fileutils'

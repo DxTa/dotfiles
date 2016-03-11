@@ -4,9 +4,10 @@
 
 " Bundle
 set nocompatible
-runtime bundle/vim-unbundle/unbundle.vim
+runtime bundle/vim-unbundle/plugin/unbundle.vim
 let $PATH=$HOME.'/.rbenv/shims/:'.$HOME.'/local/bin/:'.$PATH
 
 " Config
+let mapleader=","
+filetype plugin on
 runtime! config/*.vim
-
