@@ -51,7 +51,7 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 # Python
 if [ -d $HOME/.local/opt/pyenv ]; then
-  export PYENV_ROOT=$HOME/.local/opt/pyenv
+  export PYENV_ROOT=$HOME/.pyenv
 fi
 if [ -d $HOME/.pyenv ]; then
   export PYENV_ROOT=$HOME/.pyenv
@@ -267,7 +267,7 @@ alias mtr='sudo /usr/local/Cellar/mtr/0.86/sbin/mtr'
 
 # export PATH=/usr/local/packer:$PATH
 export PATH=/Users/dxta/cli/scala/scala-2.11.7/bin:$PATH
-export VAGRANT_HOME=/Volumes/Data/.vagrant.d
+# export VAGRANT_HOME=/Volumes/Data/.vagrant.d
 # OMNET++ Exports
 export PATH=$PATH:/Users/dxta/dev/omnetpp-4.6/bin
 export PATH=$PATH:/Users/dxta/bin
@@ -280,3 +280,4 @@ export PATH=$PATH:/Library/TeX/texbin
 export RUBYMOTION_ANDROID_NDK=/Users/dxta/.rubymotion-android/ndk
 export RUBYMOTION_ANDROID_SDK=/Users/dxta/.rubymotion-android/sdk
 
+eval "$(docker-machine env default)"

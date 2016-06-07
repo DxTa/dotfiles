@@ -55,7 +55,9 @@ bundles = [
   # Rust
   # React
   ["mxw/vim-jsx"],
-  ["scrooloose/syntastic"]
+  ["scrooloose/syntastic"],
+  # ["hallettj/jslint.vim"],
+  ["noah/vim256-color"]
 ]
 
 require 'fileutils'
