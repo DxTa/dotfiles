@@ -59,7 +59,8 @@ bundles = [
   ["shougo/vimshell.vim"],
   ["shougo/vimproc"],
   # ["hallettj/jslint.vim"],
-  ["noah/vim256-color"]
+  ["noah/vim256-color"],
+  ["trapd00r/neverland-vim-theme"]
 ]
 
 require 'fileutils'

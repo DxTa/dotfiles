@@ -19,7 +19,7 @@ set synmaxcol=350
 highlight SpellBad term=underline gui=underline
 
 set background=dark
-colorscheme wombat256
+colorscheme neverland2
 
 set cursorcolumn
 set cursorline
@@ -40,7 +40,7 @@ if has('gui_running')
   set number
 
   set background=dark
-  colorscheme wombat256
+  colorscheme neverland2
 
   if has("gui_gtk2")
     set guifont=DejaVu\ Sans\ Mono\ 11
