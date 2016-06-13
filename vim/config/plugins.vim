@@ -12,6 +12,7 @@ runtime! config/plugins/unite.vim
 runtime! config/plugins/zencoding.vim
 runtime! config/plugins/go.vim
 runtime! config/plugins/syntastic.vim
+runtime! config/plugins/vimshell.vim
 
 " let g:netrw_liststyle=3
 " map <leader>k :Explore<cr>

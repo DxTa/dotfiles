@@ -56,6 +56,8 @@ bundles = [
   # React
   ["mxw/vim-jsx"],
   ["scrooloose/syntastic"],
+  ["shougo/vimshell.vim"],
+  ["shougo/vimproc"],
   # ["hallettj/jslint.vim"],
   ["noah/vim256-color"]
 ]
