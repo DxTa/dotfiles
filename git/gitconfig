@@ -1,13 +1,13 @@
 [user]
         name = Daniel Ta
-        email = daniel.ta@lekane.com
+        email = daniel.md.ta@outlook.com
 [github]
         user = DxTa
 [credential]
         helper = osxkeychain
         helper = gnome-keyring
 [core]
-        excludesfile = /home/daniel/.gitignore_global
+        excludesfile = /Users/dxta/.gitignore_global
         whitespace = trailing-space,space-before-tab
 [color]
         ui = auto
@@ -70,7 +70,7 @@
         insteadOf = bb:
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
+	path =
 [mergetool "sourcetree"]
 	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true

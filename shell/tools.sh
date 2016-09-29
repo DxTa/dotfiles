@@ -66,7 +66,7 @@ fi
 # Node
 [[ -s "$HOME/.nvm/nvm.sh" ]] && . "$HOME/.nvm/nvm.sh"
 export NODE_PATH=$LOCAL/lib/node_modules:$NODE_PATH
-export PATH=$PATH:$HOME/.npm/bin
+export PATH=$PATH:$HOME/.npm-packages/bin
 
 if [ -d $HOME/Projects/dotfiles/bin ]; then
   export CLOSURE_COMPILER_JAR=$LOCAL/jars/compiler.jar
@@ -281,3 +281,14 @@ export RUBYMOTION_ANDROID_NDK=/Users/dxta/.rubymotion-android/ndk
 export RUBYMOTION_ANDROID_SDK=/Users/dxta/.rubymotion-android/sdk
 
 eval "$(docker-machine env default)"
+alias dockerclean="docker ps -a | grep Exit | cut -d ' ' -f 1 | xargs docker rm"
+# eval "$(docker-machine env dev)"
+
+function fixbluetooth() {
+  blueutil power 0;
+  sudo rm -rf /Library/Preferences/com.apple.Bluetooth.plist
+  blueutil power 1;
+}
+
+# hostmypet
+alias hmp_secure_tunnel_to_wordpress='ssh -N -L 8888:127.0.0.1:80 deploy@wp.hostmypet.fi'

@@ -46,11 +46,11 @@ else
   # fi
 
   # if [ "$OS" = "linux" ]; then
-  link $CLI/awesome $HOME/.config/awesome
-  link $CLI/x/xinitrc $HOME/.xinitrc
-  link $CLI/x/xresources $HOME/.xresources
-  link $CLI/x/xmodmap $HOME/.xmodmap
-  link $CLI/x/terminalrc $HOME/.config/xfce4/terminal/terminalrc
+  # link $CLI/awesome $HOME/.config/awesome
+  # link $CLI/x/xinitrc $HOME/.xinitrc
+  # link $CLI/x/xresources $HOME/.xresources
+  # link $CLI/x/xmodmap $HOME/.xmodmap
+  # link $CLI/x/terminalrc $HOME/.config/xfce4/terminal/terminalrc
     # cat $CLI/Custom.css > "$HOME/.config/chromium/Default/User StyleSheets/Custom.css"
   # fi
 fi

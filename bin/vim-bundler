@@ -19,6 +19,7 @@ bundles = [
   ["AndrewRadev/splitjoin.vim"],
   ["Shougo/unite.vim"],
   ["Shougo/unite-session"],
+  ["Shougo/neoyank.vim"],
   ["Shougo/unite-outline"],
   ["jpalardy/vim-slime"],
 
