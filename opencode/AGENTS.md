@@ -1,6 +1,6 @@
 # Context Engineering Platform
 
-Sub-agents, ChunkHound MCP code indexing, Memvid memory, external LLM validation.
+Sub-agents, sia-code CLI code indexing, Memvid memory, external LLM validation.
 
 **Built-in Subagents:** Use `@general` for broad research and multi-step analysis, `@explore` for fast code searches and pattern matching. See https://opencode.ai/docs/agents/#built-in for details.
 
@@ -60,7 +60,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 - Step 2 (Memvid search): MANDATORY (skip only if <30s, document why)
 - Step 4 (`task_plan.md`): MANDATORY
 - Step 5 (`notes.md`): Recommended (for research/analysis)
-- Step 7 (exploration): ChunkHound if unfamiliar code
+- Step 7 (exploration): sia-code if unfamiliar code
 - Step 10 (Re-read plan): Before major decisions
 - Step 11 (Self-reflection): Use @plan agent (recommended)
 - Step 14 (Memvid store): MANDATORY
@@ -95,7 +95,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
    - **Task-based agent selection** (use decision tree below, not all agents)
    - `@general` for external research, multi-step analysis, documentation lookup
    - `@explore` for file pattern matching, code search, simple name lookup
-   - `chunkhound_code_research` for architecture analysis, dependency mapping, unfamiliar code
+   - `uvx --with openai sia-code research` for architecture analysis, dependency mapping, unfamiliar code
    - Additional specialists based on domain:
       - @backend-specialist / @frontend-specialist (domain-specific)
       - @security-engineer (security implications)
@@ -114,17 +114,17 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
        <agent>@explore</agent>
      </case>
      <case pattern="Where is feature Z defined?">
-       <tool>chunkhound_code_research</tool>
+       <cli>uvx --with openai sia-code research</cli>
      </case>
      <case pattern="How does X work?">
-       <tool>chunkhound_code_research</tool>
+       <cli>uvx --with openai sia-code research</cli>
        <note>architecture</note>
      </case>
      <case pattern="Trace dependencies of module Y">
-       <tool>chunkhound_code_research</tool>
+       <cli>uvx --with openai sia-code research</cli>
      </case>
      <case pattern="Unfamiliar codebase area">
-       <tool>chunkhound_code_research</tool>
+       <cli>uvx --with openai sia-code research</cli>
        <note>map first</note>
      </case>
      <case pattern="Research library/API/pattern">
@@ -227,18 +227,32 @@ Is this a problem with...
 2. **code-reasoning** for implementation (step-by-step coding, debugging)
 3. **shannon-thinking** for validation (verify implementation meets model)
 
-### ChunkHound Code Research
+### Sia-Code Research
 
-**When to use `chunkhound_code_research`:**
+**Setup (first use per project):**
+```bash
+source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh
+uvx --with openai sia-code init && uvx --with openai sia-code index .
+```
+
+**When to use `uvx --with openai sia-code research`:**
 - Before implementing features - find existing patterns to reuse
 - During debugging - map complete flows to find actual failure point
 - Refactoring prep - understand all dependencies before making changes
 - Code archaeology - learn unfamiliar systems quickly
 
 **When to use direct search instead:**
-- Quick symbol lookups → `chunkhound_search_regex`
-- Known file/function → `chunkhound_search_semantic`
-- Architectural questions → `chunkhound_code_research`
+- Quick symbol lookups → `uvx --with openai sia-code search --regex "pattern"`
+- Known file/function → `uvx --with openai sia-code search "query"`
+- Architectural questions → `uvx --with openai sia-code research "question"`
+
+**Check index staleness:**
+```bash
+uvx --with openai sia-code status  # Shows Health Status: 🟢 Healthy / 🟠 Degraded
+```
+Update index if `Staleness Ratio > 20%` or `Health Status: Degraded`.
+
+**Skill:** Load `@sia-code` for detailed commands and workflows.
 
 ### Memvid Memory
 **Skill:** Load `@memvid` for detailed commands and patterns.
@@ -316,7 +330,7 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
 | @devops-engineer | Infrastructure, CI/CD |
 | @security-engineer | Security, auth |
 
-**Note:** For architecture analysis, dependency mapping, and unfamiliar code exploration, use `chunkhound_code_research` tool directly instead of a subagent.
+**Note:** For architecture analysis, dependency mapping, and unfamiliar code exploration, use `uvx --with openai sia-code research` directly instead of a subagent.
 
 ### Self-Reflection & External Validation
 **Self-Reflection:**
@@ -343,7 +357,7 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
 ### Two-Strike Rule (MANDATORY Tier 2+)
 **2 failed fixes → STOP.** No third fix without:
 1. CAPTURE: Full stack trace, console (chrome-devtools for frontend), environment
-2. CHUNKHOUND: Use `chunkhound_code_research` to analyze root cause
+2. SIA-CODE: Use `uvx --with openai sia-code research` to analyze root cause
 3. MEMVID: Search similar past issues
 4. EXTERNAL LLM (T3+): Validate approach
 5. STORE: Root cause, fix, prevention in Memvid
@@ -367,7 +381,7 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
 **Process:** Capture console → DevTools inspection → Network traces → Validate fixes
 
 ### Integration Changes (Cross-File)
-1. **MAP:** `chunkhound_code_research` → ALL affected locations
+1. **MAP:** `uvx --with openai sia-code research` → ALL affected locations
 2. **PLAN:** TodoWrite with files + integration test
 3. **TEST:** Create integration test FIRST
 4. **IMPLEMENT:** Make changes with test running
@@ -384,7 +398,7 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
   
   <pattern name="unmapped-features">
     <wrong>Add features without mapping</wrong>
-    <right>chunkhound_code_research → integration test</right>
+    <right>uvx --with openai sia-code research → integration test</right>
     <rationale>Changes cascade unexpectedly without understanding full impact surface</rationale>
   </pattern>
   

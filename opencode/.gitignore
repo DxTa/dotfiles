@@ -8,6 +8,7 @@ bun.lock
 *.backup*
 plans
 .chunkhound
+.sia-code
 antigravity-accounts.json
 memory.mv2
 venv
