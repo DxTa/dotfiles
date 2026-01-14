@@ -1,0 +1,15 @@
+node_modules
+package.json
+bun.lock
+# Do NOT ignore .gitignore itself - it must be tracked for protection to work on clones
+.mcp-credentials.json
+.serena
+*.bkp
+*.backup*
+plans
+.chunkhound
+antigravity-accounts.json
+memory.mv2
+venv
+.ruff_cache
+*_token.json

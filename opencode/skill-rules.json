@@ -1,0 +1,2606 @@
+{
+  "version": "2.0",
+  "description": "Skill activation triggers for Claude Code plugins and local skills. Controls when plugins/skills automatically suggest or activate based on user prompts and file context.",
+  "skills": {
+    "chaos-engineering-toolkit": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Chaos engineering toolkit for testing system resilience through controlled failure injection and stress testing",
+      "promptTriggers": {
+        "keywords": [
+          "chaos engineering",
+          "chaos test",
+          "chaos experiment",
+          "resilience test",
+          "resilience testing",
+          "failure injection",
+          "latency simulation",
+          "resource exhaustion",
+          "GameDays",
+          "recovery mechanism",
+          "cascading failure",
+          "circuit breaker",
+          "retry testing",
+          "Chaos Mesh",
+          "Gremlin",
+          "Toxiproxy",
+          "system resilience",
+          "fault injection"
+        ],
+        "intentPatterns": [
+          "(test|verify|validate).*?(resilience|recovery|failure)",
+          "chaos.*?(experiment|test|engineering)",
+          "(design|create|run).*?chaos",
+          "(failure|fault).*?injection",
+          "test.*?(system|service).*?resilience",
+          "(cascading|cascade).*?failure",
+          "recovery.*?(mechanism|validation|test)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/chaos/**/*",
+          "**/*chaos*.{js,ts,py,yaml,yml}",
+          "**/resilience/**/*",
+          "**/tests/chaos/**/*"
+        ],
+        "contentPatterns": [
+          "chaos",
+          "resilience",
+          "failure.*?injection",
+          "circuit.*?breaker"
+        ]
+      }
+    },
+    "performance-test-suite": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Performance testing suite for load testing, stress testing, and bottleneck identification",
+      "promptTriggers": {
+        "keywords": [
+          "load test",
+          "stress test",
+          "performance test",
+          "benchmark",
+          "benchmarking",
+          "spike test",
+          "endurance test",
+          "performance metrics",
+          "bottleneck",
+          "memory leak",
+          "response time",
+          "throughput",
+          "latency",
+          "performance analysis",
+          "load testing",
+          "stress testing",
+          "capacity test",
+          "performance bottleneck",
+          "breaking point"
+        ],
+        "intentPatterns": [
+          "(load|stress|spike|endurance).*?test",
+          "performance.*?(test|benchmark|analysis)",
+          "(find|identify|analyze).*?bottleneck",
+          "test.*?(performance|load|stress)",
+          "(memory|resource).*?leak",
+          "response.*?time.*?(test|measure)",
+          "(throughput|latency).*?(test|measure)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/performance/**/*",
+          "**/load-test*/**/*",
+          "**/*perf*.{js,ts,py}",
+          "**/benchmarks/**/*",
+          "**/*benchmark*.{js,ts,py}"
+        ],
+        "contentPatterns": [
+          "loadTest",
+          "stressTest",
+          "benchmark",
+          "performance"
+        ]
+      }
+    },
+    "test-coverage-analyzer": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Test coverage analyzer for identifying untested code and analyzing coverage metrics",
+      "promptTriggers": {
+        "keywords": [
+          "test coverage",
+          "coverage analysis",
+          "code coverage",
+          "untested code",
+          "coverage report",
+          "coverage threshold",
+          "coverage metrics",
+          "line coverage",
+          "branch coverage",
+          "function coverage",
+          "statement coverage",
+          "coverage gap",
+          "coverage trend",
+          "analyze coverage"
+        ],
+        "intentPatterns": [
+          "(test|code).*?coverage",
+          "coverage.*?(analysis|report|metrics)",
+          "(analyze|check|measure).*?coverage",
+          "untested.*?code",
+          "coverage.*?(threshold|gap|trend)",
+          "(identify|find).*?untested"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/coverage/**/*",
+          "**/.coverage",
+          "**/jest.config.{js,ts}",
+          "**/pytest.ini",
+          "**/.coveragerc"
+        ],
+        "contentPatterns": [
+          "coverage",
+          "coverageThreshold",
+          "collectCoverage"
+        ]
+      }
+    },
+    "security-test-scanner": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Security vulnerability scanner covering OWASP Top 10, injection flaws, XSS, CSRF, and authentication issues",
+      "promptTriggers": {
+        "keywords": [
+          "security test",
+          "security scan",
+          "vulnerability test",
+          "vulnerability scan",
+          "OWASP",
+          "OWASP Top 10",
+          "SQL injection",
+          "NoSQL injection",
+          "XSS",
+          "cross-site scripting",
+          "CSRF",
+          "authentication test",
+          "authorization test",
+          "privilege escalation",
+          "IDOR",
+          "injection flaw",
+          "security vulnerability",
+          "API security test"
+        ],
+        "intentPatterns": [
+          "security.*?(test|scan|check|audit)",
+          "(vulnerability|vuln).*?(test|scan|check)",
+          "OWASP.*?(test|scan|check)",
+          "(SQL|NoSQL|command|LDAP).*?injection",
+          "(XSS|cross.*?site.*?scripting)",
+          "(authentication|authorization).*?test",
+          "(privilege|access).*?escalation",
+          "test.*?security.*?(vulnerability|flaw)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/security/**/*",
+          "**/auth/**/*",
+          "**/*auth*.{js,ts,py}",
+          "**/*security*.{js,ts,py}",
+          "**/tests/security/**/*"
+        ],
+        "contentPatterns": [
+          "authenticate",
+          "authorize",
+          "password",
+          "JWT",
+          "bcrypt",
+          "crypto",
+          "sanitize",
+          "validate.*?input"
+        ]
+      }
+    },
+    "security-pro-pack": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Comprehensive security plugin pack including security auditing, penetration testing, compliance checking, cryptography auditing, and threat modeling",
+      "promptTriggers": {
+        "keywords": [
+          "security audit",
+          "security review",
+          "penetration test",
+          "pentest",
+          "compliance",
+          "HIPAA",
+          "PCI DSS",
+          "GDPR",
+          "SOC 2",
+          "crypto audit",
+          "cryptography",
+          "Docker security",
+          "container security",
+          "API security",
+          "threat model",
+          "threat modeling",
+          "STRIDE",
+          "security architecture",
+          "ethical hacking"
+        ],
+        "intentPatterns": [
+          "security.*?(audit|review|assessment)",
+          "(penetration|pen).*?test",
+          "compliance.*?(check|audit|assess)",
+          "(HIPAA|PCI|GDPR|SOC).*?(compliance|audit)",
+          "(crypto|cryptography).*?(audit|review)",
+          "(Docker|container).*?security",
+          "API.*?security.*?(test|audit)",
+          "threat.*?(model|modeling|assessment)",
+          "(STRIDE|DREAD).*?(model|analysis)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/security/**/*",
+          "**/auth/**/*",
+          "**/crypto/**/*",
+          "**/Dockerfile",
+          "**/docker-compose.{yml,yaml}",
+          "**/.env*",
+          "**/api/**/*security*"
+        ],
+        "contentPatterns": [
+          "crypto",
+          "encrypt",
+          "decrypt",
+          "hash",
+          "authenticate",
+          "authorize",
+          "token",
+          "secret"
+        ]
+      }
+    },
+    "fullstack-starter-pack": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Fullstack development starter pack for React, Express/FastAPI, database design, and deployment",
+      "promptTriggers": {
+        "keywords": [
+          "React component",
+          "create component",
+          "UI component",
+          "React hooks",
+          "Server Components",
+          "UI/UX design",
+          "responsive design",
+          "REST API",
+          "GraphQL",
+          "API design",
+          "Express",
+          "FastAPI",
+          "backend architecture",
+          "microservices",
+          "database design",
+          "Prisma",
+          "Prisma schema",
+          "SQL query",
+          "authentication setup",
+          "auth boilerplate",
+          "deployment",
+          "Docker deployment",
+          "Kubernetes",
+          "fullstack project",
+          "project scaffold"
+        ],
+        "intentPatterns": [
+          "(create|generate|build).*?(React|component|UI)",
+          "(design|create).*?(API|REST|GraphQL)",
+          "(Express|FastAPI).*?(setup|scaffold|boilerplate)",
+          "(backend|API).*?architecture",
+          "(database|schema).*?(design|model)",
+          "Prisma.*?(schema|model)",
+          "(authentication|auth).*?(setup|implement)",
+          "(deploy|deployment).*?(Docker|Kubernetes)",
+          "fullstack.*?(project|setup|scaffold)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/src/**/*.{tsx,ts}",
+          "**/components/**/*.{tsx,ts}",
+          "**/api/**/*",
+          "**/routes/**/*",
+          "**/prisma/**/*",
+          "**/schema.prisma",
+          "**/backend/**/*",
+          "**/frontend/**/*"
+        ],
+        "contentPatterns": [
+          "React\\.",
+          "useState",
+          "useEffect",
+          "express\\.",
+          "app\\.(get|post|put|delete)",
+          "prisma\\.",
+          "FastAPI",
+          "@app\\.(get|post|put|delete)"
+        ]
+      }
+    },
+    "ci-cd-pipeline-builder": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "CI/CD pipeline builder for GitHub Actions, GitLab CI, and Jenkins",
+      "promptTriggers": {
+        "keywords": [
+          "CI/CD",
+          "CI/CD pipeline",
+          "continuous integration",
+          "continuous deployment",
+          "continuous delivery",
+          "GitHub Actions",
+          "GitLab CI",
+          "Jenkins",
+          "pipeline",
+          "build pipeline",
+          "deployment pipeline",
+          "automation pipeline",
+          "workflow",
+          "GitHub workflow"
+        ],
+        "intentPatterns": [
+          "CI.*?CD.*?(pipeline|setup|build)",
+          "(continuous|CI|CD).*?(integration|deployment|delivery)",
+          "(create|build|setup|configure).*?pipeline",
+          "(GitHub|GitLab|Jenkins).*?(Actions|CI|pipeline)",
+          "automation.*?pipeline",
+          "(build|deploy).*?automation"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/.github/workflows/**/*.{yml,yaml}",
+          "**/.gitlab-ci.{yml,yaml}",
+          "**/Jenkinsfile",
+          "**/.circleci/**/*",
+          "**/azure-pipelines.{yml,yaml}"
+        ],
+        "contentPatterns": [
+          "github.*?actions",
+          "gitlab.*?ci",
+          "jenkins",
+          "pipeline",
+          "on:\\s*(push|pull_request)",
+          "jobs:"
+        ]
+      }
+    },
+    "infrastructure-as-code-generator": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Infrastructure as Code generator for Terraform, CloudFormation, and Pulumi",
+      "promptTriggers": {
+        "keywords": [
+          "infrastructure as code",
+          "IaC",
+          "Terraform",
+          "CloudFormation",
+          "Pulumi",
+          "infrastructure",
+          "cloud infrastructure",
+          "AWS infrastructure",
+          "GCP infrastructure",
+          "Azure infrastructure",
+          "infrastructure provisioning",
+          "infrastructure automation",
+          "Terraform config",
+          "CloudFormation template"
+        ],
+        "intentPatterns": [
+          "infrastructure.*?(as.*?code|IaC)",
+          "(Terraform|CloudFormation|Pulumi).*?(config|template|setup)",
+          "(create|generate|build).*?(infrastructure|IaC)",
+          "(AWS|GCP|Azure).*?infrastructure",
+          "infrastructure.*?(provision|automation|deploy)",
+          "(cloud|multi.*?cloud).*?infrastructure"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/terraform/**/*",
+          "**/*.tf",
+          "**/*.tfvars",
+          "**/cloudformation/**/*",
+          "**/*template.{yaml,yml,json}",
+          "**/pulumi/**/*",
+          "**/Pulumi.{yaml,yml}"
+        ],
+        "contentPatterns": [
+          "terraform",
+          "resource\\s+\"aws_",
+          "resource\\s+\"google_",
+          "resource\\s+\"azurerm_",
+          "AWSTemplateFormatVersion",
+          "pulumi"
+        ]
+      }
+    },
+    "ansible-playbook-creator": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Ansible playbook creator for configuration management and server automation",
+      "promptTriggers": {
+        "keywords": [
+          "Ansible",
+          "ansible playbook",
+          "playbook",
+          "configuration management",
+          "server configuration",
+          "server automation",
+          "infrastructure automation",
+          "provisioning",
+          "ansible role",
+          "ansible task",
+          "inventory",
+          "ansible vault"
+        ],
+        "intentPatterns": [
+          "Ansible.*?(playbook|role|task|setup)",
+          "(create|generate|write).*?(playbook|ansible)",
+          "configuration.*?management",
+          "(server|infrastructure).*?(automation|provisioning)",
+          "(deploy|provision).*?(with|using).*?ansible"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/ansible/**/*",
+          "**/playbooks/**/*",
+          "**/*playbook*.{yml,yaml}",
+          "**/roles/**/*",
+          "**/inventory/**/*",
+          "**/ansible.cfg"
+        ],
+        "contentPatterns": [
+          "ansible",
+          "hosts:",
+          "tasks:",
+          "roles:",
+          "playbook",
+          "ansible_"
+        ]
+      }
+    },
+    "algorithmic-art": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration",
+      "promptTriggers": {
+        "keywords": [
+          "generative art",
+          "algorithmic art",
+          "p5.js",
+          "creative coding",
+          "flow field",
+          "particle system",
+          "noise art",
+          "procedural art",
+          "computational art",
+          "seeded randomness",
+          "interactive art",
+          "art blocks",
+          "generative design",
+          "parametric art",
+          "code art"
+        ],
+        "intentPatterns": [
+          "(create|make|generate).*?(generative|algorithmic|procedural).*?art",
+          "(p5\\.js|processing).*?art",
+          "(flow.*?field|particle.*?system)",
+          "(create|build).*?art.*?(code|algorithm)",
+          "generative.*?(design|visual|graphic)",
+          "(noise|perlin).*?art",
+          "interactive.*?art.*?parameter"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*art*.{js,html}",
+          "**/p5/**/*",
+          "**/generative/**/*",
+          "**/*sketch*.js"
+        ],
+        "contentPatterns": [
+          "p5\\.js",
+          "createCanvas",
+          "draw\\(",
+          "noise\\(",
+          "randomSeed",
+          "particle"
+        ]
+      }
+    },
+    "artifacts-builder": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using React, Tailwind CSS, shadcn/ui",
+      "promptTriggers": {
+        "keywords": [
+          "complex artifact",
+          "React artifact",
+          "shadcn/ui",
+          "multi-component artifact",
+          "artifact builder",
+          "Tailwind artifact",
+          "interactive artifact",
+          "stateful artifact",
+          "artifact with routing",
+          "bundled artifact",
+          "claude.ai artifact",
+          "single-file artifact",
+          "self-contained app"
+        ],
+        "intentPatterns": [
+          "(create|build|make).*?complex.*?artifact",
+          "artifact.*?(React|shadcn|Tailwind)",
+          "(multi.*?component|elaborate).*?artifact",
+          "artifact.*?(state|routing|navigation)",
+          "(bundle|package).*?artifact",
+          "self.*?contained.*?(app|artifact)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/artifacts/**/*",
+          "**/bundle.html",
+          "**/*artifact*.{tsx,ts,jsx,js}"
+        ],
+        "contentPatterns": [
+          "shadcn",
+          "@/components",
+          "Tailwind",
+          "artifact"
+        ]
+      }
+    },
+    "brand-guidelines": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Applies Anthropic's official brand colors and typography to artifacts",
+      "promptTriggers": {
+        "keywords": [
+          "brand guidelines",
+          "brand colors",
+          "Anthropic brand",
+          "corporate identity",
+          "visual identity",
+          "brand styling",
+          "company colors",
+          "typography",
+          "Poppins",
+          "Lora",
+          "visual formatting",
+          "design standards",
+          "brand assets"
+        ],
+        "intentPatterns": [
+          "(apply|use).*?brand.*?(color|guideline|style)",
+          "Anthropic.*?(brand|color|style|typography)",
+          "(corporate|company).*?(identity|brand|style)",
+          "visual.*?(identity|formatting|design).*?standard",
+          "(Poppins|Lora).*?font"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/brand/**/*",
+          "**/*brand*.{css,scss}"
+        ],
+        "contentPatterns": [
+          "Poppins",
+          "Lora",
+          "#141413",
+          "#faf9f5",
+          "#d97757"
+        ]
+      }
+    },
+    "canvas-design": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Create beautiful visual art in .png and .pdf documents using design philosophy",
+      "promptTriggers": {
+        "keywords": [
+          "create poster",
+          "design poster",
+          "visual art",
+          "graphic design",
+          "poster design",
+          "static design",
+          "visual design",
+          "design philosophy",
+          "aesthetic movement",
+          "create design",
+          "art piece",
+          "visual composition"
+        ],
+        "intentPatterns": [
+          "(create|make|design).*?(poster|art|graphic)",
+          "(visual|graphic).*?design",
+          "design.*?(philosophy|aesthetic|movement)",
+          "(create|make).*?(visual|static).*?(piece|design)",
+          "(poster|flyer|banner).*?design"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*poster*.{pdf,png}",
+          "**/*design*.{pdf,png}",
+          "**/designs/**/*"
+        ],
+        "contentPatterns": []
+      }
+    },
+    "internal-comms": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Write internal communications - status reports, leadership updates, 3P updates, newsletters, FAQs, incident reports",
+      "promptTriggers": {
+        "keywords": [
+          "internal communication",
+          "status report",
+          "3P update",
+          "company newsletter",
+          "team update",
+          "leadership update",
+          "project update",
+          "incident report",
+          "FAQ",
+          "weekly update",
+          "progress report",
+          "internal comms",
+          "company comms"
+        ],
+        "intentPatterns": [
+          "(write|create|draft).*?(status|progress|update).*?report",
+          "(3P|progress.*?plan.*?problem).*?update",
+          "(company|team|internal).*?(newsletter|communication|update)",
+          "(leadership|executive).*?update",
+          "(incident|postmortem).*?report",
+          "(FAQ|question.*?answer)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/comms/**/*",
+          "**/*update*.md",
+          "**/*report*.md",
+          "**/newsletters/**/*"
+        ],
+        "contentPatterns": [
+          "status report",
+          "3P update",
+          "newsletter"
+        ]
+      }
+    },
+    "mcp-builder": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Guide for creating high-quality MCP (Model Context Protocol) servers in Python (FastMCP) or Node/TypeScript",
+      "promptTriggers": {
+        "keywords": [
+          "MCP server",
+          "Model Context Protocol",
+          "MCP integration",
+          "create MCP",
+          "build MCP",
+          "MCP tool",
+          "FastMCP",
+          "MCP SDK",
+          "external service integration",
+          "API integration MCP",
+          "LLM tool",
+          "context protocol"
+        ],
+        "intentPatterns": [
+          "(create|build|develop).*?MCP.*?server",
+          "MCP.*?(integration|tool|service)",
+          "(Model.*?Context.*?Protocol|FastMCP)",
+          "integrate.*?(API|service).*?MCP",
+          "(build|create).*?tool.*?(LLM|agent)",
+          "external.*?service.*?integration"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/mcp/**/*",
+          "**/*mcp*.{py,ts,js}",
+          "**/fastmcp/**/*"
+        ],
+        "contentPatterns": [
+          "mcp",
+          "FastMCP",
+          "@mcp.tool",
+          "server.registerTool",
+          "Model Context Protocol"
+        ]
+      }
+    },
+    "skill-creator": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Guide for creating skills that extend Claude's capabilities with specialized knowledge, workflows, or tool integrations",
+      "promptTriggers": {
+        "keywords": [
+          "create skill",
+          "build skill",
+          "new skill",
+          "skill development",
+          "SKILL.md",
+          "skill frontmatter",
+          "skill resources",
+          "custom skill",
+          "skill workflow",
+          "extend Claude",
+          "skill creator"
+        ],
+        "intentPatterns": [
+          "(create|build|develop|make).*?skill",
+          "skill.*?(creation|development|building)",
+          "SKILL\\.md",
+          "(extend|enhance).*?Claude.*?capabilit",
+          "custom.*?skill",
+          "(new|another).*?skill"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/SKILL.md",
+          "**/skills/**/*"
+        ],
+        "contentPatterns": [
+          "name:",
+          "description:",
+          "---"
+        ]
+      }
+    },
+    "slack-gif-creator": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Toolkit for creating animated GIFs optimized for Slack with size constraints and animation primitives",
+      "promptTriggers": {
+        "keywords": [
+          "Slack GIF",
+          "Slack emoji",
+          "animated GIF",
+          "GIF for Slack",
+          "emoji animation",
+          "custom Slack emoji",
+          "Slack animation",
+          "64KB GIF",
+          "message GIF",
+          "emoji GIF"
+        ],
+        "intentPatterns": [
+          "(create|make|generate).*?GIF.*?Slack",
+          "Slack.*?(emoji|GIF|animation)",
+          "(animated|custom).*?emoji.*?Slack",
+          "GIF.*?(emoji|animation).*?Slack",
+          "(create|make).*?animation.*?Slack"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*slack*.gif",
+          "**/*emoji*.gif",
+          "**/slack-gifs/**/*"
+        ],
+        "contentPatterns": []
+      }
+    },
+    "theme-factory": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Toolkit for styling artifacts with themes - 10 pre-set themes with colors/fonts",
+      "promptTriggers": {
+        "keywords": [
+          "apply theme",
+          "style artifact",
+          "theme factory",
+          "color palette",
+          "font pairing",
+          "theme selection",
+          "artifact styling",
+          "presentation theme",
+          "design theme",
+          "visual theme",
+          "Ocean Depths",
+          "Sunset Boulevard",
+          "Modern Minimalist"
+        ],
+        "intentPatterns": [
+          "(apply|use).*?theme",
+          "theme.*?(artifact|presentation|slide)",
+          "(style|design).*?artifact.*?theme",
+          "(color.*?palette|font.*?pairing)",
+          "theme.*?(selection|choice|factory)",
+          "(choose|select).*?theme"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/themes/**/*",
+          "**/*theme*.{md,json}"
+        ],
+        "contentPatterns": [
+          "theme",
+          "palette",
+          "color.*?scheme"
+        ]
+      }
+    },
+    "webapp-testing": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Toolkit for testing web applications using Playwright - frontend verification, screenshots, browser logs",
+      "promptTriggers": {
+        "keywords": [
+          "test webapp",
+          "Playwright",
+          "browser test",
+          "UI test",
+          "frontend test",
+          "web app automation",
+          "browser automation",
+          "screenshot webapp",
+          "test UI",
+          "verify frontend",
+          "debug UI",
+          "browser logs"
+        ],
+        "intentPatterns": [
+          "(test|verify|check).*?(webapp|web.*?app|UI|frontend)",
+          "Playwright.*?(test|automation|script)",
+          "(browser|UI).*?(test|automation|verification)",
+          "(screenshot|capture).*?(browser|webapp)",
+          "(debug|inspect).*?UI",
+          "browser.*?log"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/playwright/**/*",
+          "**/*playwright*.{py,js,ts}",
+          "**/e2e/**/*",
+          "**/tests/**/ui/**/*"
+        ],
+        "contentPatterns": [
+          "playwright",
+          "sync_playwright",
+          "browser\\.launch",
+          "page\\.goto",
+          "page\\.screenshot"
+        ]
+      }
+    },
+    "pdf": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Comprehensive PDF manipulation - extract text/tables, create new PDFs, merge/split, handle forms, OCR",
+      "promptTriggers": {
+        "keywords": [
+          "PDF",
+          "PDF manipulation",
+          "extract PDF",
+          "merge PDF",
+          "split PDF",
+          "create PDF",
+          "PDF form",
+          "fill PDF",
+          "PDF table extraction",
+          "PDF text extraction",
+          "pypdf",
+          "pdfplumber",
+          "reportlab",
+          "PDF watermark",
+          "PDF metadata",
+          "PDF password",
+          "OCR PDF",
+          "scanned PDF"
+        ],
+        "intentPatterns": [
+          "(extract|read|parse).*?PDF",
+          "(merge|combine|split).*?PDF",
+          "(create|generate|make).*?PDF",
+          "PDF.*?(form|table|text|extract)",
+          "(fill|populate).*?PDF.*?form",
+          "(watermark|protect|encrypt).*?PDF",
+          "OCR.*?PDF"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*.pdf",
+          "**/pdf/**/*",
+          "**/*pdf*.{py,js,ts}"
+        ],
+        "contentPatterns": [
+          "pypdf",
+          "pdfplumber",
+          "reportlab",
+          "PdfReader",
+          "PdfWriter",
+          "extract_text",
+          "extract_tables"
+        ]
+      }
+    },
+    "xlsx": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Comprehensive spreadsheet creation/editing with formulas, formatting, data analysis, visualization, financial models",
+      "promptTriggers": {
+        "keywords": [
+          "Excel",
+          "spreadsheet",
+          "XLSX",
+          "financial model",
+          "Excel formula",
+          "pivot table",
+          "data analysis",
+          "openpyxl",
+          "pandas Excel",
+          "Excel formatting",
+          "Excel chart",
+          "DCF model",
+          "LBO model",
+          "financial modeling",
+          "Excel workbook",
+          "CSV to Excel",
+          "recalculate formulas"
+        ],
+        "intentPatterns": [
+          "(create|build|generate).*?(spreadsheet|Excel|XLSX)",
+          "(financial|DCF|LBO).*?model",
+          "Excel.*?(formula|chart|format|pivot)",
+          "(spreadsheet|Excel).*?(analysis|data|calculation)",
+          "(read|parse|analyze).*?(spreadsheet|Excel|XLSX)",
+          "(openpyxl|pandas).*?Excel",
+          "recalculate.*?formula"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*.xlsx",
+          "**/*.xlsm",
+          "**/*.xls",
+          "**/excel/**/*",
+          "**/spreadsheet/**/*",
+          "**/*excel*.{py,js,ts}"
+        ],
+        "contentPatterns": [
+          "openpyxl",
+          "pd\\.read_excel",
+          "Workbook",
+          "worksheet",
+          "to_excel",
+          "xlsxwriter"
+        ]
+      }
+    },
+    "docx": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Word document creation/editing with tracked changes, comments, formatting, redlining for legal/professional docs",
+      "promptTriggers": {
+        "keywords": [
+          "Word document",
+          "DOCX",
+          "document editing",
+          "tracked changes",
+          "redlining",
+          "Word comments",
+          "document review",
+          "OOXML",
+          "pandoc",
+          "docx-js",
+          "Word formatting",
+          "legal document",
+          "contract review",
+          "document markup",
+          "accept changes",
+          "reject changes"
+        ],
+        "intentPatterns": [
+          "(create|edit|modify).*?(Word|DOCX|document)",
+          "(tracked.*?change|redline|redlining)",
+          "(review|markup|comment).*?document",
+          "Word.*?(format|style|template)",
+          "(legal|contract).*?document",
+          "(accept|reject).*?change",
+          "OOXML.*?(edit|parse)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*.docx",
+          "**/word/**/*",
+          "**/documents/**/*",
+          "**/*docx*.{py,js,ts}"
+        ],
+        "contentPatterns": [
+          "docx",
+          "python-docx",
+          "Document\\(",
+          "add_paragraph",
+          "tracked.*?change",
+          "w:ins",
+          "w:del"
+        ]
+      }
+    },
+    "pptx": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "PowerPoint presentation creation/editing - slides, templates, layouts, speaker notes",
+      "promptTriggers": {
+        "keywords": [
+          "PowerPoint",
+          "presentation",
+          "PPTX",
+          "slides",
+          "slide deck",
+          "presentation template",
+          "pptxgenjs",
+          "html2pptx",
+          "create slides",
+          "edit slides",
+          "speaker notes",
+          "slide layout",
+          "presentation design",
+          "pitch deck",
+          "slide master"
+        ],
+        "intentPatterns": [
+          "(create|build|generate).*?(PowerPoint|presentation|PPTX|slide)",
+          "(edit|modify|update).*?(presentation|slide|deck)",
+          "presentation.*?(template|design|layout)",
+          "(slide.*?deck|pitch.*?deck)",
+          "PowerPoint.*?(chart|table|format)",
+          "(speaker.*?note|slide.*?comment)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*.pptx",
+          "**/presentations/**/*",
+          "**/slides/**/*",
+          "**/*pptx*.{py,js,ts}"
+        ],
+        "contentPatterns": [
+          "pptxgenjs",
+          "html2pptx",
+          "python-pptx",
+          "Presentation\\(",
+          "add_slide",
+          "slide_layout"
+        ]
+      }
+    },
+    "aws-cost-operations": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "AWS cost optimization, monitoring, billing analysis, Cost Explorer, CloudWatch, CloudTrail, Well-Architected Framework",
+      "promptTriggers": {
+        "keywords": [
+          "AWS cost",
+          "cost optimization",
+          "cost estimation",
+          "AWS billing",
+          "AWS budget",
+          "AWS pricing",
+          "cost analysis",
+          "Cost Explorer",
+          "CloudWatch",
+          "CloudWatch alarms",
+          "CloudWatch logs",
+          "CloudWatch metrics",
+          "CloudTrail",
+          "CloudTrail logs",
+          "Well-Architected",
+          "security assessment",
+          "operational excellence",
+          "observability",
+          "monitoring AWS",
+          "AWS Prometheus",
+          "Application Signals",
+          "TCO",
+          "spending analysis",
+          "AWS audit"
+        ],
+        "intentPatterns": [
+          "(AWS|cloud).*?(cost|billing|pricing|budget)",
+          "(optimize|reduce|analyze).*?(AWS.*?)?cost",
+          "(estimate|calculate).*?(cost|pricing|TCO)",
+          "CloudWatch.*?(alarm|metric|log|dashboard)",
+          "(monitor|observability).*?AWS",
+          "CloudTrail.*?(audit|log|activity)",
+          "(Well.*?Architected|security).*?assessment",
+          "(operational|ops).*?excellence",
+          "AWS.*?(spending|budget|bill)",
+          "(track|analyze).*?AWS.*?(usage|cost|spending)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/cloudwatch/**/*",
+          "**/monitoring/**/*",
+          "**/*cloudwatch*.{yml,yaml,json,tf}",
+          "**/*alarm*.{yml,yaml,json,tf}",
+          "**/cost-analysis/**/*",
+          "**/billing/**/*",
+          "**/cloudtrail/**/*",
+          "**/*monitoring*.{yml,yaml,json}"
+        ],
+        "contentPatterns": [
+          "AWS::CloudWatch",
+          "AWS::Logs",
+          "AWS::CloudTrail",
+          "cloudwatch",
+          "MetricAlarm",
+          "LogGroup",
+          "aws_cloudwatch",
+          "cost.*?explorer",
+          "billing"
+        ]
+      }
+    },
+    "aws-cdk-development": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "AWS Cloud Development Kit (CDK) for TypeScript/Python infrastructure as code - stacks, constructs, cdk synth, cdk deploy",
+      "promptTriggers": {
+        "keywords": [
+          "AWS CDK",
+          "CDK stack",
+          "CDK construct",
+          "CDK app",
+          "cdk synth",
+          "cdk deploy",
+          "cdk bootstrap",
+          "CDK TypeScript",
+          "CDK Python",
+          "NodejsFunction",
+          "PythonFunction",
+          "CDK pattern",
+          "CDK best practices",
+          "cdk-nag",
+          "CDK validation",
+          "CDK snapshot test",
+          "infrastructure as code CDK"
+        ],
+        "intentPatterns": [
+          "(create|build|deploy).*?CDK.*?(stack|construct|app)",
+          "CDK.*?(synth|deploy|bootstrap|diff)",
+          "(AWS.*?)?CDK.*?(TypeScript|Python|Java)",
+          "cdk.*?(nag|validation|pattern)",
+          "(NodejsFunction|PythonFunction)",
+          "CDK.*?(best.*?practice|pattern)",
+          "infrastructure.*?CDK"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/cdk.json",
+          "**/cdk.out/**/*",
+          "**/*stack*.ts",
+          "**/*construct*.ts",
+          "**/lib/**/*-stack.ts",
+          "**/bin/**/*.ts"
+        ],
+        "contentPatterns": [
+          "aws-cdk",
+          "Stack\\(",
+          "Construct\\(",
+          "NodejsFunction",
+          "PythonFunction",
+          "cdk\\.App",
+          "cdk\\.Stack"
+        ]
+      }
+    },
+    "aws-serverless-eda": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "AWS serverless and event-driven architecture - Lambda, API Gateway, DynamoDB, Step Functions, EventBridge, SQS, SNS",
+      "promptTriggers": {
+        "keywords": [
+          "AWS Lambda",
+          "Lambda function",
+          "API Gateway",
+          "REST API",
+          "HTTP API",
+          "DynamoDB",
+          "Step Functions",
+          "state machine",
+          "EventBridge",
+          "event bus",
+          "SQS",
+          "SNS",
+          "message queue",
+          "pub/sub",
+          "serverless",
+          "event-driven",
+          "async processing",
+          "saga pattern",
+          "fan-out",
+          "dead letter queue",
+          "DLQ",
+          "idempotent"
+        ],
+        "intentPatterns": [
+          "(create|build|deploy).*?Lambda",
+          "(serverless|event.*?driven).*?(architecture|application)",
+          "API.*?Gateway.*?(REST|HTTP)",
+          "(Step.*?Functions|state.*?machine)",
+          "(EventBridge|event.*?bus)",
+          "(SQS|SNS|message.*?queue)",
+          "(pub.*?sub|fan.*?out)",
+          "saga.*?pattern",
+          "(async|asynchronous).*?processing",
+          "(DLQ|dead.*?letter.*?queue)",
+          "Lambda.*?(function|handler|trigger)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/lambda/**/*",
+          "**/functions/**/*",
+          "**/handlers/**/*",
+          "**/*handler*.{ts,py,js}",
+          "**/step-functions/**/*",
+          "**/state-machine/**/*",
+          "**/*eventbridge*.{yml,yaml,json}",
+          "**/sam*.{yml,yaml}"
+        ],
+        "contentPatterns": [
+          "lambda",
+          "APIGatewayEvent",
+          "SQSEvent",
+          "SNSEvent",
+          "DynamoDBStreamEvent",
+          "aws_lambda",
+          "aws_stepfunctions",
+          "aws_events",
+          "aws_sqs",
+          "aws_sns"
+        ]
+      }
+    },
+    "backend-development": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Production-ready backend development with Node.js, Python, Go, Rust, NestJS, FastAPI, Django, PostgreSQL, MongoDB, REST/GraphQL/gRPC APIs, OAuth 2.1, JWT, OWASP security",
+      "promptTriggers": {
+        "keywords": [
+          "backend development",
+          "API development",
+          "REST API",
+          "GraphQL API",
+          "gRPC",
+          "Node.js backend",
+          "Python backend",
+          "Go backend",
+          "Rust backend",
+          "NestJS",
+          "FastAPI",
+          "Django",
+          "Express",
+          "PostgreSQL",
+          "MongoDB",
+          "Redis",
+          "OAuth",
+          "JWT",
+          "authentication",
+          "authorization",
+          "OWASP",
+          "microservices",
+          "database design",
+          "API security",
+          "rate limiting",
+          "caching strategy"
+        ],
+        "intentPatterns": [
+          "(build|create|design).*?backend",
+          "(REST|GraphQL|gRPC).*?(API|endpoint)",
+          "(NestJS|FastAPI|Django|Express).*?(app|service)",
+          "(authentication|authorization).*?(setup|implement)",
+          "(OAuth|JWT).*?(implement|integrate)",
+          "(PostgreSQL|MongoDB|Redis).*?(setup|design|query)",
+          "microservices.*?(architecture|pattern)",
+          "database.*?(design|schema|model)",
+          "API.*?(security|design|versioning)",
+          "backend.*?(architecture|performance|testing)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/backend/**/*",
+          "**/server/**/*",
+          "**/api/**/*",
+          "**/routes/**/*",
+          "**/controllers/**/*",
+          "**/services/**/*",
+          "**/models/**/*",
+          "**/middleware/**/*"
+        ],
+        "contentPatterns": [
+          "express\\(",
+          "FastAPI\\(",
+          "NestFactory",
+          "@Controller",
+          "@Injectable",
+          "app\\.(get|post|put|delete)",
+          "router\\."
+        ]
+      }
+    },
+    "chrome-devtools": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Browser automation and debugging with Puppeteer - screenshots, performance analysis, network monitoring, web scraping, form automation, JavaScript debugging",
+      "promptTriggers": {
+        "keywords": [
+          "Puppeteer",
+          "browser automation",
+          "Chrome DevTools",
+          "headless browser",
+          "web scraping",
+          "screenshot automation",
+          "form automation",
+          "JavaScript debugging",
+          "network monitoring",
+          "performance analysis",
+          "page automation",
+          "DOM manipulation",
+          "browser scripting",
+          "CDP",
+          "Chrome DevTools Protocol",
+          "debugging UI",
+          "UI bug",
+          "frontend bug",
+          "layout bug",
+          "CSS bug",
+          "JavaScript error",
+          "JS error",
+          "console error",
+          "runtime error",
+          "element inspector",
+          "DOM inspector",
+          "CSS issue",
+          "layout problem",
+          "styling bug",
+          "frontend troubleshooting",
+          "investigate UI",
+          "trace network",
+          "browser console",
+          "devtools"
+        ],
+        "intentPatterns": [
+          "(automate|script).*?browser",
+          "Puppeteer.*?(script|automation|test)",
+          "(take|capture).*?screenshot",
+          "(web|page).*?scraping",
+          "(fill|submit).*?form.*?automat",
+          "browser.*?(debug|inspect|profile)",
+          "(network|request).*?(monitor|intercept)",
+          "performance.*?(analysis|profile).*?browser",
+          "headless.*?(browser|chrome)",
+          "debugging.*?(UI|interface|frontend)",
+          "(UI|frontend).*(bug|issue|problem)",
+          "(JavaScript|JS).*(error|exception|throw)",
+          "console.(error|warn|log)",
+          "inspect.*?element",
+          "(CSS|style|layout).*(issue|problem|bug)",
+          "frontend.*?(troubleshoot|diagnose|investigate)",
+          "trace.*(network|request)",
+          "verify.*?(UI|frontend|interface)",
+          "check.*?(browser|console|devtools)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/puppeteer/**/*",
+          "**/*puppeteer*.{js,ts}",
+          "**/scraper/**/*",
+          "**/automation/**/*"
+        ],
+        "contentPatterns": [
+          "puppeteer",
+          "browser\\.newPage",
+          "page\\.goto",
+          "page\\.click",
+          "page\\.type",
+          "page\\.evaluate",
+          "page\\.screenshot"
+        ]
+      }
+    },
+    "code-review": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Code review practices - receiving feedback with technical rigor, requesting reviews via subagent, verification gates requiring evidence before completion claims",
+      "promptTriggers": {
+        "keywords": [
+          "code review",
+          "review feedback",
+          "pull request review",
+          "PR feedback",
+          "review comments",
+          "code review request",
+          "request review",
+          "verification gate",
+          "completion verification",
+          "evidence-based",
+          "task complete",
+          "feature complete",
+          "tests pass",
+          "build succeeds"
+        ],
+        "intentPatterns": [
+          "(receive|respond|address).*?review.*?(feedback|comment)",
+          "(request|need).*?(code)?.*?review",
+          "(verify|confirm).*?(complete|done|finished)",
+          "before.*?(commit|push|merge)",
+          "(tests|build).*?(pass|succeed|complete)",
+          "evidence.*?(complete|done)",
+          "verification.*?(gate|check)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/.github/CODEOWNERS",
+          "**/CONTRIBUTING.md"
+        ],
+        "contentPatterns": [
+          "code.*?review",
+          "pull.*?request"
+        ]
+      }
+    },
+    "databases": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "MongoDB (document database, aggregation pipelines, Atlas) and PostgreSQL (SQL, psql, pgAdmin) - schema design, queries, indexes, migrations, replication, sharding, backups",
+      "promptTriggers": {
+        "keywords": [
+          "MongoDB",
+          "PostgreSQL",
+          "Postgres",
+          "database design",
+          "schema design",
+          "SQL query",
+          "aggregation pipeline",
+          "database index",
+          "database migration",
+          "replication",
+          "sharding",
+          "database backup",
+          "psql",
+          "pgAdmin",
+          "MongoDB Atlas",
+          "BSON",
+          "document database",
+          "relational database"
+        ],
+        "intentPatterns": [
+          "(design|create|optimize).*?(database|schema)",
+          "(MongoDB|PostgreSQL|Postgres).*?(query|setup|config)",
+          "aggregation.*?pipeline",
+          "database.*?(index|migration|backup)",
+          "(replication|sharding).*?setup",
+          "SQL.*?(query|optimization)",
+          "(document|relational).*?database",
+          "database.*?(performance|tuning)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/migrations/**/*",
+          "**/database/**/*",
+          "**/db/**/*",
+          "**/*.sql",
+          "**/prisma/**/*",
+          "**/schema.prisma"
+        ],
+        "contentPatterns": [
+          "mongoose",
+          "MongoClient",
+          "pg\\.",
+          "Pool\\(",
+          "CREATE TABLE",
+          "SELECT.*?FROM",
+          "INSERT INTO"
+        ]
+      }
+    },
+    "frontend-design": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality, avoiding generic AI aesthetics - bold typography, creative layouts, memorable UI",
+      "promptTriggers": {
+        "keywords": [
+          "frontend design",
+          "UI design",
+          "interface design",
+          "visual design",
+          "design quality",
+          "distinctive UI",
+          "creative frontend",
+          "beautiful interface",
+          "memorable design",
+          "typography design",
+          "color scheme",
+          "layout design",
+          "responsive design",
+          "landing page design",
+          "website design"
+        ],
+        "intentPatterns": [
+          "(create|build|design).*?(distinctive|beautiful|creative).*?(UI|interface|frontend)",
+          "(frontend|UI|interface).*?design",
+          "(visual|aesthetic).*?(design|quality)",
+          "(typography|color|layout).*?design",
+          "(landing.*?page|website).*?design",
+          "avoid.*?(generic|AI.*?slop)",
+          "memorable.*?(design|interface|UI)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/components/**/*.{tsx,jsx}",
+          "**/pages/**/*.{tsx,jsx}",
+          "**/styles/**/*",
+          "**/*.css",
+          "**/*.scss"
+        ],
+        "contentPatterns": [
+          "styled-components",
+          "emotion",
+          "tailwindcss",
+          "@apply",
+          "className="
+        ]
+      }
+    },
+    "frontend-development": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "React/TypeScript development with Suspense, lazy loading, useSuspenseQuery, MUI v7, TanStack Router, performance optimization, modern patterns",
+      "promptTriggers": {
+        "keywords": [
+          "React component",
+          "React hooks",
+          "TypeScript React",
+          "Suspense",
+          "lazy loading",
+          "useSuspenseQuery",
+          "TanStack Query",
+          "TanStack Router",
+          "MUI",
+          "Material UI",
+          "React performance",
+          "useCallback",
+          "useMemo",
+          "React.lazy",
+          "code splitting",
+          "frontend architecture"
+        ],
+        "intentPatterns": [
+          "(create|build).*?React.*?(component|page|feature)",
+          "React.*?(Suspense|lazy.*?loading|performance)",
+          "(useSuspenseQuery|TanStack.*?Query)",
+          "TanStack.*?Router",
+          "(MUI|Material.*?UI).*?(style|component)",
+          "frontend.*?(architecture|pattern|optimization)",
+          "React.*?(hook|state|effect)",
+          "TypeScript.*?React"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/src/**/*.{tsx,ts}",
+          "**/components/**/*.{tsx,ts}",
+          "**/features/**/*",
+          "**/hooks/**/*",
+          "**/pages/**/*.{tsx,ts}"
+        ],
+        "contentPatterns": [
+          "React\\.FC",
+          "useState",
+          "useEffect",
+          "useSuspenseQuery",
+          "React\\.lazy",
+          "Suspense",
+          "@tanstack/react-query"
+        ]
+      }
+    },
+    "media-processing": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "FFmpeg (video/audio encoding, streaming, filters, hardware acceleration) and ImageMagick (image manipulation, batch processing, effects, composition)",
+      "promptTriggers": {
+        "keywords": [
+          "FFmpeg",
+          "ImageMagick",
+          "video encoding",
+          "audio encoding",
+          "video conversion",
+          "image conversion",
+          "H.264",
+          "H.265",
+          "VP9",
+          "AV1",
+          "HLS",
+          "DASH",
+          "streaming",
+          "thumbnail generation",
+          "image resize",
+          "image crop",
+          "batch processing",
+          "video filter",
+          "audio extraction",
+          "media optimization"
+        ],
+        "intentPatterns": [
+          "(convert|encode|transcode).*?(video|audio)",
+          "(FFmpeg|ImageMagick).*?(command|script)",
+          "(resize|crop|scale).*?image",
+          "(extract|convert).*?audio",
+          "(HLS|DASH).*?streaming",
+          "(thumbnail|preview).*?generat",
+          "batch.*?(process|convert).*?(image|video)",
+          "(H\\.264|H\\.265|VP9|AV1).*?encod",
+          "media.*?(optimiz|compress)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/media/**/*",
+          "**/video/**/*",
+          "**/audio/**/*",
+          "**/images/**/*",
+          "**/*.{mp4,mkv,webm,mp3,wav,png,jpg,gif}"
+        ],
+        "contentPatterns": [
+          "ffmpeg",
+          "convert",
+          "mogrify",
+          "magick",
+          "-codec",
+          "-vf",
+          "-af"
+        ]
+      }
+    },
+    "ui-styling": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "shadcn/ui components (Radix UI + Tailwind), Tailwind CSS utility-first styling, accessible UI components, dark mode, responsive layouts, design systems",
+      "promptTriggers": {
+        "keywords": [
+          "shadcn/ui",
+          "shadcn",
+          "Radix UI",
+          "Tailwind CSS",
+          "Tailwind",
+          "utility-first CSS",
+          "accessible components",
+          "dark mode",
+          "responsive layout",
+          "design system",
+          "UI components",
+          "dialog component",
+          "dropdown component",
+          "form component",
+          "data table",
+          "command palette"
+        ],
+        "intentPatterns": [
+          "(shadcn|Radix).*?(component|UI)",
+          "Tailwind.*?(CSS|style|class)",
+          "(accessible|a11y).*?component",
+          "dark.*?mode.*?(implement|toggle)",
+          "responsive.*?(layout|design)",
+          "design.*?system",
+          "UI.*?(component|library)",
+          "(dialog|dropdown|form|table).*?component"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/components/ui/**/*",
+          "**/tailwind.config.{js,ts}",
+          "**/components.json"
+        ],
+        "contentPatterns": [
+          "@radix-ui",
+          "shadcn",
+          "className=",
+          "tailwind",
+          "cn\\("
+        ]
+      }
+    },
+    "web-frameworks": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Next.js (App Router, Server Components, RSC, PPR, SSR, SSG, ISR), Turborepo (monorepo, task pipelines, remote caching), RemixIcon (3100+ SVG icons)",
+      "promptTriggers": {
+        "keywords": [
+          "Next.js",
+          "App Router",
+          "Server Components",
+          "RSC",
+          "SSR",
+          "SSG",
+          "ISR",
+          "PPR",
+          "Turborepo",
+          "monorepo",
+          "task pipeline",
+          "remote caching",
+          "RemixIcon",
+          "full-stack Next.js",
+          "Next.js API routes",
+          "Next.js middleware"
+        ],
+        "intentPatterns": [
+          "Next\\.js.*?(app|project|route)",
+          "(App.*?Router|Server.*?Component)",
+          "(SSR|SSG|ISR|PPR)",
+          "Turborepo.*?(setup|configure|monorepo)",
+          "monorepo.*?(setup|structure)",
+          "remote.*?caching",
+          "task.*?pipeline",
+          "Next\\.js.*?(API|middleware|server)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/next.config.{js,mjs,ts}",
+          "**/app/**/*.{tsx,ts}",
+          "**/turbo.json",
+          "**/packages/**/*",
+          "**/apps/**/*"
+        ],
+        "contentPatterns": [
+          "next/",
+          "use server",
+          "use client",
+          "turbo",
+          "generateStaticParams",
+          "getServerSideProps"
+        ]
+      }
+    },
+    "debugging": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Systematic debugging framework - root cause investigation before fixes, defense-in-depth validation, verification before completion. Never jump to solutions.",
+      "promptTriggers": {
+        "keywords": [
+          "debug",
+          "debugging",
+          "bug fix",
+          "error",
+          "issue",
+          "root cause",
+          "symptom fix",
+          "test failure",
+          "unexpected behavior",
+          "investigation",
+          "defense in depth",
+          "validation layers",
+          "verification"
+        ],
+        "intentPatterns": [
+          "(debug|investigate|fix).*?(bug|error|issue)",
+          "root.*?cause.*?(analysis|investigation)",
+          "(why|what.*?caused).*?(fail|error|break)",
+          "test.*?(fail|error)",
+          "unexpected.*?(behavior|result|output)",
+          "(verify|validate).*?before.*?(fix|commit)",
+          "defense.*?in.*?depth"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/tests/**/*",
+          "**/*.test.{ts,js,py}",
+          "**/*.spec.{ts,js,py}"
+        ],
+        "contentPatterns": [
+          "console\\.log",
+          "debugger",
+          "breakpoint",
+          "assert"
+        ]
+      }
+    },
+    "problem-solving": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Problem-solving techniques - collision-zone thinking, meta-pattern recognition, simplification cascades, scale game testing, inversion exercise",
+      "promptTriggers": {
+        "keywords": [
+          "stuck",
+          "problem solving",
+          "breakthrough",
+          "innovation",
+          "pattern recognition",
+          "simplification",
+          "scale testing",
+          "inversion",
+          "collision zone",
+          "meta pattern",
+          "creative solution",
+          "unconventional approach",
+          "think differently"
+        ],
+        "intentPatterns": [
+          "(stuck|blocked).*?(problem|solution)",
+          "(breakthrough|innovative).*?(approach|solution)",
+          "pattern.*?(recognition|finding)",
+          "simplif.*?(cascade|approach)",
+          "scale.*?(test|game)",
+          "inversion.*?exercise",
+          "(creative|unconventional).*?(solution|approach)",
+          "think.*?different"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "pr-review-toolkit": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Comprehensive PR review toolkit with 6 specialized agents - comment-analyzer, pr-test-analyzer, silent-failure-hunter, type-design-analyzer, code-reviewer, and code-simplifier",
+      "promptTriggers": {
+        "keywords": [
+          "PR review",
+          "pull request review",
+          "review toolkit",
+          "comment-analyzer",
+          "pr-test-analyzer",
+          "silent-failure-hunter",
+          "type-design-analyzer",
+          "code-simplifier",
+          "test coverage review",
+          "silent failures",
+          "type design",
+          "comment accuracy",
+          "simplify code",
+          "/review-pr"
+        ],
+        "intentPatterns": [
+          "(review|analyze).*?(PR|pull.*?request)",
+          "(comment|test|type).*?analyz",
+          "silent.*?failure",
+          "type.*?design.*?(review|analyze)",
+          "simplif.*?code",
+          "(check|verify).*?test.*?coverage",
+          "comment.*?accura",
+          "code.*?simplif"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/.github/PULL_REQUEST_TEMPLATE.md"
+        ],
+        "contentPatterns": []
+      }
+    },
+    "feature-dev": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Structured 7-phase feature development workflow with specialized agents - discovery, codebase exploration, clarifying questions, architecture design, implementation, quality review, and summary",
+      "promptTriggers": {
+        "keywords": [
+          "/feature-dev",
+          "feature development",
+          "feature workflow",
+          "build feature",
+          "implement feature",
+          "new feature",
+          "code-explorer",
+          "code-architect",
+          "development workflow",
+          "structured development",
+          "7-phase",
+          "architecture design",
+          "feature implementation"
+        ],
+        "intentPatterns": [
+          "/feature-dev",
+          "(build|implement|create|add).*?feature",
+          "feature.*?(development|workflow|implement)",
+          "(structured|guided).*?development",
+          "code.*?(explorer|architect).*?agent",
+          "architecture.*?design.*?feature",
+          "(new|implement).*?feature.*?workflow"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "code-review-plugin": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Automated PR code review using multiple specialized agents with confidence-based scoring - CLAUDE.md compliance, bug detection, and git history analysis",
+      "promptTriggers": {
+        "keywords": [
+          "/code-review",
+          "automated code review",
+          "automated PR review",
+          "multi-agent review",
+          "confidence-based review",
+          "PR audit",
+          "review pull request",
+          "code-review command",
+          "review changes",
+          "CLAUDE.md compliance",
+          "code review agents"
+        ],
+        "intentPatterns": [
+          "/code-review",
+          "(automated|multi.*?agent).*?(code)?.*?review",
+          "review.*?(PR|pull.*?request).*?automat",
+          "CLAUDE\\.md.*?compliance",
+          "confidence.*?(based|score).*?review",
+          "audit.*?(PR|changes|code)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/.github/PULL_REQUEST_TEMPLATE.md"
+        ],
+        "contentPatterns": []
+      }
+    },
+    "cloud-cost-optimizer": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Cloud cost optimization and reporting for AWS, GCP, Azure - identify waste, rightsizing recommendations, reserved instance analysis, and cost allocation",
+      "promptTriggers": {
+        "keywords": [
+          "cloud cost",
+          "cost optimization",
+          "cost optimize",
+          "reduce cloud cost",
+          "cloud spending",
+          "cost report",
+          "cloud bill",
+          "cloud billing",
+          "rightsizing",
+          "reserved instances",
+          "savings plan",
+          "spot instances",
+          "cost allocation",
+          "cloud waste",
+          "unused resources",
+          "/cost-optimize"
+        ],
+        "intentPatterns": [
+          "(optimize|reduce|analyze).*?cloud.*?cost",
+          "cloud.*?(cost|spending|bill)",
+          "(cost|spending).*?(report|analysis|optimization)",
+          "(rightsize|rightsizing).*?(instance|resource)",
+          "(reserved|spot).*?instance",
+          "(unused|idle|waste).*?resource",
+          "savings.*?plan"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/cost/**/*",
+          "**/billing/**/*",
+          "**/*cost*.{json,yaml,yml}",
+          "**/finops/**/*"
+        ],
+        "contentPatterns": [
+          "cost.*?optimization",
+          "cloud.*?cost",
+          "billing",
+          "rightsizing"
+        ]
+      }
+    },
+    "api-documentation-generator": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Generate comprehensive OpenAPI/Swagger documentation from existing APIs with interactive UIs, request/response examples, authentication docs, and multiple export formats",
+      "promptTriggers": {
+        "keywords": [
+          "API documentation",
+          "generate API docs",
+          "OpenAPI",
+          "Swagger",
+          "API spec",
+          "API specification",
+          "document API",
+          "REST API docs",
+          "API reference",
+          "endpoint documentation",
+          "Swagger UI",
+          "API examples",
+          "request response examples",
+          "authentication docs",
+          "apidoc",
+          "/generate-api-docs"
+        ],
+        "intentPatterns": [
+          "(generate|create|build).*?API.*?(doc|documentation|spec)",
+          "(OpenAPI|Swagger).*?(spec|documentation|generate)",
+          "document.*?(API|endpoint|REST)",
+          "API.*?(reference|documentation|examples)",
+          "(request|response).*?example",
+          "authentication.*?document"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/openapi*.{yaml,yml,json}",
+          "**/swagger*.{yaml,yml,json}",
+          "**/api-docs/**/*",
+          "**/docs/api/**/*"
+        ],
+        "contentPatterns": [
+          "openapi:",
+          "swagger:",
+          "paths:",
+          "components:",
+          "schemas:"
+        ]
+      }
+    },
+    "github-operations": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "GitHub repository management using gh CLI - PRs (create, review, merge), issues (create, list, close), Actions workflows (monitor, rerun), and search across repos",
+      "promptTriggers": {
+        "keywords": [
+          "GitHub",
+          "gh CLI",
+          "pull request",
+          "PR",
+          "create PR",
+          "merge PR",
+          "review PR",
+          "GitHub issue",
+          "open issue",
+          "close issue",
+          "GitHub Actions",
+          "workflow run",
+          "CI workflow",
+          "workflow failed",
+          "rerun workflow",
+          "gh pr",
+          "gh issue",
+          "gh run",
+          "gh search",
+          "checkout PR",
+          "list PRs",
+          "list issues"
+        ],
+        "intentPatterns": [
+          "(create|open|merge|review|close).*?(PR|pull.*?request)",
+          "(create|open|close|list|view).*?issue",
+          "(check|view|monitor|rerun).*?(workflow|action|CI)",
+          "gh.*?(pr|issue|run|search)",
+          "(GitHub|gh).*?(Actions|workflow)",
+          "(workflow|CI|build).*?(fail|status|log)",
+          "search.*?(issue|PR|pull.*?request)",
+          "(squash|rebase|merge).*?(commit|PR)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/.github/**/*",
+          "**/.github/workflows/**/*.{yml,yaml}",
+          "**/.github/CODEOWNERS",
+          "**/.github/PULL_REQUEST_TEMPLATE.md",
+          "**/.github/ISSUE_TEMPLATE/**/*"
+        ],
+        "contentPatterns": [
+          "on:\\s*(push|pull_request)",
+          "jobs:",
+          "runs-on:",
+          "uses:\\s*actions/",
+          "github\\.event"
+        ]
+      }
+    },
+    "glab-operations": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "GitLab repository management using glab CLI - MRs (create, review, merge), issues (create, list, close), CI/CD pipelines (monitor, retry, trace), and cross-repo operations",
+      "promptTriggers": {
+        "keywords": [
+          "GitLab",
+          "glab",
+          "glab CLI",
+          "merge request",
+          "MR",
+          "create MR",
+          "merge MR",
+          "review MR",
+          "approve MR",
+          "GitLab issue",
+          "GitLab pipeline",
+          "CI/CD pipeline",
+          "pipeline status",
+          "pipeline failed",
+          "glab mr",
+          "glab issue",
+          "glab ci",
+          "checkout MR",
+          "list MRs",
+          "trace job",
+          "retry job",
+          "ci lint"
+        ],
+        "intentPatterns": [
+          "(create|open|merge|review|approve|close).*?(MR|merge.*?request)",
+          "(create|open|close|list|view).*?(GitLab.*?)?issue",
+          "(check|view|monitor|retry|trace).*?(pipeline|CI|job)",
+          "glab.*?(mr|issue|ci)",
+          "(GitLab|glab).*?(pipeline|CI)",
+          "(pipeline|CI|job).*?(fail|status|log|trace)",
+          "search.*?(issue|MR|merge.*?request)",
+          "(squash|rebase|merge).*?(commit|MR)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/.gitlab-ci.yml",
+          "**/.gitlab-ci.yaml",
+          "**/.gitlab/**/*",
+          "**/gitlab-ci/**/*"
+        ],
+        "contentPatterns": [
+          "stages:",
+          "script:",
+          "image:",
+          "before_script:",
+          "after_script:",
+          "artifacts:",
+          "cache:",
+          "rules:",
+          "only:",
+          "except:"
+        ]
+      }
+    },
+    "gcal": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Google Calendar & Meet skill - Search meetings, get event details, attendees, descriptions, and fetch Google Meet transcripts via Google Calendar API",
+      "promptTriggers": {
+        "keywords": [
+          "Google Calendar",
+          "GCal",
+          "calendar search",
+          "meeting search",
+          "find meeting",
+          "upcoming meeting",
+          "calendar event",
+          "event details",
+          "meeting attendees",
+          "meeting description",
+          "Google Meet",
+          "Meet transcript",
+          "meeting transcript",
+          "calendar lookup",
+          "schedule check",
+          "when is my meeting",
+          "meeting time",
+          "calendar agenda",
+          "today's meetings",
+          "tomorrow's meetings",
+          "meeting notes",
+          "check meetings",
+          "meetings next week",
+          "any meetings",
+          "meeting check",
+          "next week meetings",
+          "this week meetings"
+        ],
+        "intentPatterns": [
+          "(search|find|lookup|check).*?(calendar|meeting|event)",
+          "(Google Calendar|GCal).*?(search|find|lookup)",
+          "(what|when).*?(meeting|event|calendar)",
+          "(upcoming|today's|tomorrow's).*?(meetings|events|agenda)",
+          "meeting.*?(attendees|details|description|time)",
+          "(Google Meet|Meet).*?transcript",
+          "(check|see|view).*?schedule",
+          "calendar.*?(agenda|lookup|search)",
+          "(any|what).*(meeting|meetings|events)",
+          "meetings.*(next week|this week|today|tomorrow)",
+          "do I have.*?(meeting|meetings)",
+          "check.*?(meeting|schedule|calendar)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "gdrive": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Google Drive search skill - Search and read Google Drive files including Docs, Sheets, Slides, PDFs, and other file types via Google Drive API",
+      "promptTriggers": {
+        "keywords": [
+          "Google Drive",
+          "GDrive",
+          "Drive search",
+          "find file",
+          "search Drive",
+          "Google Doc",
+          "Google Sheet",
+          "Google Slides",
+          "read Doc",
+          "read Sheet",
+          "Drive file",
+          "cloud storage",
+          "search documents",
+          "find in Drive",
+          "open Doc",
+          "open Sheet",
+          "download from Drive",
+          "file lookup"
+        ],
+        "intentPatterns": [
+          "(search|find|lookup).*?Google.*?Drive",
+          "(search|find).*?(file|doc|sheet|slide).*?Drive",
+          "Google.*?(Drive|Doc|Sheet|Slide).*?(search|find|read)",
+          "(read|open|view).*?(Google Doc|Google Sheet|Google Slides)",
+          "Drive.*?file.*?(search|lookup|find)",
+          "(find|search).*?cloud.*?storage"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "gmail": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Gmail search skill - Search and read Gmail messages, email content, attachments, and metadata via Gmail API",
+      "promptTriggers": {
+        "keywords": [
+          "Gmail",
+          "email search",
+          "find email",
+          "search email",
+          "read email",
+          "email content",
+          "email from",
+          "email subject",
+          "inbox search",
+          "email lookup",
+          "find message",
+          "search messages",
+          "email thread",
+          "email attachment",
+          "recent email",
+          "email by sender",
+          "email date",
+          "Gmail search",
+          "check email"
+        ],
+        "intentPatterns": [
+          "(search|find|lookup).*?(email|Gmail|message)",
+          "(read|view|check).*?email",
+          "email.*?(from|subject|date|content)",
+          "(find|search).*?(inbox|messages)",
+          "Gmail.*?(search|find|lookup)",
+          "(email|message).*?(thread|attachment)",
+          "recent.*?(email|messages)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "pkm": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Personal Knowledge Management via Obsidian MCP - capture learnings to daily notes and search vault",
+      "promptTriggers": {
+        "keywords": [
+          "PKM",
+          "personal knowledge",
+          "capture learning",
+          "daily note",
+          "Obsidian",
+          "vault search",
+          "note capture",
+          "learning capture",
+          "knowledge base",
+          "save to notes",
+          "add to vault"
+        ],
+        "intentPatterns": [
+          "(capture|save|add).*?(learning|note|knowledge)",
+          "(search|find).*?(vault|notes|obsidian)",
+          "PKM.*?(capture|search)",
+          "(daily|today's).*?note",
+          "obsidian.*?(add|search|capture)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "memvid": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Single-file AI memory with memvid-cli for persistent knowledge storage and retrieval using text-embedding-3-large. Search past context, store learnings, manage session memory.",
+      "promptTriggers": {
+        "keywords": [
+          "memvid",
+          "memory",
+          "remember",
+          "recall",
+          "search memory",
+          "store memory",
+          "save this",
+          "what did we learn",
+          "past decisions",
+          "previous context",
+          "long-term memory",
+          "session memory",
+          "knowledge base",
+          "memory search",
+          "retrieve memory"
+        ],
+        "intentPatterns": [
+          "(search|find|recall).*?(memory|past|previous)",
+          "(store|save|remember).*?(learning|decision|context)",
+          "what.*?(did we|have we).*?(learn|decide|choose)",
+          "why.*?(did we|choose|picked)",
+          "memory.*?(search|find|store)",
+          "(persistent|long-term).*?memory",
+          "recall.*?(decision|choice|pattern)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/*.mv2",
+          "**/memory.mv2"
+        ],
+        "contentPatterns": [
+          "memvid",
+          "memory.mv2"
+        ]
+      }
+    }
+  },
+  "notes": {
+    "enforcement_types": {
+      "suggest": "Skill suggestion appears but doesn't block execution",
+      "block": "Requires skill to be used before proceeding (guardrail)",
+      "warn": "Shows warning but allows proceeding"
+    },
+    "priority_levels": {
+      "critical": "Highest - Always trigger when matched",
+      "high": "Important - Trigger for most matches",
+      "medium": "Moderate - Trigger for clear matches",
+      "low": "Optional - Trigger only for explicit matches"
+    },
+    "skill_types": {
+      "guardrail": "Enforces best practices by blocking or warning",
+      "domain": "Provides domain-specific expertise and suggestions"
+    },
+    "source_types": {
+      "marketplace": "Plugin installed from marketplace",
+      "local": "Skill defined in ~/.config/opencode/skill/",
+      "custom": "User-defined custom skill"
+    },
+    "usage": {
+      "hook": "UserPromptSubmit hook automatically checks prompts against these rules",
+      "activation": "Skills are suggested via Skill tool when triggers match",
+      "customization": "Adjust keywords, patterns, and priorities to match your workflow"
+    },
+    "installed_plugins": {
+      "testing": [
+        "chaos-engineering-toolkit",
+        "performance-test-suite",
+        "test-coverage-analyzer",
+        "security-test-scanner"
+      ],
+      "security": [
+        "security-pro-pack"
+      ],
+      "development": [
+        "fullstack-starter-pack",
+        "feature-dev",
+        "code-review-plugin",
+        "pr-review-toolkit"
+      ],
+      "devops": [
+        "ci-cd-pipeline-builder",
+        "infrastructure-as-code-generator",
+        "ansible-playbook-creator",
+        "cloud-cost-optimizer"
+      ],
+      "creative": [
+        "algorithmic-art",
+        "canvas-design",
+        "slack-gif-creator",
+        "theme-factory"
+      ],
+      "artifacts": [
+        "artifacts-builder"
+      ],
+      "communication": [
+        "internal-comms"
+      ],
+      "integration": [
+        "mcp-builder",
+        "webapp-testing"
+      ],
+      "api": [
+        "api-documentation-generator"
+      ],
+      "documents": [
+        "pdf",
+        "xlsx",
+        "docx",
+        "pptx"
+      ],
+      "meta": [
+        "skill-creator"
+      ],
+      "aws": [
+        "aws-cost-operations",
+        "aws-cdk-development",
+        "aws-serverless-eda"
+      ],
+      "local_skills": [
+        "backend-development",
+        "chrome-devtools",
+        "code-review",
+        "databases",
+        "frontend-design",
+        "frontend-development",
+        "gcal",
+        "gdrive",
+        "gmail",
+        "github-operations",
+        "glab-operations",
+        "media-processing",
+        "ui-styling",
+        "web-frameworks",
+        "debugging",
+        "problem-solving",
+        "pkm"
+      ]
+    }
+  }
+}

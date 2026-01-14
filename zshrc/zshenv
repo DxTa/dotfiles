@@ -1,0 +1,6 @@
+#!/bin/zsh
+# ~/.zshenv - Sourced for ALL shell types (interactive & non-interactive)
+# This ensures aliases and functions work in opencode bash tool
+
+# Source main customizations
+[[ -f "$HOME/.dotfiles/zshrc/init.sh" ]] && source "$HOME/.dotfiles/zshrc/init.sh"

@@ -1,0 +1,81 @@
+# ===========================================
+# SHELL SECRETS
+# ===========================================
+zshrc/secrets.sh
+
+# ===========================================
+# CREDENTIALS & TOKENS (Global Patterns)
+# ===========================================
+# API Keys & Secrets
+*credentials*.json
+*secret*.json
+service-account*.json
+
+# OAuth Tokens  
+*_token.json
+*token*.json
+*-token.json
+token.json
+
+# Account files
+*accounts*.json
+*-accounts.json
+
+# ===========================================
+# ENVIRONMENT FILES
+# ===========================================
+.env
+.env.*
+.env.local
+.env.*.local
+*.env
+
+# ===========================================
+# CRYPTOGRAPHIC MATERIAL
+# ===========================================
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+id_rsa*
+id_ed25519*
+id_ecdsa*
+
+# ===========================================
+# PACKAGE MANAGER AUTH
+# ===========================================
+.npmrc
+.yarnrc
+.pypirc
+.netrc
+
+# ===========================================
+# OPENCODE SPECIFIC
+# ===========================================
+opencode/node_modules/
+opencode/package.json
+opencode/bun.lock
+opencode/.serena/
+opencode/*.bkp
+opencode/*.backup*
+opencode/plans/
+opencode/.chunkhound/
+opencode/memory.mv2
+opencode/venv/
+opencode/.ruff_cache/
+
+# ===========================================
+# GENERAL EXCLUSIONS
+# ===========================================
+*.sqlite
+*.sqlite3
+*.db
+.chunkhound/
+
+# ===========================================
+# OS FILES
+# ===========================================
+.DS_Store
+Thumbs.db
