@@ -1,12 +1,19 @@
 #!/bin/bash
 # install.sh - Master installer for all dotfiles configurations
-# Usage: bash ~/.dotfiles/install.sh [component]
+# Usage: bash ~/.dotfiles/install.sh [OPTIONS] [COMPONENT]
 #
 # Components:
 #   all (default) - Install all configurations
-#   zsh          - Install only zsh configuration
-#   tmux         - Install only tmux configuration
-#   vim          - Install only vim configuration
+#   zsh           - Install only zsh configuration
+#   tmux          - Install only tmux configuration
+#   vim           - Install only vim configuration
+#
+# Options:
+#   --dry-run        Show what would be done without making changes
+#   --install-deps   Install missing dependencies via package manager
+#   --check-deps     Only check dependencies, don't install anything
+#   --skip-ycm       Skip YouCompleteMe compilation (faster)
+#   -h, --help       Show this help message
 #
 # This script:
 # 1. Runs all sub-installers (zshrc, tmux, vim)
@@ -15,19 +22,86 @@
 
 set -e
 
-DOTFILES_DIR="$HOME/.dotfiles"
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Source shared utilities
+source "$DOTFILES_DIR/lib/common.sh"
+source "$DOTFILES_DIR/lib/platform.sh"
+source "$DOTFILES_DIR/lib/deps.sh"
 
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
-log_header() { echo -e "${BLUE}[====]${NC} $1"; }
+# Parse arguments
+DRY_RUN=false
+INSTALL_DEPS=false
+CHECK_ONLY=false
+SKIP_YCM=false
+COMPONENT="all"
+
+show_usage() {
+    cat << EOF
+
+Usage: bash ~/.dotfiles/install.sh [OPTIONS] [COMPONENT]
+
+Components:
+  all (default)  Install all configurations
+  zsh            Install only zsh configuration
+  tmux           Install only tmux configuration
+  vim            Install only vim configuration
+
+Options:
+  --dry-run        Show what would be done without making changes
+  --install-deps   Install missing dependencies via package manager
+  --check-deps     Only check dependencies, don't install anything
+  --skip-ycm       Skip YouCompleteMe compilation (faster)
+  -h, --help       Show this help message
+
+Platform detected: $OS_TYPE (package manager: $PKG_MANAGER)
+
+Examples:
+  bash ~/.dotfiles/install.sh                    # Install everything
+  bash ~/.dotfiles/install.sh --check-deps       # Check dependencies
+  bash ~/.dotfiles/install.sh --install-deps     # Install deps and dotfiles
+  bash ~/.dotfiles/install.sh --skip-ycm vim     # Install vim without YCM
+  bash ~/.dotfiles/install.sh --dry-run          # Preview what would happen
+
+EOF
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dry-run)
+            DRY_RUN=true
+            export DRY_RUN
+            shift
+            ;;
+        --install-deps)
+            INSTALL_DEPS=true
+            shift
+            ;;
+        --check-deps)
+            CHECK_ONLY=true
+            shift
+            ;;
+        --skip-ycm)
+            SKIP_YCM=true
+            export SKIP_YCM
+            shift
+            ;;
+        -h|--help|help)
+            show_usage
+            exit 0
+            ;;
+        all|zsh|tmux|vim)
+            COMPONENT="$1"
+            shift
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            show_usage
+            exit 1
+            ;;
+    esac
+done
 
 # ==========================================
 # Component Installation Functions
@@ -67,29 +141,65 @@ install_vim() {
 # Main Installation Logic
 # ==========================================
 
-show_usage() {
-    echo ""
-    echo "Usage: bash ~/.dotfiles/install.sh [component]"
-    echo ""
-    echo "Components:"
-    echo "  all (default)  Install all configurations"
-    echo "  zsh            Install only zsh configuration"
-    echo "  tmux           Install only tmux configuration"
-    echo "  vim            Install only vim configuration"
-    echo ""
-}
-
 main() {
-    local component="${1:-all}"
     local errors=0
     
     echo ""
     echo "============================================"
     echo "  Dotfiles Master Installer"
+    echo "  Platform: $OS_TYPE | Package Manager: $PKG_MANAGER"
+    [[ "$DRY_RUN" == "true" ]] && echo "  Mode: DRY RUN (no changes will be made)"
     echo "============================================"
     echo ""
     
-    case "$component" in
+    # Check dependencies if requested or if installing
+    if [[ "$CHECK_ONLY" == "true" ]] || [[ "$INSTALL_DEPS" == "true" ]]; then
+        if check_all_deps; then
+            echo ""
+            log_info "All dependencies satisfied!"
+            [[ "$CHECK_ONLY" == "true" ]] && exit 0
+        else
+            echo ""
+            if [[ "$INSTALL_DEPS" == "true" ]]; then
+                log_header "Installing missing dependencies..."
+                
+                # Install based on component selection
+                case "$COMPONENT" in
+                    all)
+                        install_deps_zsh || ((errors++))
+                        install_deps_tmux || ((errors++))
+                        install_deps_vim || ((errors++))
+                        ;;
+                    zsh)  install_deps_zsh || ((errors++)) ;;
+                    tmux) install_deps_tmux || ((errors++)) ;;
+                    vim)  install_deps_vim || ((errors++)) ;;
+                esac
+                
+                if [[ $errors -gt 0 ]]; then
+                    log_error "Failed to install some dependencies"
+                    exit 1
+                fi
+                echo ""
+                log_info "Dependencies installed successfully!"
+                echo ""
+            elif [[ "$CHECK_ONLY" == "true" ]]; then
+                log_warn "Some dependencies missing. Run with --install-deps to install them."
+                exit 1
+            else
+                log_warn "Some dependencies missing. Installation may fail."
+                log_warn "Run with --install-deps to install dependencies first."
+                echo ""
+            fi
+        fi
+    fi
+    
+    # Exit if only checking dependencies
+    if [[ "$CHECK_ONLY" == "true" ]]; then
+        exit 0
+    fi
+    
+    # Perform installation
+    case "$COMPONENT" in
         all)
             log_info "Installing all configurations..."
             echo ""
@@ -112,15 +222,6 @@ main() {
         vim)
             install_vim || ((errors++))
             ;;
-        -h|--help|help)
-            show_usage
-            exit 0
-            ;;
-        *)
-            log_error "Unknown component: $component"
-            show_usage
-            exit 1
-            ;;
     esac
     
     echo ""
@@ -133,6 +234,9 @@ main() {
     fi
     echo "============================================"
     echo ""
+    
+    # Set secure permissions
+    secure_permissions
     
     log_info "Next steps:"
     echo "  1. Open a new terminal to test zsh configuration"

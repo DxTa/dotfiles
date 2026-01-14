@@ -65,6 +65,13 @@ opencode/.chunkhound/
 opencode/memory.mv2
 opencode/venv/
 opencode/.ruff_cache/
+opencode/.sia-code/
+
+# ===========================================
+# CODE INDEXING & SEARCH CACHES
+# ===========================================
+.sia-code/
+*.mv2
 
 # ===========================================
 # GENERAL EXCLUSIONS

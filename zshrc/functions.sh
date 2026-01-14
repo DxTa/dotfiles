@@ -1,16 +1,21 @@
 #!/bin/zsh
 # functions.sh - Shell functions
 
+# Source platform utilities for cross-platform support
+if [[ -f "$HOME/.dotfiles/lib/platform.sh" ]]; then
+    source "$HOME/.dotfiles/lib/platform.sh"
+fi
+
 # Docker: Clean running containers older than 2 hours
 docker-clean-containers() {
 	docker ps -f status=running --format "{{.ID}} {{.CreatedAt}}" | while read id cdate ctime _; do if [[ $(date +'%s' -d "${cdate} ${ctime}") -lt $(date +'%s' -d '2 hours ago') ]]; then docker kill $id; fi; done
 }
 
-# Helper function for SSHFS mount cleanup
+# Helper function for SSHFS mount cleanup (cross-platform)
 _dev_cleanup_mount() {
     local mount_dir="$1"
-    if mountpoint -q "$mount_dir" 2>/dev/null; then
-        fusermount -uz "$mount_dir" 2>/dev/null || umount -l "$mount_dir" 2>/dev/null
+    if _is_mounted "$mount_dir"; then
+        _unmount_sshfs "$mount_dir"
     fi
     rmdir "$mount_dir" 2>/dev/null
 }
@@ -23,7 +28,7 @@ dev-list() {
             if [[ -d "$mount_dir" ]]; then
                 local dir_name=$(basename "${mount_dir%/}")
                 local session_name="dev-${dir_name}"
-                if mountpoint -q "$mount_dir" 2>/dev/null; then
+                if _is_mounted "$mount_dir"; then
                     echo "  ✓ MOUNTED: ${mount_dir%/}"
                     echo "    Session: ${session_name}"
                 else
@@ -43,7 +48,7 @@ dev-cleanup() {
         local cleaned=0
         for mount_dir in $HOME/dev/sshfs_dirs/*/; do
             if [[ -d "$mount_dir" ]]; then
-                if ! mountpoint -q "$mount_dir" 2>/dev/null; then
+                if ! _is_mounted "$mount_dir"; then
                     rmdir "$mount_dir" 2>/dev/null && cleaned=$((cleaned + 1))
                 fi
             fi
@@ -88,8 +93,8 @@ dev-umount() {
     # Clean up mount
     if [[ -d "$mount_dir" ]]; then
         echo "Unmounting $mount_dir..."
-        if mountpoint -q "$mount_dir" 2>/dev/null; then
-            fusermount -uz "$mount_dir" 2>/dev/null || umount -l "$mount_dir" 2>/dev/null
+        if _is_mounted "$mount_dir"; then
+            _unmount_sshfs "$mount_dir"
         fi
         rmdir "$mount_dir" 2>/dev/null && echo "Removed mount directory"
     fi
@@ -112,7 +117,7 @@ dev() {
             host_part="$remote_spec"
         fi
         local path_last=$(basename "$remote_path")
-        local hash=$(echo "$arg" | md5sum | cut -c1-6)
+        local hash=$(echo "$arg" | portable_md5)
         local mount_dir="$HOME/dev/sshfs_dirs/${host_part}-${path_last}-${hash}"
         local session_name="dev-${host_part}-${path_last}-${hash}"
         session_name=$(echo "$session_name" | tr -cd 'a-zA-Z0-9-_' | tr -s '_')
@@ -130,7 +135,7 @@ dev() {
 
         tmux has-session -t "$session_name" 2>/dev/null && session_exists=true
         [[ -d "$mount_dir" ]] && mount_exists=true
-        mountpoint -q "$mount_dir" 2>/dev/null && is_mounted=true
+        _is_mounted "$mount_dir" && is_mounted=true
 
         if $session_exists || $mount_exists; then
             echo ""
@@ -161,7 +166,7 @@ dev() {
                     echo "Cleaning up..."
                     tmux kill-session -t "$session_name" 2>/dev/null
                     if $is_mounted; then
-                        fusermount -uz "$mount_dir" 2>/dev/null || umount -l "$mount_dir" 2>/dev/null
+                        _unmount_sshfs "$mount_dir"
                     fi
                     rmdir "$mount_dir" 2>/dev/null
                     echo "Cleaned. Starting fresh..."
@@ -173,19 +178,19 @@ dev() {
             esac
         fi
 
-        if ! mountpoint -q "$mount_dir" 2>/dev/null; then
+        if ! _is_mounted "$mount_dir"; then
             mkdir -p "$mount_dir"
 
             trap "_dev_cleanup_mount \"$mount_dir\"; trap - INT TERM EXIT" INT TERM EXIT
 
             echo "Mounting $remote_spec:$remote_path to $mount_dir..."
-            if ! sshfs "${remote_spec}:${remote_path}" "$mount_dir" -o reconnect -o Compression=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3; then
+            if ! _sshfs "${remote_spec}:${remote_path}" "$mount_dir" -o reconnect -o Compression=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3; then
                 echo "ERROR: SSHFS mount failed for $remote_spec:$remote_path"
                 _dev_cleanup_mount "$mount_dir"
                 return 1
             fi
 
-            if ! mountpoint -q "$mount_dir" 2>/dev/null; then
+            if ! _is_mounted "$mount_dir"; then
                 echo "ERROR: SSHFS command succeeded but mount point is not accessible"
                 _dev_cleanup_mount "$mount_dir"
                 return 1
@@ -226,7 +231,7 @@ dev() {
     dir="$(cd "$dir" && pwd)"
 
     local last2=$(echo "$dir" | rev | cut -d'/' -f1-2 | rev | tr '/' '-')
-    local hash=$(echo "$dir" | md5sum | cut -c1-6)
+    local hash=$(echo "$dir" | portable_md5)
     local session_name="dev-${last2}-${hash}"
     session_name=$(echo "$session_name" | tr -cd 'a-zA-Z0-9-_' | tr -s '_')
 

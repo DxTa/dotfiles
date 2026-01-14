@@ -14,5 +14,9 @@ alias wormhole='$HOME/.local/venv/bin/wormhole'
 alias ccmanager='pkgx npx ccmanager'
 alias bun='pkgx bun'
 
-# rm alias (safer deletion with trash-put)
-alias rm='trash-put'
+# rm alias (safer deletion with trash - cross-platform)
+if command -v trash-put &>/dev/null; then
+    alias rm='trash-put'  # Linux
+elif command -v trash &>/dev/null; then
+    alias rm='trash'  # macOS (brew install trash)
+fi

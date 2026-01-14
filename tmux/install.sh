@@ -9,50 +9,12 @@
 
 set -e
 
-DOTFILES_TMUX="$HOME/.dotfiles/tmux"
-BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
+DOTFILES_TMUX="$DOTFILES_DIR/tmux"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
-
-# Backup a file if it exists
-backup_file() {
-    local file="$1"
-    if [[ -e "$file" ]] || [[ -L "$file" ]]; then
-        mkdir -p "$BACKUP_DIR"
-        cp -P "$file" "$BACKUP_DIR/$(basename "$file")"
-        log_info "Backed up $file to $BACKUP_DIR/"
-    fi
-}
-
-# Create symlink with backup
-create_symlink() {
-    local source="$1"
-    local target="$2"
-    
-    # Already correct symlink?
-    if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$source" ]]; then
-        log_info "$target already symlinked correctly, skipping..."
-        return 0
-    fi
-    
-    # Backup existing file (if regular file or different symlink)
-    if [[ -e "$target" ]] || [[ -L "$target" ]]; then
-        backup_file "$target"
-        rm -f "$target"
-    fi
-    
-    # Create symlink
-    ln -s "$source" "$target"
-    log_info "Created symlink: $target -> $source"
-}
+# Source shared utilities
+source "$DOTFILES_DIR/lib/common.sh"
+source "$DOTFILES_DIR/lib/platform.sh"
 
 # ==========================================
 # Step 1: Configure ~/.tmux.conf (symlink)
@@ -99,6 +61,7 @@ main() {
     echo ""
     echo "=========================================="
     echo "  Dotfiles Tmux Configuration Installer"
+    echo "  Platform: $OS_TYPE"
     echo "=========================================="
     echo ""
 

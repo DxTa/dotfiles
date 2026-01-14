@@ -13,7 +13,7 @@ export DOCKER_BUILDKIT=1
 export PATH="$HOME/bin:$PATH"
 
 # pnpm
-export PNPM_HOME="/home/daniel/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -27,4 +27,4 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # opencode
-export PATH=/home/dxta/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"

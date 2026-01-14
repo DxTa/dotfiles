@@ -11,56 +11,15 @@
 
 set -e
 
-DOTFILES_VIM="$HOME/.dotfiles/vim"
-BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
+DOTFILES_VIM="$DOTFILES_DIR/vim"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Source shared utilities
+source "$DOTFILES_DIR/lib/common.sh"
+source "$DOTFILES_DIR/lib/platform.sh"
 
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
-
-# Backup a file or directory if it exists
-backup_file() {
-    local file="$1"
-    if [[ -e "$file" ]] || [[ -L "$file" ]]; then
-        mkdir -p "$BACKUP_DIR"
-        if [[ -d "$file" ]] && [[ ! -L "$file" ]]; then
-            # It's a directory (not a symlink to a directory)
-            cp -rP "$file" "$BACKUP_DIR/$(basename "$file")"
-        else
-            # It's a file or symlink
-            cp -P "$file" "$BACKUP_DIR/$(basename "$file")"
-        fi
-        log_info "Backed up $file to $BACKUP_DIR/"
-    fi
-}
-
-# Create symlink with backup
-create_symlink() {
-    local source="$1"
-    local target="$2"
-    
-    # Already correct symlink?
-    if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$source" ]]; then
-        log_info "$target already symlinked correctly, skipping..."
-        return 0
-    fi
-    
-    # Backup existing file (if regular file or different symlink)
-    if [[ -e "$target" ]] || [[ -L "$target" ]]; then
-        backup_file "$target"
-        rm -rf "$target"
-    fi
-    
-    # Create symlink
-    ln -s "$source" "$target"
-    log_info "Created symlink: $target -> $source"
-}
+# Skip YCM build if requested
+SKIP_YCM="${SKIP_YCM:-false}"
 
 # ==========================================
 # Step 1: Configure ~/.vimrc (symlink)
@@ -81,7 +40,7 @@ configure_vim_runtime() {
 # ==========================================
 init_submodules() {
     log_info "Initializing git submodules (YouCompleteMe)..."
-    cd "$HOME/.dotfiles"
+    cd "$DOTFILES_DIR"
     git submodule update --init --recursive
     
     if [[ -d "$DOTFILES_VIM/vim_runtime/my_plugins/YouCompleteMe" ]]; then
@@ -96,21 +55,42 @@ init_submodules() {
 # Step 4: Build YouCompleteMe
 # ==========================================
 build_ycm() {
+    if [[ "$SKIP_YCM" == "true" ]]; then
+        log_info "Skipping YouCompleteMe build (SKIP_YCM=true)"
+        return 0
+    fi
+    
     local ycm_dir="$DOTFILES_VIM/vim_runtime/my_plugins/YouCompleteMe"
     
     # Check if already built
-    if [[ -d "$ycm_dir/third_party/ycmd" ]] && [[ -n "$(find "$ycm_dir/third_party/ycmd" -name 'ycm_core*.so' 2>/dev/null)" ]]; then
+    if [[ -d "$ycm_dir/third_party/ycmd" ]] && [[ -n "$(find "$ycm_dir/third_party/ycmd" -name 'ycm_core*.so' -o -name 'ycm_core*.dylib' 2>/dev/null)" ]]; then
         log_info "YouCompleteMe already built, skipping..."
         return 0
     fi
     
     log_info "Building YouCompleteMe (this may take several minutes)..."
-    log_info "This requires: build-essential, cmake, python3-dev"
+    
+    # Platform-specific dependency hints
+    case "$OS_TYPE" in
+        linux|wsl)
+            log_info "Required: build-essential, cmake, python3-dev"
+            ;;
+        macos)
+            log_info "Required: Xcode Command Line Tools, cmake, python"
+            ;;
+    esac
     
     # Check if python3 is available
     if ! command -v python3 &> /dev/null; then
         log_error "python3 is required but not found!"
-        log_error "Install with: sudo apt install python3"
+        case "$OS_TYPE" in
+            linux|wsl)
+                log_error "Install with: sudo apt install python3"
+                ;;
+            macos)
+                log_error "Install with: brew install python"
+                ;;
+        esac
         exit 1
     fi
     
@@ -120,7 +100,14 @@ build_ycm() {
         log_info "YouCompleteMe built successfully!"
     else
         log_warn "YouCompleteMe build failed or requires additional dependencies"
-        log_warn "You may need to install: sudo apt install build-essential cmake python3-dev"
+        case "$OS_TYPE" in
+            linux|wsl)
+                log_warn "Install with: sudo apt install build-essential cmake python3-dev"
+                ;;
+            macos)
+                log_warn "Install with: xcode-select --install && brew install cmake python"
+                ;;
+        esac
         log_warn "Then run: python3 $ycm_dir/install.py --all"
     fi
 }
@@ -182,6 +169,7 @@ main() {
     echo ""
     echo "=========================================="
     echo "  Dotfiles Vim Configuration Installer"
+    echo "  Platform: $OS_TYPE"
     echo "=========================================="
     echo ""
 
@@ -198,7 +186,9 @@ main() {
     log_info "Next steps:"
     echo "  1. Open vim and check that it loads without errors"
     echo "  2. Run :YcmDebugInfo in vim to verify YouCompleteMe is working"
-    echo "  3. If YCM build failed, run: python3 $DOTFILES_VIM/vim_runtime/my_plugins/YouCompleteMe/install.py --all"
+    if [[ "$SKIP_YCM" != "true" ]]; then
+        echo "  3. If YCM build failed, run: python3 $DOTFILES_VIM/vim_runtime/my_plugins/YouCompleteMe/install.py --all"
+    fi
     echo ""
 }
 

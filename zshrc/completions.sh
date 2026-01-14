@@ -2,7 +2,7 @@
 # completions.sh - Zsh completions (interactive-only)
 
 # bun completions
-[ -s "/home/daniel/.bun/_bun" ] && source "/home/daniel/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # Completion for dev function - SSH hosts and remote paths
 _dev() {

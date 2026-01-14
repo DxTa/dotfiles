@@ -1,16 +1,57 @@
-temp_dirs/undodir/*
+# ==========================================
+# TEMP/CACHE DIRECTORIES
+# ==========================================
+temp_dirs/
+.netrwhist
 sources_non_forked/ack.vim/.netrwhist
-temp_dirs/yankring_history_v2.txt
+
+# ==========================================
+# GENERATED TAG FILES
+# ==========================================
+tags
+**/doc/tags
+**/doc/tags-*
 sources_forked/yankring/doc/tags
 sources_non_forked/tlib/doc/tags
 sources_non_forked/ctrlp.vim/doc/tags*
-# Allow my_plugins structure, but ignore YCM build artifacts
+
+# ==========================================
+# YOUCOMPLETEME BUILD ARTIFACTS
+# ==========================================
 my_plugins/YouCompleteMe/third_party/
 my_plugins/YouCompleteMe/**/*.so
+my_plugins/YouCompleteMe/**/*.dylib
+my_plugins/YouCompleteMe/**/*.pyd
 my_plugins/YouCompleteMe/**/*.pyc
 my_plugins/YouCompleteMe/**/__pycache__/
+my_plugins/YouCompleteMe/.ycm_extra_conf.pyc
 
-# Keep my_configs.vim untracked (managed in dotfiles root)
+# ==========================================
+# VIM SESSION/SWAP FILES
+# ==========================================
+*.swp
+*.swo
+*.swn
+Session.vim
+
+# ==========================================
+# PLUGIN CACHES
+# ==========================================
+.cache/
+plugged/
+
+# ==========================================
+# YANKRING HISTORY
+# ==========================================
+temp_dirs/yankring_history_v2.txt
+
+# ==========================================
+# USER CONFIGS (managed separately)
+# ==========================================
 my_configs.vim
-tags
+
+# ==========================================
+# OS FILES
+# ==========================================
 .DS_Store
+Thumbs.db

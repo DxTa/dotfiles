@@ -144,7 +144,7 @@
         "CHUNKHOUND_EMBEDDING__MODEL": "text-embedding-3-large",
         "CHUNKHOUND_LLM_PROVIDER": "claude-code-cli"
       },
-      "enabled": true
+      "enabled": false
     },
     "context7": {
       "type": "remote",
@@ -167,7 +167,7 @@
         "SLACK_MCP_XOXP_TOKEN": "{env:SLACK_MCP_XOXP_TOKEN}",
         "SLACK_MCP_ADD_MESSAGE_TOOL": "C049JSCEDN3"
       },
-      "enabled": true
+      "enabled": false
     },
     "obsidian": {
       "type": "local",
@@ -238,7 +238,8 @@
     "code-reasoning_*": true,
     "shannon-thinking_*": true,
     "serena-mcp_*": false,
-    "chunkhound_*": true
+    "chunkhound_*": false,
+    "slack_*": false
   },
   "permission": {
     "skill": {
