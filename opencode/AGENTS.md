@@ -150,7 +150,8 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 16. ☐ Memvid: Store learnings (T1: optional, T2+: MANDATORY)
     - What new insight did we capture?
     - Should it become a curated hint in AGENTS.md?
-17. ☐ Validation: run tests, verify changes
+17. ☐ @code-simplifier: Run on modified code (T2+: recommended, before final testing)
+18. ☐ Validation: run tests, verify changes
 
 **Mark each item ✓ as you complete it.**
 
@@ -322,6 +323,7 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
 |-------|----------|
 | @general | Broad research, multi-step analysis, uncertain searches |
 | @explore | Fast codebase exploration, file patterns, code search |
+| @code-simplifier | Code cleanup, simplification before testing/PR |
 | @qa-engineer | Test suites, coverage review |
 | @technical-writer | READMEs, API docs, root cause docs |
 | @senior-fullstack-developer | Architecture, performance, large refactors |
