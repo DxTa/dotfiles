@@ -1,0 +1,16 @@
+temp_dirs/undodir/*
+sources_non_forked/ack.vim/.netrwhist
+temp_dirs/yankring_history_v2.txt
+sources_forked/yankring/doc/tags
+sources_non_forked/tlib/doc/tags
+sources_non_forked/ctrlp.vim/doc/tags*
+# Allow my_plugins structure, but ignore YCM build artifacts
+my_plugins/YouCompleteMe/third_party/
+my_plugins/YouCompleteMe/**/*.so
+my_plugins/YouCompleteMe/**/*.pyc
+my_plugins/YouCompleteMe/**/__pycache__/
+
+# Keep my_configs.vim untracked (managed in dotfiles root)
+my_configs.vim
+tags
+.DS_Store

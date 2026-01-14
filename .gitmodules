@@ -1,0 +1,3 @@
+[submodule "vim/vim_runtime/my_plugins/YouCompleteMe"]
+	path = vim/vim_runtime/my_plugins/YouCompleteMe
+	url = https://github.com/ycm-core/YouCompleteMe.git

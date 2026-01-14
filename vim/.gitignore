@@ -1,0 +1,8 @@
+# Compiled YCM binaries (rebuilt by install.sh)
+vim_runtime/my_plugins/YouCompleteMe/third_party/
+vim_runtime/my_plugins/YouCompleteMe/**/*.so
+vim_runtime/my_plugins/YouCompleteMe/**/*.pyc
+vim_runtime/my_plugins/YouCompleteMe/**/__pycache__/
+
+# Vim temp files
+vim_runtime/temp_dirs/
