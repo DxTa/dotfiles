@@ -258,28 +258,30 @@ Update index if `Staleness Ratio > 20%` or `Health Status: Degraded`.
 ### Memvid Memory
 **Skill:** Load `@memvid` for detailed commands and patterns.
 
-**Setup (one-time):**
+**Setup (first use per project):**
 ```bash
 export OPENAI_API_KEY=sk-your-key-here  # Already in .mcp-credentials.json
-memvid create ~/.config/opencode/memory.mv2
+memvid create ./memory.mv2
 ```
+
+> ⚠️ **STOP:** Did you search Memvid BEFORE starting? This is Step 2 - MANDATORY for T2+.
 
 **AT START (hybrid search):**
 ```bash
 # Search for relevant context (uses text-embedding-3-large)
-memvid find ~/.config/opencode/memory.mv2 --query "[task]" --mode sem --top-k 10 -m openai-large
+memvid find ./memory.mv2 --query "[task]" --mode sem --top-k 10 -m openai-large
 
 # Check entity state if specific entity known
-memvid state ~/.config/opencode/memory.mv2 "[EntityName]"
+memvid state ./memory.mv2 "[EntityName]"
 ```
 
 **AT END - Store only genuinely new outcomes:**
 ```bash
 # Store new learning with label
-echo '{"title":"[Topic]","label":"procedure","text":"[Description of workflow]"}' | memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+echo '{"title":"[Topic]","label":"procedure","text":"[Description of workflow]"}' | memvid put ./memory.mv2 --embedding -m openai-large
 
 # Or for quick facts
-echo "Key insight about [topic]" | memvid put ~/.config/opencode/memory.mv2 --label fact --embedding -m openai-large
+echo "Key insight about [topic]" | memvid put ./memory.mv2 --label fact --embedding -m openai-large
 ```
 
 - Skip if behavior matched documentation/expectation
