@@ -19,7 +19,7 @@ Organized interface for memvid-cli - single-file AI memory with hybrid search, e
 - Entity extraction via Memory Cards (O(1) lookups)
 
 **Memory File Location:**
-`~/.config/opencode/memory.mv2`
+`./memory.mv2` (project root, same level as `.git`)
 
 **Embedding Model:**
 text-embedding-3-large (3072 dimensions) via `-m openai-large`
@@ -39,17 +39,17 @@ This happens automatically in OpenCode workflows.
 
 **Semantic Search (uses embeddings):**
 ```bash
-memvid find ~/.config/opencode/memory.mv2 --query "your search query" --mode sem --top-k 10 -m openai-large
+memvid find ./memory.mv2 --query "your search query" --mode sem --top-k 10 -m openai-large
 ```
 
 **Lexical Search (keyword-based, fast):**
 ```bash
-memvid find ~/.config/opencode/memory.mv2 --query "exact keywords" --mode lex --top-k 10
+memvid find ./memory.mv2 --query "exact keywords" --mode lex --top-k 10
 ```
 
 **Auto Mode (automatic selection):**
 ```bash
-memvid find ~/.config/opencode/memory.mv2 --query "your query" --mode auto --top-k 10
+memvid find ./memory.mv2 --query "your query" --mode auto --top-k 10
 ```
 
 **Search Modes:**
@@ -61,17 +61,17 @@ memvid find ~/.config/opencode/memory.mv2 --query "your query" --mode auto --top
 
 **With Embeddings (recommended):**
 ```bash
-echo '{"title":"Topic Name","label":"procedure","text":"Full description of what was learned"}' | memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+echo '{"title":"Topic Name","label":"procedure","text":"Full description of what was learned"}' | memvid put ./memory.mv2 --embedding -m openai-large
 ```
 
 **Quick Text (with label):**
 ```bash
-echo "Key insight about topic" | memvid put ~/.config/opencode/memory.mv2 --label fact --embedding -m openai-large
+echo "Key insight about topic" | memvid put ./memory.mv2 --label fact --embedding -m openai-large
 ```
 
 **From File:**
 ```bash
-memvid put ~/.config/opencode/memory.mv2 --input document.pdf --embedding -m openai-large
+memvid put ./memory.mv2 --input document.pdf --embedding -m openai-large
 ```
 
 **Labels (use Graphiti convention):**
@@ -83,7 +83,7 @@ memvid put ~/.config/opencode/memory.mv2 --input document.pdf --embedding -m ope
 
 Check entity state (O(1) lookup via Memory Cards):
 ```bash
-memvid state ~/.config/opencode/memory.mv2 "EntityName"
+memvid state ./memory.mv2 "EntityName"
 ```
 
 Returns structured facts about the entity (employer, role, relationships, etc.).
@@ -91,7 +91,7 @@ Returns structured facts about the entity (employer, role, relationships, etc.).
 ### 4. Check Statistics
 
 ```bash
-memvid stats ~/.config/opencode/memory.mv2
+memvid stats ./memory.mv2
 ```
 
 Shows:
@@ -104,7 +104,7 @@ Shows:
 ### 5. Ask Questions (LLM-powered Q&A)
 
 ```bash
-memvid ask ~/.config/opencode/memory.mv2 --question "What did we decide about authentication?" --use-model openai
+memvid ask ./memory.mv2 --question "What did we decide about authentication?" --use-model openai
 ```
 
 Returns sourced answers with citations.
@@ -112,7 +112,7 @@ Returns sourced answers with citations.
 ### 6. Timeline and History
 
 ```bash
-memvid timeline ~/.config/opencode/memory.mv2
+memvid timeline ./memory.mv2
 ```
 
 View chronological history of stored memories.
@@ -124,7 +124,7 @@ View chronological history of stored memories.
 Search for relevant context:
 ```bash
 source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh
-memvid find ~/.config/opencode/memory.mv2 --query "[task description]" --mode sem --top-k 10 -m openai-large
+memvid find ./memory.mv2 --query "[task description]" --mode sem --top-k 10 -m openai-large
 ```
 
 ### At Task End (AGENTS.md Pattern)
@@ -132,14 +132,14 @@ memvid find ~/.config/opencode/memory.mv2 --query "[task description]" --mode se
 Store learnings:
 ```bash
 source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh
-echo '{"title":"[Topic]","label":"procedure","text":"[What was learned]"}' | memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+echo '{"title":"[Topic]","label":"procedure","text":"[What was learned]"}' | memvid put ./memory.mv2 --embedding -m openai-large
 ```
 
 ### Two-Strike Rule Integration
 
 After 2 failed fixes, search for similar past issues:
 ```bash
-memvid find ~/.config/opencode/memory.mv2 --query "error debugging failed fix" --mode sem --top-k 5 -m openai-large
+memvid find ./memory.mv2 --query "error debugging failed fix" --mode sem --top-k 5 -m openai-large
 ```
 
 ## Storage Guidelines
@@ -158,7 +158,7 @@ memvid find ~/.config/opencode/memory.mv2 --query "error debugging failed fix" -
 **Storage Optimization:**
 ```bash
 # Vector compression (16x storage savings)
-memvid put ~/.config/opencode/memory.mv2 --input file.pdf --embedding --vector-compression -m openai-large
+memvid put ./memory.mv2 --input file.pdf --embedding --vector-compression -m openai-large
 ```
 
 ## Advanced Features
@@ -167,7 +167,7 @@ memvid put ~/.config/opencode/memory.mv2 --input file.pdf --embedding --vector-c
 
 ```bash
 # Extract entities and relationships
-memvid enrich ~/.config/opencode/memory.mv2 --engine rules
+memvid enrich ./memory.mv2 --engine rules
 ```
 
 Creates Memory Cards for O(1) entity lookups.
@@ -176,20 +176,20 @@ Creates Memory Cards for O(1) entity lookups.
 
 ```bash
 # Start recording session
-memvid session start ~/.config/opencode/memory.mv2 --name "task-name"
+memvid session start ./memory.mv2 --name "task-name"
 
 # End session
-memvid session end ~/.config/opencode/memory.mv2
+memvid session end ./memory.mv2
 
 # Replay with different parameters
-memvid session replay ~/.config/opencode/memory.mv2 --session abc123 --top-k 10
+memvid session replay ./memory.mv2 --session abc123 --top-k 10
 ```
 
 ### Maintenance
 
 ```bash
 # Rebuild indexes and reclaim space
-memvid doctor ~/.config/opencode/memory.mv2 --vacuum --rebuild-time-index --rebuild-lex-index
+memvid doctor ./memory.mv2 --vacuum --rebuild-time-index --rebuild-lex-index
 ```
 
 ## Common Patterns
@@ -198,28 +198,28 @@ memvid doctor ~/.config/opencode/memory.mv2 --vacuum --rebuild-time-index --rebu
 
 ```bash
 # Store research findings
-echo '{"title":"API Authentication Research","label":"procedure","text":"Investigated JWT vs OAuth. Chose JWT for stateless microservices. Refresh token stored in httpOnly cookie, access token in memory. 15min expiry."}' | memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+echo '{"title":"API Authentication Research","label":"procedure","text":"Investigated JWT vs OAuth. Chose JWT for stateless microservices. Refresh token stored in httpOnly cookie, access token in memory. 15min expiry."}' | memvid put ./memory.mv2 --embedding -m openai-large
 ```
 
 ### Pattern 2: Bug Fix Documentation
 
 ```bash
 # Document bug fix
-echo '{"title":"React Hydration Error Fix","label":"fact","text":"Hydration errors caused by useLayoutEffect on SSR. Solution: use useEffect or check typeof window !== undefined before DOM access."}' | memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+echo '{"title":"React Hydration Error Fix","label":"fact","text":"Hydration errors caused by useLayoutEffect on SSR. Solution: use useEffect or check typeof window !== undefined before DOM access."}' | memvid put ./memory.mv2 --embedding -m openai-large
 ```
 
 ### Pattern 3: Architecture Decision
 
 ```bash
 # Store decision
-echo '{"title":"Database Choice Decision","label":"preference","text":"Chose PostgreSQL over MongoDB for e-commerce. Strong ACID guarantees needed for transactions. Referential integrity critical for orders/inventory."}' | memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+echo '{"title":"Database Choice Decision","label":"preference","text":"Chose PostgreSQL over MongoDB for e-commerce. Strong ACID guarantees needed for transactions. Referential integrity critical for orders/inventory."}' | memvid put ./memory.mv2 --embedding -m openai-large
 ```
 
 ### Pattern 4: Recall Previous Decision
 
 ```bash
 # Search for past decisions
-memvid find ~/.config/opencode/memory.mv2 --query "why did we choose postgresql database" --mode sem --top-k 5 -m openai-large
+memvid find ./memory.mv2 --query "why did we choose postgresql database" --mode sem --top-k 5 -m openai-large
 ```
 
 ## Error Handling
@@ -285,8 +285,9 @@ memvid find ~/.config/opencode/memory.mv2 --query "why did we choose postgresql 
 
 ## Notes
 
-- Always use absolute path: `~/.config/opencode/memory.mv2`
+- Use project-relative path: `./memory.mv2` (same level as `.git`)
 - Flag `-m openai-large` maps to `text-embedding-3-large` (3072 dimensions)
 - Memory file is portable: can git commit, scp, share
+- Recommended: Add `memory.mv2` to `.gitignore` to keep learnings local
 - Free tier: 50MB capacity (~194 documents with embeddings)
 - Use `--vector-compression` to fit ~3000 documents in 50MB

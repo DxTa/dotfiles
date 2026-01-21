@@ -14,3 +14,7 @@ memory.mv2
 venv
 .ruff_cache
 *_token.json
+.gitignore
+antigravity-signature-cache.json
+antigravity-logs/
+retrospectives

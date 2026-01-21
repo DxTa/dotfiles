@@ -39,8 +39,8 @@ LLM auto-detects tier based on task complexity:
 | Tier | Scope | Key Requirements |
 |------|-------|------------------|
 | **T1** | <30 lines, 1 file | task_plan.md + TodoWrite MANDATORY. Memvid optional |
-| **T2** | 30-100 lines, 2-5 files | All T1 + Memvid MANDATORY |
-| **T3** | 100+ lines, architecture | All T2 + notes.md + External LLM MANDATORY |
+| **T2** | 30-100 lines, 2-5 files | All T1 + Memvid MANDATORY + **Sia-code if triggers** |
+| **T3** | 100+ lines, architecture | All T2 + notes.md + External LLM + **Sia-code MANDATORY** |
 | **T4** | Critical/Deployment | All T3 + rollback plan + Antagonistic QA NON-SKIPPABLE |
 
 ### Tier 1 Requirements
@@ -60,7 +60,11 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 - Step 2 (Memvid search): MANDATORY (skip only if <30s, document why)
 - Step 4 (`task_plan.md`): MANDATORY
 - Step 5 (`notes.md`): Recommended (for research/analysis)
-- Step 7 (exploration): sia-code if unfamiliar code
+- Step 7 (exploration): **Sia-code recommended if ANY trigger:**
+  - Unfamiliar codebase area (haven't worked in past 30 days)
+  - Cross-file changes (Integration Changes pattern)
+  - After Two-Strike Rule triggered
+  - Task involves "how does X work" or "trace dependencies"
 - Step 10 (Re-read plan): Before major decisions
 - Step 11 (Self-reflection): Use @plan agent (recommended)
 - Step 14 (Memvid store): MANDATORY
@@ -70,7 +74,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 - All steps MANDATORY except where noted
 - Step 2 (Memvid search): MANDATORY - execute BEFORE exploration
 - Step 5 (`notes.md`): MANDATORY
-- Step 7 (exploration): Parallel subagents MANDATORY before code changes
+- Step 7 (exploration): **Sia-code + parallel subagents MANDATORY** before code changes
 - Step 10 (Re-read plan): Before EVERY major decision
 - Step 11 (Self-reflection): Use @plan agent (MANDATORY)
 - Step 12 (External LLM): MANDATORY
@@ -91,11 +95,19 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 4. ☐ Create task_plan.md: `{projectSlug}_{sessionID}_task_plan.md` (MANDATORY all tiers)
 5. ☐ Create notes.md: `{projectSlug}_{sessionID}_notes.md` (T1: optional, T2: recommended, T3+: mandatory)
 6. ☐ TodoWrite: Initialize Phase 1 steps
-7. ☐ **Exploration subagents** (T3+: MANDATORY before code changes, others: as needed):
-   - **Task-based agent selection** (use decision tree below, not all agents)
+7. ☐ **Exploration** (T3+: MANDATORY before code changes, T2+: if triggers hit):
+   
+   **7a. ☐ Sia-Code Check (T2+: recommended if triggers, T3+: MANDATORY):**
+   - ☐ Trigger check: Unfamiliar code? Cross-file changes? "How does X work"? Post Two-Strike?
+   - ☐ If YES: Run `uvx --with openai sia-code status` (check index health)
+   - ☐ If YES: Run `uvx --with openai sia-code research "[architectural question]"` 
+   - ☐ Document in task_plan.md:
+     - **T2:** Optional: "Sia-code findings: [summary]" OR "Sia-code skipped: [reason]"
+     - **T3+:** MANDATORY: Must document findings or skip reason
+   
+   **7b. ☐ Subagent Selection (use decision tree, not all agents):**
    - `@general` for external research, multi-step analysis, documentation lookup
    - `@explore` for file pattern matching, code search, simple name lookup
-   - `uvx --with openai sia-code research` for architecture analysis, dependency mapping, unfamiliar code
    - Additional specialists based on domain:
       - @backend-specialist / @frontend-specialist (domain-specific)
       - @security-engineer (security implications)
@@ -266,6 +278,11 @@ memvid create ./memory.mv2
 
 > ⚠️ **STOP:** Did you search Memvid BEFORE starting? This is Step 2 - MANDATORY for T2+.
 
+> ⚠️ **SIA-CODE CHECK:** Is this codebase unfamiliar or are you modifying cross-file integrations?
+> - If YES and `.sia-code/` exists: Run `uvx --with openai sia-code status` first
+> - If YES and `.sia-code/` doesn't exist: Run `uvx --with openai sia-code init && uvx --with openai sia-code index .`
+> - If NO: Document in task_plan.md ("Familiar codebase: [reason]") for T3+ tasks
+
 **AT START (hybrid search):**
 ```bash
 # Search for relevant context (uses text-embedding-3-large)
@@ -359,12 +376,16 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
 ## RULES
 
 ### Two-Strike Rule (MANDATORY Tier 2+)
-**2 failed fixes → STOP.** No third fix without:
-1. CAPTURE: Full stack trace, console (chrome-devtools for frontend), environment
-2. SIA-CODE: Use `uvx --with openai sia-code research` to analyze root cause
-3. MEMVID: Search similar past issues
-4. EXTERNAL LLM (T3+): Validate approach
-5. STORE: Root cause, fix, prevention in Memvid
+**2 failed fixes → STOP.** No third fix without completing ALL steps:
+1. ☐ CAPTURE: Full stack trace, console (chrome-devtools for frontend), environment
+2. ☐ **SIA-CODE (NON-SKIPPABLE):** 
+   - Run: `uvx --with openai sia-code research "trace error flow from [component]" --hops 3`
+   - Document: Add findings summary to task_plan.md "Two-Strike Analysis" section
+3. ☐ MEMVID: Search similar past issues
+4. ☐ EXTERNAL LLM (T3+): Validate approach
+5. ☐ STORE: Root cause, fix, prevention in Memvid
+
+**Verification:** Cannot proceed to third fix attempt until sia-code findings documented in task_plan.md.
 
 **Anti-patterns:** Trial-and-error console.log, CSS without DevTools, random fixes
 
@@ -404,6 +425,12 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
     <wrong>Add features without mapping</wrong>
     <right>uvx --with openai sia-code research → integration test</right>
     <rationale>Changes cascade unexpectedly without understanding full impact surface</rationale>
+  </pattern>
+  
+  <pattern name="skipped-sia-code">
+    <wrong>Start coding unfamiliar codebase without sia-code research</wrong>
+    <right>sia-code research → understand architecture → then code</right>
+    <rationale>Blind coding leads to integration bugs, missed patterns, and duplicated logic</rationale>
   </pattern>
   
   <pattern name="visual-only-debugging">
@@ -455,6 +482,7 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
 **Context7:** Use `@context7` for library docs
 **Code index:** `repomix-output.xml` for AI navigation
 **Project docs:** Read AGENTS.md, CLAUDE.md first
+**Sia-code:** `uvx --with openai sia-code status` (check health), `sia-code research "question"` (explore)
 
 ## EFFICIENCY
 

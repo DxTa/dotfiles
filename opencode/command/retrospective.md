@@ -1,26 +1,6 @@
----
->
-> ⚠️ **TODO: INCOMPATIBLE WITH OPENCODE**
-> 
-> This command was designed for Claude CLI and references `~/.claude/history.jsonl`.
-> OpenCode stores conversations differently in `~/.local/share/opencode/storage/`.
-> 
-> **Required changes to make this work:**
-> - Rewrite to read from `~/.local/share/opencode/storage/session/` for session metadata
-> - Parse messages from `~/.local/share/opencode/storage/message/` 
-> - Parse parts from `~/.local/share/opencode/storage/part/`
-> - Update Python extraction script accordingly
-> - Update agent references: `~/.claude/agents/` → `~/.config/opencode/agent/`
-> - Update doc references: `~/.claude/CLAUDE.md` → `~/.config/opencode/AGENTS.md`
->
-> **Status:** Not functional until rewritten
+# 🔍 OpenCode Retrospective Analysis
 
-
-
-
-# 🔍 Claude Code Retrospective Analysis
-
-Analyze the last {{days}} days of Claude Code conversations to identify bottlenecks, tool utilization patterns, workflow insights, and improvement opportunities.
+Analyze the last {{days}} days of OpenCode sessions and plan files to identify bottlenecks, tool utilization patterns, workflow insights, and improvement opportunities.
 
 ## Usage Examples
 
@@ -45,23 +25,25 @@ Analyze the last {{days}} days of Claude Code conversations to identify bottlene
 
 ## Implementation Instructions
 
-### Phase 1: Preparation & Setup (5 minutes)
+### Phase 1: Preparation & Setup (3 minutes)
 
 **Parse Arguments:**
 - `days` = {{days}} (default: 30 if not specified)
 - `scope` = {{scope}} (default: "quick" if not specified)
 - `validate` = {{validate}} (default: false if not specified)
-- `output-dir` = {{output-dir}} (default: ~/.claude/retrospectives/retrospective-{current-timestamp}/)
+- `output-dir` = {{output-dir}} (default: ~/.config/opencode/retrospectives/retrospective-{current-timestamp}/)
 
 **Validations:**
-1. Check that `~/.claude/history.jsonl` exists and is readable
-2. Validate `days` is one of: 7, 14, 30, 60, 90
-3. Validate `scope` is one of: quick, full, tools-only, patterns-only
-4. Create output directory if it doesn't exist
-5. If `validate=true`, check that external LLM (Gemini 2.5 Pro) is available
+1. Check that `~/.local/share/opencode/storage/session/` exists and contains subdirectories
+2. Check that `~/.config/opencode/plans/` exists and contains .md files
+3. Validate `days` is one of: 7, 14, 30, 60, 90
+4. Validate `scope` is one of: quick, full, tools-only, patterns-only
+5. Create output directory if it doesn't exist
+6. If `validate=true`, check that external LLM (Gemini 2.5 Pro) is available
 
 **Error Handling:**
-- If history.jsonl not found: "❌ Cannot find ~/.claude/history.jsonl. Please ensure history is enabled in Claude settings."
+- If storage not found: "❌ Cannot find ~/.local/share/opencode/storage/. No OpenCode sessions found."
+- If plans not found: "⚠️ No plan files found in ~/.config/opencode/plans/. Proceeding with session data only."
 - If invalid days: "❌ Invalid days={{days}}. Valid options: 7, 14, 30, 60, 90"
 - If invalid scope: "❌ Invalid scope={{scope}}. Valid options: quick, full, tools-only, patterns-only"
 - If directory creation fails: "❌ Cannot create {{output-dir}}. Check write permissions."
@@ -70,60 +52,199 @@ Analyze the last {{days}} days of Claude Code conversations to identify bottlene
 ```
 TodoWrite: Track 8-phase retrospective analysis process
 - Phase 1: Preparation & Setup
-- Phase 2: Data Extraction
+- Phase 2: Data Extraction (Parallel)
 - Phase 3: Parallel Sub-Agent Analysis
 - Phase 4: Report Generation
-- Phase 5: CLAUDE.md Update Generation
-- Phase 6: Memory Storage
+- Phase 5: AGENTS.md Update Generation
+- Phase 6: Memory Storage (Memvid)
 - Phase 7: Validation (if requested)
 - Phase 8: Output Summary
 ```
 
 ---
 
-### Phase 2: Data Extraction (5 minutes)
+### Phase 2: Data Extraction (5 minutes) - PARALLEL EXECUTION
 
-**Extract Conversation History:**
+**Run TWO extraction tasks IN PARALLEL:**
 
-1. Read `~/.claude/history.jsonl` (entire file)
-2. Calculate timestamp cutoff: current_time - ({{days}} * 86400000) milliseconds
-3. Filter conversations where timestamp >= cutoff
-4. Extract metadata from filtered conversations:
-   - Total conversation count
-   - Unique projects (from "project" field)
-   - Timestamp range (earliest to latest)
-   - Command usage frequency (/clear, /help, etc.)
-   - Tool mentions (chunkhound, graphiti, TodoWrite, external LLM)
+#### Task A: Session Data Extraction
 
-**Generate Summary Statistics:**
-```python
-# Example statistics to extract
-total_conversations = count of filtered entries
-unique_projects = distinct project paths
-date_range = "{earliest_date} to {latest_date}"
-project_distribution = {project: count} sorted by count desc
-tool_mentions = {
-  "chunkhound": count of mentions,
-  "graphiti": count of mentions,
-  "TodoWrite": count of mentions,
-  "external_llm": count of "gemini" or "copilot" or "codex"
+```bash
+# Calculate cutoff timestamp (days ago in milliseconds)
+cutoff_ts=$(($(date +%s%3N) - ({{days}} * 86400000)))
+
+# Extract session data
+output_dir="{{output-dir}}"
+mkdir -p "$output_dir"
+
+# 1. List all projects
+projects=$(ls ~/.local/share/opencode/storage/project/*.json 2>/dev/null)
+
+# 2. For each project, find sessions within date range
+sessions_data="[]"
+for proj_file in $projects; do
+  proj_id=$(basename "$proj_file" .json)
+  proj_dir=$(jq -r '.worktree' "$proj_file")
+  
+  # Find sessions for this project
+  session_dir="$HOME/.local/share/opencode/storage/session/$proj_id"
+  if [ -d "$session_dir" ]; then
+    for session_file in "$session_dir"/*.json; do
+      created=$(jq -r '.time.created' "$session_file")
+      if [ "$created" -ge "$cutoff_ts" ]; then
+        # Extract session metadata
+        session_data=$(jq -c '{
+          id: .id,
+          title: .title,
+          directory: .directory,
+          created: .time.created,
+          updated: .time.updated,
+          summary: .summary
+        }' "$session_file")
+        sessions_data=$(echo "$sessions_data" | jq --argjson s "$session_data" '. += [$s]')
+      fi
+    done
+  fi
+done
+
+# 3. For each session, extract message metadata
+for session_id in $(echo "$sessions_data" | jq -r '.[].id'); do
+  msg_dir="$HOME/.local/share/opencode/storage/message/$session_id"
+  if [ -d "$msg_dir" ]; then
+    # Count messages by role and agent
+    for msg_file in "$msg_dir"/*.json; do
+      agent=$(jq -r '.agent // "unknown"' "$msg_file")
+      model=$(jq -r '.model.modelID // "unknown"' "$msg_file")
+      # Aggregate stats...
+    done
+  fi
+done
+
+# 4. Sample parts for tool mentions
+tool_mentions='{
+  "sia-code": 0,
+  "memvid": 0,
+  "TodoWrite": 0,
+  "mcp_task": 0,
+  "external_llm": 0
+}'
+
+# Save session extraction
+echo "$sessions_data" > "$output_dir/recent_sessions.json"
+```
+
+#### Task B: Plan File Extraction (PARALLEL)
+
+```bash
+# Extract plan file data
+plans_dir="$HOME/.config/opencode/plans"
+output_dir="{{output-dir}}"
+
+# Calculate cutoff date
+cutoff_date=$(date -d "{{days}} days ago" +%Y-%m-%d)
+
+# Find recent plan files by modification time
+plans_data="[]"
+for plan_file in "$plans_dir"/*_task_plan.md; do
+  mod_date=$(stat -c %Y "$plan_file")
+  cutoff_epoch=$(date -d "$cutoff_date" +%s)
+  
+  if [ "$mod_date" -ge "$cutoff_epoch" ]; then
+    # Parse plan file metadata
+    session=$(grep -m1 "^\*\*Session" "$plan_file" | sed 's/.*: //')
+    project=$(grep -m1 "^\*\*Project" "$plan_file" | sed 's/.*: //')
+    tier=$(grep -m1 "^\*\*Tier" "$plan_file" | sed 's/.*: //' | grep -oP 'T[1-4]')
+    created=$(grep -m1 "^\*\*Created" "$plan_file" | sed 's/.*: //')
+    
+    # Count phase completion
+    total_phases=$(grep -c "^### Phase" "$plan_file" || echo 0)
+    completed_phases=$(grep -c "\[x\]" "$plan_file" || echo 0)
+    pending_items=$(grep -c "\[ \]" "$plan_file" || echo 0)
+    
+    # Check for key sections
+    has_errors=$(grep -q "## Errors Encountered" "$plan_file" && echo true || echo false)
+    has_findings=$(grep -q "## Key Findings" "$plan_file" && echo true || echo false)
+    has_decisions=$(grep -q "## Decisions" "$plan_file" && echo true || echo false)
+    
+    plan_data=$(jq -nc --arg f "$plan_file" --arg s "$session" --arg p "$project" \
+      --arg t "$tier" --arg c "$created" --argjson tp "$total_phases" \
+      --argjson cp "$completed_phases" --argjson pi "$pending_items" \
+      --argjson he "$has_errors" --argjson hf "$has_findings" --argjson hd "$has_decisions" \
+      '{file: $f, session: $s, project: $p, tier: $t, created: $c, 
+        total_phases: $tp, completed_phases: $cp, pending_items: $pi,
+        has_errors: $he, has_findings: $hf, has_decisions: $hd}')
+    
+    plans_data=$(echo "$plans_data" | jq --argjson p "$plan_data" '. += [$p]')
+  fi
+done
+
+# Extract notes files similarly
+for notes_file in "$plans_dir"/*_notes.md; do
+  # Similar extraction for notes...
+done
+
+# Save plan extraction
+echo "$plans_data" > "$output_dir/recent_plans.json"
+```
+
+**Generate Combined Summary Statistics:**
+
+After both extractions complete, merge into `summary.json`:
+
+```json
+{
+  "analysis_period": {
+    "days": {{days}},
+    "start_date": "{start}",
+    "end_date": "{end}"
+  },
+  "sessions": {
+    "total": N,
+    "unique_projects": ["proj1", "proj2"],
+    "agent_distribution": {
+      "plan": N,
+      "code": M,
+      "ultrathink": K
+    },
+    "model_usage": {
+      "claude-opus-4-5": N,
+      "claude-sonnet-4-5": M
+    }
+  },
+  "plans": {
+    "total_task_plans": 55,
+    "total_notes": 19,
+    "tier_distribution": {
+      "T1": N,
+      "T2": M,
+      "T3": K,
+      "T4": J
+    },
+    "phase_completion_rate": "85%",
+    "plans_with_errors": N,
+    "plans_with_findings": M,
+    "plans_with_decisions": K
+  },
+  "tool_mentions": {
+    "sia-code": N,
+    "memvid": M,
+    "TodoWrite": K,
+    "mcp_task": J,
+    "external_llm": I
+  }
 }
 ```
 
 **Save extraction results:**
-- Save to `{{output-dir}}/summary.json`
-- Save filtered conversations to `{{output-dir}}/recent_conversations.jsonl`
+- `{{output-dir}}/summary.json` - Combined statistics
+- `{{output-dir}}/recent_sessions.json` - Session metadata
+- `{{output-dir}}/recent_plans.json` - Plan file metadata
 
 ---
 
 ### Phase 3: Parallel Sub-Agent Analysis (15-20 minutes)
 
-**CRITICAL: Spawn all 4 agents IN PARALLEL using haiku model for speed**
-
-Use this exact syntax:
-```
-Task(subagent_type="general-purpose", model="haiku", description="...", prompt="...")
-```
+**CRITICAL: Spawn all 4 agents IN PARALLEL using `mcp_task` tool**
 
 Send a **single message** with **4 Task tool calls** to run them in parallel.
 
@@ -131,37 +252,57 @@ Send a **single message** with **4 Task tool calls** to run them in parallel.
 
 #### Agent 1: Workflow Tier Adherence Analysis
 
-**Task Description:** "Analyze workflow tier adherence"
+**Task tool call:**
+```
+mcp_task(
+  subagent_type="general",
+  description="Analyze workflow tier adherence",
+  prompt="..."
+)
+```
 
 **Prompt:**
 ```
-Analyze workflow tier adherence in Claude Code usage over the last {{days}} days.
+Analyze workflow tier adherence in OpenCode usage over the last {{days}} days.
 
-Read and analyze: {{output-dir}}/recent_conversations.jsonl
+Read and analyze BOTH files:
+1. {{output-dir}}/recent_sessions.json - Session metadata
+2. {{output-dir}}/recent_plans.json - Plan file metadata (CRITICAL for tier data)
 
 **Analysis Focus:**
-1. Task complexity distribution:
-   - Tier 1 (simple, <30 lines): estimate %
-   - Tier 2 (medium, 30-100 lines): estimate %
-   - Tier 3 (complex, 100+ lines, architecture): estimate %
-   - Tier 4 (critical, deployment): estimate %
 
-2. Workflow adherence:
-   - TodoWrite usage for multi-step tasks
-   - Plan mode usage before complex changes
-   - Self-reflection mentions
+1. Task complexity distribution (from plan files):
+   - Count tier field from task_plan.md files
+   - Tier 1 (simple, <30 lines): count and %
+   - Tier 2 (medium, 30-100 lines): count and %
+   - Tier 3 (complex, 100+ lines, architecture): count and %
+   - Tier 4 (critical, deployment): count and %
+   - Compare to targets: T1: 40-50%, T2: 30-40%, T3: 15-20%, T4: 5-10%
 
-3. Comparison to targets:
-   - Tier 1: 40-50%, Tier 2: 30-40%, Tier 3: 15-20%, Tier 4: 5-10%
+2. Workflow adherence (from plan files):
+   - Phase completion rate (count [x] vs [ ])
+   - Plans with "Key Findings" sections
+   - Plans with "Decisions" sections
+   - Plans with "Errors Encountered" sections
+
+3. Agent mode usage (from sessions):
+   - Plan vs Code agent distribution
+   - Ultrathink usage for complex tasks
+   - Agent switches per session
+
+4. TodoWrite integration:
+   - Sessions with todo files in storage/todo/
+   - Correlation with plan files
 
 **Output:**
 Save detailed analysis to: {{output-dir}}/workflow_tier_adherence_analysis.md
 
 Include:
-- Tier distribution table (actual vs target)
+- Tier distribution table (actual vs target) - FROM PLAN FILES
+- Phase completion metrics
 - Adherence score (1-10) with justification
 - Top 3 workflow bottlenecks
-- Specific examples of good vs poor adherence
+- Specific examples of good vs poor adherence (cite plan file names)
 - Recommended improvements
 ```
 
@@ -169,86 +310,97 @@ Include:
 
 #### Agent 2: Tool Utilization Analysis
 
-**Task Description:** "Analyze tool utilization patterns"
-
 **Prompt:**
 ```
-Analyze tool utilization patterns in Claude Code usage over the last {{days}} days.
+Analyze tool utilization patterns in OpenCode usage over the last {{days}} days.
 
-Read and analyze: {{output-dir}}/recent_conversations.jsonl
+Read and analyze:
+1. {{output-dir}}/recent_sessions.json - Session metadata
+2. {{output-dir}}/recent_plans.json - Plan file metadata
+3. {{output-dir}}/summary.json - Tool mention counts
 
 **Analysis Focus:**
-1. Chunkhound/Code Expert usage:
-   - How often mentioned or used?
-   - "where is X" or "how does Y work" questions answered with chunkhound?
-   - Used before code changes to unfamiliar areas?
 
-2. Graphiti memory usage:
-   - How often queried at task START?
-   - How often updated at task END?
-   - Preferences, procedures, facts stored appropriately?
+1. sia-code usage (replaced chunkhound):
+   - Mentions in session parts
+   - Used before unfamiliar code changes?
+   - "uvx --with openai sia-code research" patterns
+
+2. Memvid memory usage (replaced Graphiti):
+   - "memvid find" at task START?
+   - "memvid put" at task END?
+   - Labels used: procedure, preference, fact
 
 3. Sub-agent utilization:
-   - Which agents used (code-expert, qa-engineer, technical-writer)?
-   - Used for Tier 3+ tasks as required?
-   - Parallel execution when appropriate?
+   - mcp_task usage in sessions
+   - Which subagent_types used?
+   - Parallel execution (multiple Task calls)?
 
 4. External LLM validation:
-   - Gemini/Copilot/Codex usage frequency?
-   - Used for Tier 3+ tasks as required?
-   - Success rate and outcomes?
+   - Gemini/Codex mentions
+   - Used for T3+ tasks as required?
+
+5. Plan file creation:
+   - task_plan.md created for multi-step tasks?
+   - notes.md created for research?
 
 **Output:**
 Save detailed analysis to: {{output-dir}}/tool_utilization_analysis.md
 
 Include:
 - Tool utilization scores (1-10) for each tool
-- Usage frequency statistics vs targets
+- Usage frequency statistics vs AGENTS.md requirements
 - Specific examples of effective vs ineffective usage
-- Missing opportunities (where tools should have been used)
-- Improvement recommendations
+- Missing opportunities (where tools SHOULD have been used per tier)
+- Improvement recommendations aligned with AGENTS.md
 ```
 
 ---
 
 #### Agent 3: Bottleneck Identification Analysis
 
-**Task Description:** "Identify bottlenecks and inefficiencies"
-
 **Prompt:**
 ```
-Identify bottlenecks, inefficiencies, and pain points in Claude Code usage over the last {{days}} days.
+Identify bottlenecks, inefficiencies, and pain points in OpenCode usage over the last {{days}} days.
 
-Read and analyze: {{output-dir}}/recent_conversations.jsonl
+Read and analyze:
+1. {{output-dir}}/recent_sessions.json - Session metadata
+2. {{output-dir}}/recent_plans.json - Plan file metadata
 
 **Analysis Focus:**
-1. Repeated patterns suggesting missing procedures:
-   - Same questions asked multiple times?
-   - Similar debugging workflows repeated?
-   - Common troubleshooting steps not documented?
 
-2. Error patterns and failures:
-   - Mentions of: "error", "failed", "issue", "problem", "bug"
-   - What types most common?
-   - Same issues recurring across projects?
+1. Errors from plan files (HIGH VALUE):
+   - Read "Errors Encountered" sections from task_plan.md files
+   - Categorize error types
+   - Recurring issues across projects?
 
-3. Efficiency gaps:
-   - Long back-and-forth conversations?
-   - Tasks that should be automated?
-   - Parallel operations not used?
+2. Incomplete phases:
+   - Plans with [ ] pending items
+   - Abandoned plans (old modification date, incomplete phases)
+   - Blocked workflows
 
-4. Context switching overhead:
-   - How often are projects switched?
-   - Context lost when switching?
-   - Memory/documentation gaps causing re-discovery?
+3. Repeated patterns suggesting missing procedures:
+   - Similar plan titles/goals repeated?
+   - Same errors occurring multiple times?
+
+4. Efficiency gaps:
+   - Low phase completion rates
+   - High pending item counts
+   - Long time between created and updated
+
+5. Context switching overhead:
+   - Project variety in sessions
+   - Session duration patterns
+   - Plan creation vs session ratio
 
 **Output:**
 Save detailed analysis to: {{output-dir}}/bottlenecks_analysis.md
 
 Include:
 - Top 5 bottlenecks with severity scores (1-10)
-- Repeated pain points and frequency
-- Specific conversation examples
+- Error patterns from "Errors Encountered" sections (CITE FILES)
+- Incomplete plan analysis
+- Specific plan file examples
 - Efficiency improvement opportunities
 - Recommended process improvements
 ```
@@ -257,44 +409,46 @@ Include:
 
 #### Agent 4: Success Pattern Identification
 
-**Task Description:** "Identify success patterns"
-
 **Prompt:**
 ```
-Identify successful patterns and best practices from Claude Code usage over the last {{days}} days.
+Identify successful patterns and best practices from OpenCode usage over the last {{days}} days.
 
-Read and analyze: {{output-dir}}/recent_conversations.jsonl
+Read and analyze:
+1. {{output-dir}}/recent_sessions.json - Session metadata
+2. {{output-dir}}/recent_plans.json - Plan file metadata
 
 **Analysis Focus:**
-1. Successful workflows:
-   - What conversations led to successful outcomes?
-   - Positive indicators: "done", "completed", "working", "success", "fixed"
 
-2. Effective tool combinations:
-   - Tools used together effectively
-   - Successful parallel agent usage
-   - Good memory + code exploration use
+1. Successful workflows from plan files (HIGH VALUE):
+   - Plans with high phase completion (all [x])
+   - Plans with "Key Findings" sections
+   - Plans with documented "Decisions"
 
-3. Good practices observed:
+2. Best practices observed:
    - Proper tier selection
-   - Effective validation and review
-   - Good documentation habits
-   - Efficient context management
+   - Good plan file structure
+   - Effective notes.md usage
+   - Complete phase tracking
 
-4. User satisfaction indicators:
-   - Positive acknowledgments
-   - Tasks completed without excessive iteration
-   - Clean, efficient conversation flows
+3. Effective patterns:
+   - Projects with multiple successful plans
+   - Good agent mode selection (plan vs code)
+   - Parallel execution usage
+
+4. Knowledge capture:
+   - Plans that documented learnings
+   - Decisions with clear rationale
+   - Reusable patterns identified
 
 **Output:**
 Save detailed analysis to: {{output-dir}}/success_patterns_analysis.md
 
 Include:
-- Top 5 success patterns with examples
-- Effective tool usage combinations
+- Top 5 success patterns with examples (CITE FILES)
+- "Key Findings" that should become AGENTS.md rules
+- "Decisions" that should become procedures
 - Best practices that should be formalized
-- User preferences that emerged
-- Patterns worth promoting in CLAUDE.md
+- Patterns worth promoting in AGENTS.md
 ```
 
 ---
@@ -320,6 +474,7 @@ Include:
 
 2. **quick_reference.txt** - 1-page visual summary
    - Tool utilization scores (ASCII bar charts)
+   - Tier distribution from plan files
    - Bottleneck severity table
    - Success patterns checklist
    - Next steps checklist
@@ -328,45 +483,12 @@ Include:
 All of "quick" scope PLUS:
 
 3. **synthesis_report.md** - Comprehensive synthesis
-   - Convergent findings across all 4 agents
-   - Critical issues with evidence
-   - Secondary bottlenecks
-   - Success patterns worth reinforcing
-   - Proposed CLAUDE.md updates (detailed)
-
 4. **remediation_plan.md** - 4-week implementation plan
-   - Week 1: Quick wins (2 hours, recovery 2-3 hrs/week)
-   - Week 2: Medium changes (4 hours, recovery +2 hrs/week)
-   - Week 3: Structural changes (8 hours, recovery +1-2 hrs/week)
-   - Week 4: Validation & adjustment
-
 5. **implementation_checklist.md** - Actionable tracking
-   - Phase 1-4 checklists
-   - Weekly metric tracking template
-   - Success criteria definitions
-
 6. **visual_summary.txt** - ASCII charts and graphs
-   - Tool utilization bar charts
-   - Tier distribution pie chart
-   - Bottleneck timeline
-   - Project distribution graph
-
 7. **ANALYSIS_COMPLETE.txt** - Completion report
-   - Analysis metadata (date, conversations, confidence)
-   - Deliverables created
-   - Key findings summary
-   - FAQ section
-
 8. **INDEX.md** - Navigation guide
-   - Reading path recommendations
-   - Document descriptions
-   - Quick links to sections
-
 9. **README.md** - Context and usage
-   - What this analysis covers
-   - How to use the documents
-   - Next steps after review
-
 10-13. **Agent-specific reports** (already created in Phase 3)
 
 #### If scope="tools-only" (2 documents):
@@ -380,113 +502,64 @@ All of "quick" scope PLUS:
 
 ---
 
-### Phase 5: CLAUDE.md Update Generation
+### Phase 5: AGENTS.md Update Generation
 
-**Based on all analysis findings, generate specific CLAUDE.md update recommendations.**
+**Based on all analysis findings, generate specific AGENTS.md update recommendations.**
 
-Create: `{{output-dir}}/CLAUDE_MD_UPDATES.md`
+Create: `{{output-dir}}/AGENTS_MD_UPDATES.md`
 
 **Structure:**
 ```markdown
-# CLAUDE.md Updates - Based on {{days}}-Day Retrospective
+# AGENTS.md Updates - Based on {{days}}-Day Retrospective
 
 ## Overview
 - Analysis period: {date_range}
-- Conversations analyzed: {total_conversations}
+- Sessions analyzed: {total_sessions}
+- Plan files analyzed: {total_plans}
 - Critical issues found: {count}
 - Expected productivity recovery: {hours}/week
 
 ## Proposed Updates
 
 ### Update 1: [Title] (INSERT/REPLACE at line X)
-**WHY:** {evidence from analysis}
-**Current:** {current CLAUDE.md text or "none"}
+**WHY:** {evidence from analysis - cite plan files}
+**Current:** {current AGENTS.md text or "none"}
 **Proposed:**
 ```markdown
 {new text to add/replace}
 ```
-
-### Update 2: [Title] (INSERT/REPLACE at line Y)
-...
 
 ## Implementation Checklist
 - [ ] Phase 1: Critical fixes (Week 1)
 - [ ] Phase 2: Tool enablement (Week 2)
 - [ ] Phase 3: Pattern reinforcement (Week 3)
 - [ ] Phase 4: Metrics & tracking (Week 4)
-
-## Expected Outcomes
-- Tool utilization improvements
-- Bottleneck reductions
-- Productivity recovery timeline
 ```
-
-**Generate 5-10 specific updates addressing:**
-1. Tool underutilization (make MANDATORY if <20% usage)
-2. Workflow tier misclassification
-3. Missing procedures (Two-Strike Debugging, Focus Blocks, etc.)
-4. Success patterns to formalize
-5. Bottleneck mitigation strategies
 
 ---
 
-### Phase 6: Memory Storage (MANDATORY for scope="full")
+### Phase 6: Memory Storage (Memvid)
 
-**Store findings in Graphiti memory.**
+**Store findings using Memvid (replaces Graphiti).**
 
-**As PROCEDURES (entity="Procedure"):**
-```python
-mcp__graphiti-memory__add_memory(
-  name="Monthly Retrospective Procedure - {current_date}",
-  episode_body="[Full retrospective process documentation]",
-  source="text",
-  source_description="monthly retrospective procedure",
-  group_id="default"
-)
+```bash
+source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh
+
+# Store as PROCEDURE
+echo '{"title":"Monthly Retrospective - {{date}}","label":"procedure","text":"Retrospective analysis process: 1) Extract sessions from storage/, 2) Extract plans from plans/, 3) Run 4 parallel agents, 4) Generate reports, 5) Update AGENTS.md, 6) Store to Memvid"}' | \
+  memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+
+# Store as PREFERENCE (from success patterns)
+echo '{"title":"Coding Patterns - {{date}} Retrospective","label":"preference","text":"[Top patterns from success_patterns_analysis.md]"}' | \
+  memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
+
+# Store as FACT (metrics and bottlenecks)
+echo '{"title":"Retrospective Findings - {{date}}","label":"fact","text":"Sessions: N, Plans: M, Tier distribution: T1=X%, T2=Y%, T3=Z%, T4=W%. Top bottleneck: [from bottlenecks_analysis.md]. Tool utilization: sia-code=X/10, memvid=Y/10"}' | \
+  memvid put ~/.config/opencode/memory.mv2 --embedding -m openai-large
 ```
-
-Store:
-- Retrospective analysis process (this command's methodology)
-- New debugging workflows discovered
-- Testing procedures from findings
-- Deployment checklists from patterns
-
-**As PREFERENCES (entity="Preference"):**
-```python
-mcp__graphiti-memory__add_memory(
-  name="Coding Patterns - {current_date} Retrospective",
-  episode_body="[Observed coding patterns and best practices]",
-  source="text",
-  source_description="retrospective preferences",
-  group_id="default"
-)
-```
-
-Store:
-- Coding patterns observed
-- Testing approaches preferred
-- Documentation standards found
-- Tool usage best practices identified
-
-**As FACTS (regular episodes):**
-```python
-mcp__graphiti-memory__add_memory(
-  name="{Current_date} Retrospective Critical Findings",
-  episode_body="[Detailed bottleneck metrics and tool utilization stats]",
-  source="text",
-  source_description="retrospective analysis facts",
-  group_id="default"
-)
-```
-
-Store:
-- Bottleneck details with metrics
-- Tool utilization: current % vs target %
-- Architecture decisions/patterns observed
-- Common pitfalls and gotchas discovered
 
 **For scope="quick", "tools-only", "patterns-only":**
-Store only key findings (1-2 memory entries instead of full set).
+Store only key findings (1 memory entry with summary).
 
 ---
 
@@ -495,140 +568,98 @@ Store only key findings (1-2 memory entries instead of full set).
 **Run external LLM validation using Gemini 2.5 Pro.**
 
 ```bash
-/usr/bin/zsh -c "source ~/.zshrc && gemini -m gemini-2.5-pro -p 'Adopt an antagonistic QA mindset. Review this retrospective analysis:
+source ~/.zshrc && gemini -m gemini-2.5-pro -p 'Adopt an antagonistic QA mindset. Review this retrospective analysis:
 
 ## Analysis Summary:
-- {{total_conversations}} conversations analyzed over {{days}} days
-- Tool underutilization: Graphiti {X}%, Chunkhound {Y}%, TodoWrite {Z}%
-- Estimated productivity loss: {N} hours/week
-- Proposed recovery: {M} hours/week within 4 weeks
+- Sessions analyzed: {N} over {{days}} days
+- Plan files analyzed: {M}
+- Tier distribution: T1={X}%, T2={Y}%, T3={Z}%, T4={W}%
+- Tool utilization scores: sia-code={A}/10, memvid={B}/10, TodoWrite={C}/10
 
 ## Key Findings:
-[Paste top 3-4 critical issues from synthesis]
+[Top 3-4 critical issues from synthesis]
 
 ## Proposed Solutions:
-[Paste top 3-4 CLAUDE.md updates]
+[Top 3-4 AGENTS.md updates]
 
 Validate with skepticism:
 1. Are findings supported by sufficient evidence?
-2. Are severity scores justified or inflated?
-3. Are time savings realistic or optimistic?
-4. Could MANDATORY tools create new bottlenecks?
-5. Is 4-week timeline achievable?
-6. What assumptions could be wrong?
-7. Are there simpler solutions overlooked?
-8. What could break if changes applied?
+2. Are tier percentages realistic given plan file count?
+3. Are tool scores justified?
+4. What assumptions could be wrong?
+5. Are there simpler solutions overlooked?
 
-Be brutally honest about gaps and weaknesses.'"
+Be brutally honest about gaps.'
 ```
 
-**Timeout:** 2 minutes. If timeout, note in output: "⚠️ Gemini validation timed out. Proceed with manual review."
-
-**Save results:**
-- If successful: Save to `{{output-dir}}/validation_report.md`
-- If timeout/error: Note in SUMMARY.md that validation was skipped
+**Timeout:** 2 minutes
 
 ---
 
 ### Phase 8: Output Summary & Completion
 
-**Update TodoWrite to mark phases complete.**
-
 **Generate completion report:**
 
 ```
-🎯 Retrospective Analysis Complete!
+🎯 OpenCode Retrospective Analysis Complete!
 
 📊 Analysis Summary:
 - Period: {date_range}
-- Conversations analyzed: {total_conversations}
+- Sessions analyzed: {total_sessions}
+- Plan files analyzed: {total_plans} (task_plans: {N}, notes: {M})
 - Projects: {unique_project_count}
 - Scope: {{scope}}
 
 📁 Documents Generated: {document_count}
 Location: {{output-dir}}/
 
-✅ Key Deliverables:
-{if scope=quick}
-- SUMMARY.md - Executive summary
-- quick_reference.txt - 1-page visual summary
+📈 Tier Distribution (from plan files):
+- T1: {N}% (target: 40-50%)
+- T2: {M}% (target: 30-40%)
+- T3: {K}% (target: 15-20%)
+- T4: {J}% (target: 5-10%)
 
-{if scope=full}
-- SUMMARY.md - Executive summary
-- synthesis_report.md - Comprehensive analysis (22 KB)
-- CLAUDE_MD_UPDATES.md - Specific update recommendations (23 KB)
-- remediation_plan.md - 4-week action plan
-- implementation_checklist.md - Weekly tracking
-- + 8 additional analysis documents
-
-{if scope=tools-only}
-- tool_utilization_analysis.md - Tool usage deep dive
-- quick_reference.txt - Tool metrics summary
-
-{if scope=patterns-only}
-- workflow_tier_adherence_analysis.md - Tier analysis
-- success_patterns_analysis.md - Best practices
-- quick_reference.txt - Pattern summary
+🔧 Tool Utilization Scores:
+- sia-code: {X}/10
+- Memvid: {Y}/10
+- TodoWrite: {Z}/10
+- Sub-agents: {W}/10
 
 🔴 Critical Issues Found: {count}
-1. {issue_1_title} (severity: {X}/10)
-2. {issue_2_title} (severity: {Y}/10)
-3. {issue_3_title} (severity: {Z}/10)
+1. {issue_1} (from plan: {file})
+2. {issue_2} (from plan: {file})
 
-💰 Bottom Line:
-- Productivity loss: {N} hours/week
-- Recovery potential: {M} hours/week (within 4 weeks)
-- ROI: 2-3 days payback
-
-🧠 Memory Updated:
-- {count} procedures stored
-- {count} preferences stored
-- {count} facts stored
-
-{if validate=true and validation succeeded}
-✅ External validation: PASSED (Gemini 2.5 Pro)
-
-{if validate=true and validation failed}
-⚠️ External validation: TIMEOUT or FAILED
-Recommendation: Manual review of findings
+🧠 Memory Updated (Memvid):
+- {count} entries stored
 
 🎯 Immediate Next Steps:
-1. Read {{output-dir}}/SUMMARY.md (5-10 min)
-2. Review {{output-dir}}/quick_reference.txt (2 min)
-3. Check {{output-dir}}/CLAUDE_MD_UPDATES.md (10 min)
-4. Implement Week 1 from remediation_plan.md (2 hours)
-5. Set up weekly metric tracking
-6. Schedule next retrospective in 30 days
+1. Read {{output-dir}}/SUMMARY.md (5 min)
+2. Review AGENTS_MD_UPDATES.md (10 min)
+3. Implement Week 1 changes (2 hours)
+4. Schedule next retrospective
 
 📅 Next Retrospective: {current_date + 30 days}
-
-🚀 Start now. Your future productivity depends on taking action today.
 ```
-
-**Final checklist:**
-- [ ] All {{document_count}} documents created
-- [ ] Findings stored in Graphiti memory (if scope=full)
-- [ ] CLAUDE.md updates generated
-- [ ] Validation completed (if requested)
-- [ ] Output summary displayed
-- [ ] TodoWrite marked all phases complete
 
 ---
 
 ## Success Criteria
 
-After running this command, verify:
-- ✅ {{output-dir}}/ directory exists with all documents
-- ✅ SUMMARY.md contains executive summary with critical issues
-- ✅ CLAUDE_MD_UPDATES.md has specific line-by-line recommendations
-- ✅ quick_reference.txt provides 1-page visual overview
-- ✅ Graphiti memory updated with procedures, preferences, facts (if scope=full)
-- ✅ No errors or timeouts in execution
-- ✅ Next steps clearly documented
+- ✅ Both data sources extracted (sessions + plans)
+- ✅ 4 sub-agents completed in parallel
+- ✅ Tier distribution from plan files
+- ✅ AGENTS.md updates cite specific plan files
+- ✅ Memvid memory updated
+- ✅ No errors or timeouts
 
 ---
 
 ## Error Recovery
+
+**If Phase 2 (extraction) fails:**
+1. Check which data source completed
+2. Continue with available data
+3. Note in SUMMARY.md which source was incomplete
 
 **If Phase 3 (sub-agents) times out:**
 1. Check which agents completed successfully
@@ -644,7 +675,7 @@ After running this command, verify:
 **If validation fails:**
 1. Note timeout in output summary
 2. Continue with document generation
-3. Recommend manual validation of CLAUDE_MD_UPDATES.md
+3. Recommend manual validation of AGENTS_MD_UPDATES.md
 
 ---
 
@@ -667,24 +698,28 @@ After running this command, verify:
 
 ## Reference Documentation
 
-**This command replaces:** Manual retrospective process in `/tmp/claude_retrospective/`
+**Data Sources:**
+- `~/.local/share/opencode/storage/` - Session/message/part data
+- `~/.config/opencode/plans/` - Task plans and notes
 
-**Related files:**
-- `~/.claude/CLAUDE.md` - Will receive update recommendations
-- `~/.claude/history.jsonl` - Data source
-- `/tmp/claude_retrospective/` - Example output from manual retrospective
+**Output Location:**
+- `~/.config/opencode/retrospectives/retrospective-{timestamp}/`
 
-**Agent specifications:**
-- `~/.claude/agents/project-manager.md` - Coordination agent
-- `~/.claude/agents/code-expert.md` - Code analysis agent
-- `~/.claude/agents/qa-engineer.md` - Testing analysis agent
-- `~/.claude/agents/technical-writer.md` - Documentation analysis agent
+**Configuration:**
+- `~/.config/opencode/AGENTS.md` - Will receive update recommendations
+- `~/.config/opencode/memory.mv2` - Memvid memory storage
 
-**Graphiti cursor rules:**
-- `/home/daniel/dev/mcp/graphiti/mcp_server/cursor_rules.md` - Memory best practices
+**Agent Definitions:**
+- `~/.config/opencode/agent/project-manager.md`
+- `~/.config/opencode/agent/qa-engineer.md`
+- `~/.config/opencode/agent/technical-writer.md`
+
+**Skills:**
+- `@memvid` - Memory storage patterns
+- `@planning-with-files` - Plan file format
 
 ---
 
-**Command Version:** 1.0
-**Created:** 2025-11-19
-**Next Update:** After first production run and feedback
+**Command Version:** 2.0
+**Created:** 2026-01-16
+**Rewritten for:** OpenCode (from Claude CLI)
