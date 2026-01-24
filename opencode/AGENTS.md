@@ -36,12 +36,12 @@ Skip ALL planning for trivial direct commands:
 
 LLM auto-detects tier based on task complexity:
 
-| Tier | Scope | Key Requirements |
-|------|-------|------------------|
-| **T1** | <30 lines, 1 file | task_plan.md + TodoWrite MANDATORY. sia-code memory optional |
-| **T2** | 30-100 lines, 2-5 files | All T1 + **Sia-code MANDATORY** (search + memory) |
-| **T3** | 100+ lines, architecture | All T2 + notes.md + External LLM |
-| **T4** | Critical/Deployment | All T3 + rollback plan + Antagonistic QA NON-SKIPPABLE |
+| Tier | Scope | Key Requirements | Compression | Token Hint |
+|------|-------|------------------|-------------|------------|
+| **T1** | <30 lines, 1 file | task_plan.md + TodoWrite MANDATORY. sia-code memory optional | 5-10x | ~8K budget |
+| **T2** | 30-100 lines, 2-5 files | All T1 + **Sia-code MANDATORY** (search + memory) | 2-5x | ~16K budget |
+| **T3** | 100+ lines, architecture | All T2 + notes.md + External LLM | 1-2x | ~32K budget |
+| **T4** | Critical/Deployment | All T3 + rollback plan + Antagonistic QA NON-SKIPPABLE | None | ~64K budget |
 
 ### Tier 1 Requirements
 Follow **MASTER CHECKLIST** with these tier-specific requirements:
@@ -164,6 +164,9 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 15. ☐ task_plan.md: Mark all phases [x]
 16. ☐ sia-code memory: Store learnings (T1: optional, T2+: MANDATORY)
     - What new insight did we capture?
+    - Search for related memories: `uvx sia-code memory search "[topic]"`
+    - If exists: Update with "Updated [date]: [new insight]"
+    - If new: Use appropriate category prefix (Procedure/Fact/Pattern/Fix)
     - Store as decision: `uvx sia-code memory add-decision "..."`
 17. ☐ @code-simplifier: Run on modified code (T2+: recommended, before final testing)
 18. ☐ Validation: run tests, verify changes
@@ -284,6 +287,54 @@ uvx sia-code memory list --type timeline
 uvx sia-code memory list --type decision
 ```
 
+**Memory Evolution Protocol (T2+):**
+
+<protocol name="memory-evolution">
+  <description>Guidelines for maintaining and evolving sia-code memory</description>
+  
+  <rule name="update-vs-create">
+    <when>Same topic, new insight discovered</when>
+    <action>Update existing with context noting what changed</action>
+    <format>
+      uvx sia-code memory add-decision \
+        "Updated [YYYY-MM-DD]: [new insight]. Previous: [old insight]."
+    </format>
+  </rule>
+  
+  <rule name="link-related">
+    <when>Discovery relates to existing memory</when>
+    <action>Reference related topics in the decision text</action>
+    <format>
+      uvx sia-code memory add-decision \
+        "[Learning]. Related: [topic1], [topic2]."
+    </format>
+  </rule>
+  
+  <rule name="contradictory-findings">
+    <when>New finding contradicts existing memory</when>
+    <action>Keep both, add context explaining conditions when each applies</action>
+    <format>
+      uvx sia-code memory add-decision \
+        "Context-dependent: [condition1] → [behavior1]; [condition2] → [behavior2]."
+    </format>
+  </rule>
+  
+  <categories>
+    <category prefix="Procedure:">Step-by-step how-to instructions</category>
+    <category prefix="Fact:">Verified assertion about the codebase</category>
+    <category prefix="Pattern:">Reusable approach with conditions for use</category>
+    <category prefix="Fix:">Root cause → solution mapping</category>
+    <category prefix="Preference:">User or project-specific choice</category>
+  </categories>
+</protocol>
+
+**Memory Quality Checklist:**
+- [ ] Includes context (why this was learned)
+- [ ] Uses appropriate category prefix
+- [ ] References related topics if applicable
+- [ ] Specific enough to be actionable
+- [ ] Avoids duplicating existing memory
+
 **Check index health:**
 ```bash
 uvx sia-code status  # Shows 🟢 Healthy / 🟡 Degraded / 🔴 Critical
@@ -305,6 +356,53 @@ uvx sia-code embed stop    # Stop daemon (optional, auto-stops after 1hr idle)
 > - If YES and `.sia-code/` exists: Run `uvx sia-code status` first
 > - If YES and `.sia-code/` doesn't exist: Run `uvx sia-code init && uvx sia-code index .`
 > - If NO: Document in task_plan.md ("Familiar codebase: [reason]") for T3+ tasks
+
+### Token Budget Awareness (T2+)
+
+**Context window is a public good** - every token competes with other information.
+
+**Built-in Monitoring:**
+```bash
+# Check current project stats
+opencode stats --project ""
+
+# Check last 7 days with model breakdown
+opencode stats --days 7 --models 5
+
+# Full breakdown
+opencode stats --days 30 --models 10 --tools 10
+```
+
+<decision-tree name="budget-action-triggers">
+  <case condition="phase_boundary_reached">
+    <action>Run `opencode stats --project ""` to assess usage</action>
+  </case>
+  <case condition="long_outputs >= 3">
+    <action>Consider offloading findings to notes.md</action>
+  </case>
+  <case condition="error_investigation > 2_attempts">
+    <action>Document state, run stats, assess if /clear needed</action>
+  </case>
+  <case condition="before_clear">
+    <action>Run stats to log usage, then proceed with /clear</action>
+  </case>
+</decision-tree>
+
+**Heuristic Triggers:**
+| Event | Action |
+|-------|--------|
+| Phase boundary | Run `opencode stats`, summarize to task_plan.md |
+| 3+ long tool outputs | Consider notes.md offload |
+| Error investigation >2 attempts | Document state, check stats |
+| Research accumulated | Transfer to notes.md |
+| Before `/clear` | Run stats to log, then clear |
+
+**Budget Overflow Protocol:**
+1. Run `opencode stats --project ""` to assess current usage
+2. Offload research findings to notes.md
+3. Summarize completed phases in task_plan.md
+4. Store key learnings in sia-code memory
+5. If still overloaded: `/clear` and restore from task_plan.md
 
 ### TodoWrite + Plan Sync
 **Context stability:** Keep AGENTS.md rules and task goal fixed; summarize completed phases only at boundaries.
@@ -392,16 +490,69 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
   <anti-patterns>Trial-and-error console.log, CSS without DevTools, random fixes</anti-patterns>
 </rule>
 
-### Observation Masking
+### Observation Masking (Tier-Aware)
 
-Long outputs waste tokens. Apply simple masking (50%+ cost savings):
+Long outputs waste tokens. Apply tier-appropriate masking (50%+ cost savings):
 
-| Output Type | Keep |
-|-------------|------|
-| File >100 lines | First 20 + last 10 + search matches |
-| Command success | Exit code + key metrics |
-| Command error | Full error + 5 lines context |
-| Test results | Pass/fail counts + first failure |
+| Output Type | T1 (Simple) | T2 (Moderate) | T3+ (Complex) |
+|-------------|-------------|---------------|---------------|
+| File >100 lines | First 20 + last 10 + matches | Error context + 20 lines | Full structure |
+| Command success | Exit code only | Exit code + key metrics | Exit code + full output |
+| Command error | Full error + 3 lines | Full error + 5 lines | Full error section |
+| Test results | Pass/fail counts | + first 3 failures | + all failures + stacks |
+| API response | Schema only | Schema + sample | Full response |
+| Build logs | Final 5 lines | Final 10 lines | Full error section |
+
+**Semantic Preservation:** Always keep function signatures, error lines, imports.
+
+### Compression Strategy (Tier-Aware)
+
+<decision-tree name="compression-strategy">
+  <description>Select compression ratio based on output type and task tier</description>
+  
+  <case condition="output.type == 'error'">
+    <action>Keep FULL - errors need complete context</action>
+    <rationale>Error diagnosis requires full stack traces and surrounding code</rationale>
+  </case>
+  
+  <case condition="output.type != 'error'">
+    <branch on="task.tier">
+      <case value="T1">
+        <action>5-10x compression</action>
+        <rules>
+          <rule>Files: First 20 + last 10 + search matches</rule>
+          <rule>Commands: Exit code only</rule>
+          <rule>Tests: Pass/fail counts only</rule>
+        </rules>
+      </case>
+      <case value="T2">
+        <action>2-5x compression</action>
+        <rules>
+          <rule>Files: Error context + 20 lines around</rule>
+          <rule>Commands: Exit code + key metrics</rule>
+          <rule>Tests: Pass/fail + first 3 failures</rule>
+        </rules>
+      </case>
+      <case value="T3">
+        <action>1-2x compression (semantic preservation)</action>
+        <rules>
+          <rule>Files: Full structure, compress comments only</rule>
+          <rule>Architecture: Full file required</rule>
+          <rule>Tests: Full failure details + stack traces</rule>
+        </rules>
+      </case>
+      <case value="T4">
+        <action>No compression (full fidelity)</action>
+        <rationale>Critical/deployment tasks need complete context</rationale>
+      </case>
+    </branch>
+  </case>
+</decision-tree>
+
+**Semantic Preservation Rules (LLMLingua-2):**
+- **Always keep:** Function signatures, imports, class definitions, error lines
+- **Safe to compress:** Repeated patterns, verbose comments, whitespace
+- **Never discard:** The exact line referenced in errors
 
 ### Frontend Debugging (MANDATORY Tier 2+)
 Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
@@ -471,6 +622,24 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
     <right>Store in notes.md</right>
     <rationale>Large research dumps dilute focus; notes.md preserves findings without polluting working memory</rationale>
   </pattern>
+  
+  <pattern name="blind-truncation">
+    <wrong>Apply same compression regardless of task tier</wrong>
+    <right>Match compression ratio to tier (T1: 5-10x, T2: 2-5x, T3+: minimal)</right>
+    <rationale>Architecture tasks need full context; simple edits can compress heavily</rationale>
+  </pattern>
+  
+  <pattern name="memory-stagnation">
+    <wrong>Create new memories without checking for existing related ones</wrong>
+    <right>Search memory first, update existing with context if same topic</right>
+    <rationale>Duplicate memories fragment knowledge; evolved memories maintain coherence</rationale>
+  </pattern>
+  
+  <pattern name="budget-blindness">
+    <wrong>Ignore context usage until auto-compact or /clear forced</wrong>
+    <right>Monitor budget proactively, offload at 75%, prepare for /clear at 90%</right>
+    <rationale>Proactive offloading preserves continuity; reactive clearing loses context</rationale>
+  </pattern>
 </anti-patterns>
 
 ## QUICK REFERENCE
@@ -488,6 +657,7 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
 **Sia-code:** `uvx sia-code status` (check health), `uvx sia-code search --regex "X"` (search), `uvx sia-code research "Q"` (explore)
 **Sia-code embed:** `uvx sia-code embed start` (start daemon), `uvx sia-code embed status` (check), MANDATORY for hybrid search
 **Sia-code memory:** `uvx sia-code memory search "X"` (find past), `uvx sia-code memory add-decision "..."` (store)
+**Token monitoring:** `opencode stats --project ""` (built-in usage/cost stats)
 
 ## EFFICIENCY
 
