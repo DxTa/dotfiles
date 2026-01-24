@@ -66,7 +66,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
   - After Two-Strike Rule triggered
   - Task involves "how does X work" or "trace dependencies"
 - Step 10 (Re-read plan): Before major decisions
-- Step 11 (Self-reflection): Use @plan agent (recommended)
+- Step 11 (Self-reflection): Use @self-reflect agent (recommended)
 - Step 14 (sia-code memory): MANDATORY
 
 ### Tier 3 Requirements
@@ -76,7 +76,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 - Step 5 (`notes.md`): MANDATORY
 - Step 7 (exploration): **Sia-code + parallel subagents MANDATORY** before code changes
 - Step 10 (Re-read plan): Before EVERY major decision
-- Step 11 (Self-reflection): Use @plan agent (MANDATORY)
+- Step 11 (Self-reflection): Use @self-reflect agent (MANDATORY)
 - Step 12 (External LLM): MANDATORY
 - Step 14 (sia-code memory): MANDATORY
 
@@ -155,7 +155,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 8. ☐ TodoWrite: Update as steps complete
 9. ☐ Sync task_plan.md Status after each TodoWrite change
 10. ☐ Re-read task_plan.md before major decisions; confirm trimmed context is irrelevant to next 2 steps
-11. ☐ Self-reflection (T1: mental check, T2: @plan agent recommended, T3+: @plan agent MANDATORY)
+11. ☐ Self-reflection (T1: mental check, T2: @self-reflect recommended, T3+: @self-reflect MANDATORY)
 12. ☐ Log errors to task_plan.md
 
 **POST-TASK:**
@@ -438,6 +438,7 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
 |-------|----------|
 | @general | Broad research, multi-step analysis, uncertain searches |
 | @explore | Fast codebase exploration, file patterns, code search |
+| @self-reflect | Antagonistic QA, plan validation, self-reflection (GPT-5.2 Codex) |
 | @code-simplifier | Code cleanup, simplification before testing/PR |
 | @qa-engineer | Test suites, coverage review |
 | @technical-writer | READMEs, API docs, root cause docs |
@@ -450,24 +451,26 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
 **Note:** For architecture analysis, dependency mapping, and unfamiliar code exploration, use `uvx sia-code research` directly instead of a subagent.
 
 ### Self-Reflection & External Validation
-**Self-Reflection:**
-- T1: Quick mental check
-- T2: Use @plan agent (recommended)
-- T3+: Use @plan agent (MANDATORY)
 
-**External LLM (Codex or equivalent):**
-- T2: Optional
-- T3+: MANDATORY
-- T4: NON-SKIPPABLE
+**Self-Reflection with @self-reflect:**
+- T1: Quick mental check (skip agent)
+- T2: Use `@self-reflect` (recommended)
+- T3+: Use `@self-reflect` (MANDATORY)
+- T4: Use `@self-reflect` (NON-SKIPPABLE)
 
-**Validation approach:** Antagonistic QA mindset - validate edge cases, production risks, missing considerations, simpler approaches, wrong assumptions. **Assume broken until proven.**
-
-**Codex Execution Command:**
-```bash
-~/.local/bin/codex -c model=gpt-5.1-codex exec --skip-git-repo-check "Adopt antagonistic QA mindset. Review this plan: validate edge cases, production risks, missing considerations, simpler approaches, wrong assumptions. Assume broken until proven." < ~/.config/opencode/plans/{planfile}.md
+**Invocation:**
+```
+@self-reflect Review this plan for edge cases, production risks, and missing considerations
 ```
 
-**Usage:** Pass the task_plan.md path via stdin redirection.
+**What @self-reflect validates:**
+- Edge cases and error scenarios
+- Production risks and scalability concerns
+- Missing considerations and requirements gaps
+- Simpler alternative approaches
+- Unstated assumptions that need verification
+
+**Validation approach:** Antagonistic QA mindset from a Senior Technical Lead perspective - validate edge cases, production risks, missing considerations, simpler approaches, wrong assumptions. **Assume broken until proven.**
 
 ## RULES
 
