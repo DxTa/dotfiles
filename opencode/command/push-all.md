@@ -1,6 +1,6 @@
 ---
 description: Stage all changes, create commit, and push to remote (use with caution)
-allowed-tools: ["Bash(git add:*)", "Bash(git status:*)", "Bash(git commit:*)", "Bash(git push:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git pull:*)", "Glob", "Grep", "Read"]
+allowed-tools: ["Bash(git add:*)", "Bash(git status:*)", "Bash(git commit:*)", "Bash(git push:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git pull:*)", "Bash(npm run:*)", "Bash(npx:*)", "Bash(cargo:*)", "Bash(go:*)", "Bash(golangci-lint:*)", "Bash(ruff:*)", "Bash(mypy:*)", "Bash(pyright:*)", "Bash(flake8:*)", "Bash(bundle exec:*)", "Bash(composer:*)", "Bash(deno:*)", "Bash(cat:*)", "Bash(ls:*)", "Bash(test:*)", "Glob", "Grep", "Read"]
 ---
 
 # Commit and Push Everything
@@ -21,7 +21,150 @@ git diff --stat
 git log -1 --oneline
 ```
 
-### 2. Safety Checks
+### 2. Quality Gates (Lint/Typecheck)
+
+**Detect project type and run quality checks before pushing.**
+
+#### Detection Strategy
+
+Check for config files in priority order (stop at first match per type):
+
+```bash
+# Quick detection
+ls package.json pyproject.toml Cargo.toml go.mod composer.json Gemfile deno.json biome.json 2>/dev/null
+```
+
+#### Project-Specific Gates
+
+| Config File | Project Type | Lint Command | Typecheck Command |
+|-------------|--------------|--------------|-------------------|
+| `package.json` | Node.js | Parse `scripts` for: `lint`, `eslint` | Parse `scripts` for: `typecheck`, `type-check`, `tsc` |
+| `pyproject.toml` | Python | `ruff check .` (if `[tool.ruff]`) | `mypy .` (if `[tool.mypy]`) |
+| `Cargo.toml` | Rust | `cargo clippy` | `cargo check` |
+| `go.mod` | Go | `go vet ./...` | (included in vet) |
+| `composer.json` | PHP | Parse `scripts` for: `lint`, `phpcs` | `./vendor/bin/phpstan` (if exists) |
+| `Gemfile` | Ruby | `bundle exec rubocop` | `bundle exec sorbet tc` (if sorbet) |
+| `deno.json` | Deno | `deno lint` | `deno check *.ts` |
+| `biome.json` | Biome | `npx biome check .` | (included in check) |
+
+#### Node.js Script Detection
+
+For `package.json`, parse the `scripts` section:
+
+```bash
+# Check for lint scripts
+cat package.json | grep -E '"(lint|eslint)":'
+
+# Check for typecheck scripts  
+cat package.json | grep -E '"(typecheck|type-check|tsc)":'
+```
+
+**Patterns to detect:**
+- Lint: Script name contains `lint`, `eslint`, or `check`
+- Typecheck: Script name contains `type`, `typecheck`, `tsc`
+
+**Execute with:** `npm run <script-name>`
+
+#### Python Tool Detection
+
+For `pyproject.toml`, check for tool configurations:
+
+```bash
+# Check for ruff
+grep -q "\[tool.ruff\]" pyproject.toml && echo "ruff check ."
+
+# Check for mypy
+grep -q "\[tool.mypy\]" pyproject.toml && echo "mypy ."
+
+# Check for pyright
+grep -q "\[tool.pyright\]" pyproject.toml && echo "pyright"
+```
+
+#### Execution Flow
+
+1. **Detect all project types** (a repo may have multiple, e.g., Node.js + Python)
+2. **For each detected type:**
+   - Find available lint commands
+   - Find available typecheck commands
+3. **Run all gates sequentially:**
+   - Run all lint commands first
+   - Then run all typecheck commands
+4. **❌ STOP if any gate fails** - must fix before continuing
+
+**Example output:**
+
+```
+🔍 Quality Gates Check
+
+Detected: Node.js project (package.json)
+
+🧹 Running lint: npm run lint
+   ✅ Lint passed
+
+🔬 Running typecheck: npm run typecheck
+   ✅ Typecheck passed
+
+✅ All quality gates passed!
+```
+
+**If gates fail:**
+
+```
+🧹 Running lint: npm run lint
+   ❌ LINT FAILED
+
+ERROR: Quality gate blocked push. Fix errors before pushing.
+
+Run this to see details:
+  npm run lint
+
+Cannot proceed until all gates pass.
+```
+
+**If no gates found:**
+
+```
+ℹ️  No lint/typecheck scripts detected in this project.
+    Consider adding quality checks to your project configuration:
+    
+    Node.js: Add "lint" and "typecheck" scripts to package.json
+    Python: Configure ruff, mypy in pyproject.toml
+    
+    Continuing with push...
+```
+
+**Multi-project example:**
+
+```
+🔍 Quality Gates Check
+
+Detected: Node.js (package.json) + Python (pyproject.toml)
+
+Node.js gates:
+  🧹 npm run lint → ✅ Passed
+  🔬 npm run typecheck → ✅ Passed
+
+Python gates:
+  🧹 ruff check . → ✅ Passed
+  🔬 mypy . → ✅ Passed
+
+✅ All quality gates passed!
+```
+
+#### Hard Gate Policy
+
+**No bypass mechanism** - if gates fail, the push is blocked. This ensures:
+- Code quality standards are maintained
+- Type safety is enforced
+- Linting rules are followed
+- No broken code reaches the repository
+
+**To proceed after failure:**
+1. Fix the reported errors
+2. Re-run the push-all command
+3. Gates will re-check automatically
+
+### 3. Safety Checks
 
 **❌ STOP and WARN if any of the following are detected:**
 
@@ -61,7 +204,7 @@ SECRET=${YOUR_SECRET}
 - No merge conflicts present
 - Correct branch (warn if committing directly to main/master)
 
-### 3. Request Confirmation
+### 4. Request Confirmation
 
 Present summary to user:
 
@@ -80,7 +223,7 @@ Type 'yes' to proceed or 'no' to cancel.
 
 **WAIT for explicit "yes" from the user before proceeding.**
 
-### 4. Stage Changes
+### 5. Stage Changes
 
 After confirmation:
 ```bash
@@ -88,7 +231,7 @@ git add .
 git status  # Verify staging
 ```
 
-### 5. Generate Commit Message
+### 6. Generate Commit Message
 
 Analyze the changes and create a conventional commit message:
 
@@ -117,7 +260,7 @@ Use `Git(haiku)` model for generating commit messages:
 - Use imperative mood ("add" not "added" or "adds")
 - Reference issues with # if applicable
 
-### 6. Commit and Push
+### 7. Commit and Push
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -130,7 +273,7 @@ git log -1 --oneline --decorate  # Verify commit
 git push  # If fails: git pull --rebase && git push
 ```
 
-### 7. Confirm Success
+### 8. Confirm Success
 
 ```
 ✅ Successfully pushed to remote!
@@ -177,6 +320,7 @@ Files changed: X (+insertions, -deletions)
 - Merge conflicts are present
 - Want granular commit history
 - Pre-commit hooks are failing
+- Lint or typecheck errors are present (gates will block)
 
 ---
 

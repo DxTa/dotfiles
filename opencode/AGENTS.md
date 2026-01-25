@@ -57,7 +57,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 ### Tier 2 Requirements
 Follow **MASTER CHECKLIST** with these tier-specific requirements:
 - Step 1 (`@skill-suggests`): Execute
-- Step 2 (sia-code memory search): MANDATORY (skip only if <30s, document why)
+- Step 2 (sia-code memory search): MANDATORY (skip only if <30s, document why). If it fails, see “Memory - Search past learnings”
 - Step 4 (`task_plan.md`): MANDATORY
 - Step 5 (`notes.md`): Recommended (for research/analysis)
 - Step 7 (exploration): **Sia-code recommended if ANY trigger:**
@@ -72,7 +72,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 ### Tier 3 Requirements
 Follow **MASTER CHECKLIST** with these tier-specific requirements:
 - All steps MANDATORY except where noted
-- Step 2 (sia-code memory search): MANDATORY - execute BEFORE exploration
+- Step 2 (sia-code memory search): MANDATORY - execute BEFORE exploration. If it fails, see “Memory - Search past learnings”
 - Step 5 (`notes.md`): MANDATORY
 - Step 7 (exploration): **Sia-code + parallel subagents MANDATORY** before code changes
 - Step 10 (Re-read plan): Before EVERY major decision
@@ -91,6 +91,8 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 **PRE-TASK:**
 1. ☐ `@skill-suggests [task]`
 2. ☐ sia-code memory search (past decisions, patterns)
+   - If memory search fails due to missing `.sia-code/`: run `uvx sia-code init && uvx sia-code index .`, then retry
+   - Memory search failure recovery: see “Memory - Search past learnings”
 3. ☐ **Call `get-session-info` tool** → get sessionID and projectSlug
 4. ☐ Create task_plan.md: `{projectSlug}_{sessionID}_task_plan.md` (MANDATORY all tiers)
 5. ☐ Create notes.md: `{projectSlug}_{sessionID}_notes.md` (T1: optional, T2: recommended, T3+: mandatory)
@@ -164,7 +166,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 15. ☐ task_plan.md: Mark all phases [x]
 16. ☐ sia-code memory: Store learnings (T1: optional, T2+: MANDATORY)
     - What new insight did we capture?
-    - Search for related memories: `uvx sia-code memory search "[topic]"`
+    - Search for related memories: `uvx sia-code memory search "[topic]"` (if it fails, see “Memory - Search past learnings”)
     - If exists: Update with "Updated [date]: [new insight]"
     - If new: Use appropriate category prefix (Procedure/Fact/Pattern/Fix)
     - Store as decision: `uvx sia-code memory add-decision "..."`
@@ -274,6 +276,11 @@ uvx sia-code research "how does X work?" --hops 3
 ```bash
 uvx sia-code memory search "authentication"
 ```
+If this fails because `.sia-code/` is missing or uninitialized, run:
+```bash
+uvx sia-code init && uvx sia-code index .
+```
+Then retry the memory search.
 
 **Memory - Store new learning:**
 ```bash
@@ -485,7 +492,7 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
       - Run: `uvx sia-code research "trace error flow from [component]" --hops 3`
       - Document: Add findings summary to task_plan.md "Two-Strike Analysis" section
     </step>
-    <step>SIA-CODE MEMORY: Search similar past issues (`uvx sia-code memory search "..."`)</step>
+    <step>SIA-CODE MEMORY: Search similar past issues (`uvx sia-code memory search "..."`). If it fails, see “Memory - Search past learnings”</step>
     <step tier="3+">EXTERNAL LLM: Validate approach</step>
     <step>STORE: Root cause as decision (`uvx sia-code memory add-decision "..."`)</step>
   </steps>
@@ -659,7 +666,7 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
 **Project docs:** Read AGENTS.md, CLAUDE.md first
 **Sia-code:** `uvx sia-code status` (check health), `uvx sia-code search --regex "X"` (search), `uvx sia-code research "Q"` (explore)
 **Sia-code embed:** `uvx sia-code embed start` (start daemon), `uvx sia-code embed status` (check), MANDATORY for hybrid search
-**Sia-code memory:** `uvx sia-code memory search "X"` (find past), `uvx sia-code memory add-decision "..."` (store)
+**Sia-code memory:** `uvx sia-code memory search "X"` (find past; if it fails, see “Memory - Search past learnings”), `uvx sia-code memory add-decision "..."` (store)
 **Token monitoring:** `opencode stats --project ""` (built-in usage/cost stats)
 
 ## EFFICIENCY
@@ -668,7 +675,7 @@ Use `@chrome-devtools` for: UI/styling, JS errors, network, DOM, performance
 
 **Group 1 (Task Start - run together):**
 - `@skill-suggests`
-- sia-code memory search (`uvx sia-code memory search "[task]"`)
+- sia-code memory search (`uvx sia-code memory search "[task]"`). If it fails, see “Memory - Search past learnings”
 - `get-session-info`
 
 **Sequential after Group 1:**
