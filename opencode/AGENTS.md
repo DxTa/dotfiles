@@ -124,6 +124,7 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
    **Agent Selection Decision Tree:**
    
    <decision-tree name="agent-selection">
+     <!-- Built-in agents and tools -->
      <case pattern="Find files matching pattern X">
        <agent>@explore</agent>
      </case>
@@ -151,6 +152,109 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
      <case pattern="Complex multi-step analysis">
        <agent>@general</agent>
      </case>
+     
+     <!-- Self-Reflection (CRITICAL - currently underutilized) -->
+     <case pattern="Validate plan before implementation (T2+)">
+       <agent>@self-reflect</agent>
+       <tier>T2: recommended, T3+: MANDATORY</tier>
+     </case>
+     <case pattern="Before claiming task/feature complete">
+       <agent>@self-reflect</agent>
+       <note>Verification gate - assume broken until proven</note>
+     </case>
+     <case pattern="Review approach after 2 failed fixes">
+       <agent>@self-reflect</agent>
+       <note>Two-Strike Rule validation</note>
+     </case>
+     
+     <!-- Frontend Specialist -->
+     <case pattern="React/Vue/Angular component design">
+       <agent>@frontend-specialist</agent>
+     </case>
+     <case pattern="CSS/styling/responsive layout issues">
+       <agent>@frontend-specialist</agent>
+     </case>
+     <case pattern="Frontend state management (Redux/Zustand/Context)">
+       <agent>@frontend-specialist</agent>
+     </case>
+     <case pattern="UI/UX implementation decisions">
+       <agent>@frontend-specialist</agent>
+     </case>
+     
+     <!-- Backend Specialist -->
+     <case pattern="API endpoint design (REST/GraphQL/gRPC)">
+       <agent>@backend-specialist</agent>
+     </case>
+     <case pattern="Database schema/query optimization">
+       <agent>@backend-specialist</agent>
+     </case>
+     <case pattern="Server-side authentication/authorization">
+       <agent>@backend-specialist</agent>
+     </case>
+     <case pattern="Microservices architecture decisions">
+       <agent>@backend-specialist</agent>
+     </case>
+     
+     <!-- DevOps Engineer -->
+     <case pattern="CI/CD pipeline design (GitHub Actions/GitLab CI)">
+       <agent>@devops-engineer</agent>
+     </case>
+     <case pattern="Docker/container configuration">
+       <agent>@devops-engineer</agent>
+     </case>
+     <case pattern="Kubernetes/infrastructure setup">
+       <agent>@devops-engineer</agent>
+     </case>
+     <case pattern="Deployment strategy/rollback planning">
+       <agent>@devops-engineer</agent>
+     </case>
+     
+     <!-- QA Engineer -->
+     <case pattern="Test strategy/architecture design">
+       <agent>@qa-engineer</agent>
+     </case>
+     <case pattern="Test coverage analysis/gaps">
+       <agent>@qa-engineer</agent>
+     </case>
+     <case pattern="E2E/integration test planning">
+       <agent>@qa-engineer</agent>
+     </case>
+     
+     <!-- Security Engineer -->
+     <case pattern="Authentication/authorization design">
+       <agent>@security-engineer</agent>
+     </case>
+     <case pattern="OWASP vulnerability check">
+       <agent>@security-engineer</agent>
+     </case>
+     <case pattern="Crypto/secrets management">
+       <agent>@security-engineer</agent>
+     </case>
+     
+     <!-- Technical Writer -->
+     <case pattern="README/documentation needed">
+       <agent>@technical-writer</agent>
+     </case>
+     <case pattern="API documentation generation">
+       <agent>@technical-writer</agent>
+     </case>
+     
+     <!-- Management/Strategy Agents (rare usage) -->
+     <case pattern="Product requirements/user stories">
+       <agent>@product-owner</agent>
+     </case>
+     <case pattern="Project timeline/milestone planning">
+       <agent>@project-manager</agent>
+     </case>
+     <case pattern="Team/people management decisions">
+       <agent>@engineering-manager</agent>
+     </case>
+     <case pattern="Technology strategy/roadmap">
+       <agent>@enterprise-cto</agent>
+     </case>
+     <case pattern="Extract reusable insights/patterns">
+       <agent>@knowledge-analyzer</agent>
+     </case>
    </decision-tree>
 
 **DURING:**
@@ -158,6 +262,13 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 9. ☐ Sync task_plan.md Status after each TodoWrite change
 10. ☐ Re-read task_plan.md before major decisions; confirm trimmed context is irrelevant to next 2 steps
 11. ☐ Self-reflection (T1: mental check, T2: @self-reflect recommended, T3+: @self-reflect MANDATORY)
+    
+   **Self-Reflection Checkpoints (AUTO-TRIGGER):**
+   - [ ] After creating task_plan.md (T2+: recommended, T3+: run @self-reflect)
+   - [ ] Before first code change (T3+: MANDATORY @self-reflect on approach)
+   - [ ] After Two-Strike Rule triggered (run @self-reflect for root cause)
+   - [ ] Before claiming "task complete" (T2+: @self-reflect verification gate)
+
 12. ☐ Log errors to task_plan.md
 
 **POST-TASK:**
@@ -456,6 +567,42 @@ Plans may cache old versions. Use fresh prompt (don't reference old plan) to ref
 | @security-engineer | Security, auth |
 
 **Note:** For architecture analysis, dependency mapping, and unfamiliar code exploration, use `uvx sia-code research` directly instead of a subagent.
+
+### Sub-Agent Trigger Patterns
+
+Quick reference for when to invoke specialist agents:
+
+| Trigger Pattern | Agent | Notes |
+|-----------------|-------|-------|
+| **Validation/Completion** | | |
+| Plan validation before implementation | @self-reflect | T2+: recommended, T3+: MANDATORY |
+| Before marking task complete | @self-reflect | Verification gate |
+| After 2 failed fix attempts | @self-reflect | Two-Strike Rule |
+| **Frontend Domain** | | |
+| React/Vue/Angular components | @frontend-specialist | |
+| CSS/styling/responsive | @frontend-specialist | |
+| UI state management | @frontend-specialist | |
+| **Backend Domain** | | |
+| API design (REST/GraphQL/gRPC) | @backend-specialist | |
+| Database schema/queries | @backend-specialist | |
+| Server auth/authz | @backend-specialist | |
+| **Infrastructure** | | |
+| CI/CD pipelines | @devops-engineer | |
+| Docker/Kubernetes | @devops-engineer | |
+| Deployment/rollback | @devops-engineer | |
+| **Quality** | | |
+| Test strategy/coverage | @qa-engineer | |
+| E2E test planning | @qa-engineer | |
+| **Security** | | |
+| Auth design, OWASP | @security-engineer | |
+| Crypto/secrets | @security-engineer | |
+| **Documentation** | | |
+| README, API docs | @technical-writer | |
+| **Strategy (rare)** | | |
+| Product requirements | @product-owner | |
+| Project planning | @project-manager | |
+| Tech roadmap | @enterprise-cto | |
+| Extract reusable patterns | @knowledge-analyzer | |
 
 ### Self-Reflection & External Validation
 
