@@ -2742,6 +2742,153 @@
           "JIRA-"
         ]
       }
+    },
+    "agent-selection": {
+      "type": "workflow",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Decision tree for selecting appropriate agents and tools based on task patterns",
+      "promptTriggers": {
+        "keywords": [
+          "which agent",
+          "agent selection",
+          "decision tree",
+          "what agent",
+          "choose agent",
+          "pick agent",
+          "select agent",
+          "agent for task",
+          "best agent"
+        ],
+        "intentPatterns": [
+          "(which|what).*?agent.*?use",
+          "agent.*?selection",
+          "(choose|pick|select).*?agent",
+          "best.*?agent.*?for"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "anti-patterns": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Common mistakes to avoid with explanations and correct alternatives",
+      "promptTriggers": {
+        "keywords": [
+          "anti-pattern",
+          "mistake",
+          "avoid",
+          "wrong approach",
+          "common mistake",
+          "pitfall",
+          "don't do",
+          "bad practice"
+        ],
+        "intentPatterns": [
+          "(avoid|don't|shouldn't)",
+          "common.*?mistake",
+          "anti.*?pattern",
+          "wrong.*?approach",
+          "pitfall"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "master-checklist": {
+      "type": "workflow",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Detailed guidance for MASTER CHECKLIST steps with tier-specific requirements",
+      "promptTriggers": {
+        "keywords": [
+          "checklist",
+          "steps",
+          "workflow",
+          "process",
+          "master checklist",
+          "detailed steps",
+          "step guidance",
+          "checklist details"
+        ],
+        "intentPatterns": [
+          "checklist.*?detail",
+          "step.*?guidance",
+          "(master|full).*?checklist",
+          "workflow.*?steps"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "token-management": {
+      "type": "workflow",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Token budget awareness, compression strategies, and observation masking for optimal context usage",
+      "promptTriggers": {
+        "keywords": [
+          "token",
+          "compression",
+          "masking",
+          "budget",
+          "token budget",
+          "context usage",
+          "compression strategy",
+          "token management",
+          "offload"
+        ],
+        "intentPatterns": [
+          "token.*(budget|management)",
+          "compress.*?output",
+          "context.*?(usage|window)",
+          "offload.*?(research|notes)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "reasoning-tools": {
+      "type": "workflow",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Decision framework for code-reasoning vs shannon-thinking MCP tools",
+      "promptTriggers": {
+        "keywords": [
+          "code-reasoning",
+          "shannon-thinking",
+          "reasoning tool",
+          "which reasoning",
+          "MCP reasoning",
+          "structured thinking",
+          "reasoning framework"
+        ],
+        "intentPatterns": [
+          "(code-reasoning|shannon).*?when",
+          "which.*?reasoning",
+          "reasoning.*?(tool|framework)",
+          "MCP.*?reasoning"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
     }
   },
   "notes": {
@@ -2849,7 +2996,12 @@
         "superpowers-verification",
         "superpowers-debugging",
         "superpowers-branch-completion",
-        "push-all"
+        "push-all",
+        "agent-selection",
+        "anti-patterns",
+        "master-checklist",
+        "token-management",
+        "reasoning-tools"
       ]
     }
   }
