@@ -1,11 +1,32 @@
 ---
-description: Stage all changes, create commit, and push to remote (use with caution)
-allowed-tools: ["Bash(git add:*)", "Bash(git status:*)", "Bash(git commit:*)", "Bash(git push:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git pull:*)", "Bash(npm run:*)", "Bash(npx:*)", "Bash(cargo:*)", "Bash(go:*)", "Bash(golangci-lint:*)", "Bash(ruff:*)", "Bash(mypy:*)", "Bash(pyright:*)", "Bash(flake8:*)", "Bash(bundle exec:*)", "Bash(composer:*)", "Bash(deno:*)", "Bash(cat:*)", "Bash(ls:*)", "Bash(test:*)", "Glob", "Grep", "Read"]
+name: push-all
+description: Stage all changes, run quality gates (lint/typecheck), safety checks (secrets/large files), commit, and push to remote
+version: "1.0.0"
+license: MIT
+compatibility: opencode
 ---
 
-# Commit and Push Everything
+# Push All Skill
+
+Stage all changes, run quality gates, perform safety checks, and push to remote.
 
 ⚠️ **CAUTION**: Stage ALL changes, commit, and push to remote. Use only when confident all changes belong together.
+
+---
+
+## Unique Value (Not in Superpowers)
+
+This skill provides capabilities not found in standard Superpowers:
+
+- **Quality Gates:** Automatic lint/typecheck verification per project type (Node.js, Python, Rust, Go, PHP, Ruby, Deno, Biome)
+- **Safety Checks:** Secrets detection, large file warnings, build artifact exclusion
+- **Multi-project Support:** Handles monorepos with multiple languages
+
+## Integration with Superpowers
+
+This skill is called by `superpowers/finishing-a-development-branch` for:
+- **Option 1:** Push and create PR
+- **Option 2:** Merge locally (quality gates before merge)
 
 ---
 
@@ -46,110 +67,6 @@ ls package.json pyproject.toml Cargo.toml go.mod composer.json Gemfile deno.json
 | `Gemfile` | Ruby | `bundle exec rubocop` | `bundle exec sorbet tc` (if sorbet) |
 | `deno.json` | Deno | `deno lint` | `deno check *.ts` |
 | `biome.json` | Biome | `npx biome check .` | (included in check) |
-
-#### Node.js Script Detection
-
-For `package.json`, parse the `scripts` section:
-
-```bash
-# Check for lint scripts
-cat package.json | grep -E '"(lint|eslint)":'
-
-# Check for typecheck scripts  
-cat package.json | grep -E '"(typecheck|type-check|tsc)":'
-```
-
-**Patterns to detect:**
-- Lint: Script name contains `lint`, `eslint`, or `check`
-- Typecheck: Script name contains `type`, `typecheck`, `tsc`
-
-**Execute with:** `npm run <script-name>`
-
-#### Python Tool Detection
-
-For `pyproject.toml`, check for tool configurations:
-
-```bash
-# Check for ruff
-grep -q "\[tool.ruff\]" pyproject.toml && echo "ruff check ."
-
-# Check for mypy
-grep -q "\[tool.mypy\]" pyproject.toml && echo "mypy ."
-
-# Check for pyright
-grep -q "\[tool.pyright\]" pyproject.toml && echo "pyright"
-```
-
-#### Execution Flow
-
-1. **Detect all project types** (a repo may have multiple, e.g., Node.js + Python)
-2. **For each detected type:**
-   - Find available lint commands
-   - Find available typecheck commands
-3. **Run all gates sequentially:**
-   - Run all lint commands first
-   - Then run all typecheck commands
-4. **❌ STOP if any gate fails** - must fix before continuing
-
-**Example output:**
-
-```
-🔍 Quality Gates Check
-
-Detected: Node.js project (package.json)
-
-🧹 Running lint: npm run lint
-   ✅ Lint passed
-
-🔬 Running typecheck: npm run typecheck
-   ✅ Typecheck passed
-
-✅ All quality gates passed!
-```
-
-**If gates fail:**
-
-```
-🧹 Running lint: npm run lint
-   ❌ LINT FAILED
-
-ERROR: Quality gate blocked push. Fix errors before pushing.
-
-Run this to see details:
-  npm run lint
-
-Cannot proceed until all gates pass.
-```
-
-**If no gates found:**
-
-```
-ℹ️  No lint/typecheck scripts detected in this project.
-    Consider adding quality checks to your project configuration:
-    
-    Node.js: Add "lint" and "typecheck" scripts to package.json
-    Python: Configure ruff, mypy in pyproject.toml
-    
-    Continuing with push...
-```
-
-**Multi-project example:**
-
-```
-🔍 Quality Gates Check
-
-Detected: Node.js (package.json) + Python (pyproject.toml)
-
-Node.js gates:
-  🧹 npm run lint → ✅ Passed
-  🔬 npm run typecheck → ✅ Passed
-
-Python gates:
-  🧹 ruff check . → ✅ Passed
-  🔬 mypy . → ✅ Passed
-
-✅ All quality gates passed!
-```
 
 #### Hard Gate Policy
 

@@ -86,6 +86,165 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
 - task_plan.md must include rollback plan in Decisions section
 - Antagonistic QA before marking complete
 
+## TDD ENFORCEMENT (T2+ MANDATORY)
+
+**Skill:** Load `superpowers/test-driven-development` for full guidance.
+
+### The Iron Law
+
+```
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+```
+
+| Tier | TDD Requirement |
+|------|-----------------|
+| T1 | Optional (but encouraged) |
+| T2+ | **MANDATORY** - Code before test? DELETE IT. Start over. |
+
+### RED-GREEN-REFACTOR Cycle
+
+| Phase | Action | Verification |
+|-------|--------|--------------|
+| **RED** | Write ONE failing test | Run test, see FAIL |
+| **Verify RED** | Confirm failure reason | "Feature missing" not typo |
+| **GREEN** | Write MINIMAL code to pass | Run test, see PASS |
+| **Verify GREEN** | All tests pass | No regressions |
+| **REFACTOR** | Clean up (stay green) | Tests still pass |
+| **COMMIT** | Atomic commit | One behavior per commit |
+
+### Dispatch Pattern
+
+```
+Task tool (@general):
+  description: "Implement [feature] with TDD"
+  prompt: |
+    Load skill: superpowers/test-driven-development
+    
+    Implement: [feature description]
+    Follow RED-GREEN-REFACTOR strictly.
+```
+
+## CODE REVIEW PROTOCOL (T2+)
+
+**Skills:**
+- `superpowers/requesting-code-review` - How to request review
+- `superpowers/receiving-code-review` - How to handle feedback
+- `superpowers/subagent-driven-development` - Two-stage review pattern
+
+### Three-Level Review System
+
+| Level | Skill/Agent | When | Focus |
+|-------|-------------|------|-------|
+| **Design Review** | @self-reflect | Before implementation | Plan validation, risks |
+| **Spec Review** | `superpowers/subagent-driven-development` | After implementation | Did we build what was requested? |
+| **Code Review** | `superpowers/requesting-code-review` | After spec passes | Is it built well? |
+
+### Two-Stage Review Dispatch
+
+**STAGE 1: Spec Compliance**
+```
+Task tool (@general):
+  description: "Review spec compliance for Task N"
+  prompt: |
+    Load skill: superpowers/subagent-driven-development
+    Use spec-reviewer-prompt.md template.
+    
+    Task requirements: [from task_plan.md]
+    Implementation report: [what was built]
+    
+    Output: ✅ Spec compliant OR ❌ Issues with file:line
+```
+
+**STAGE 2: Code Quality** (only after Stage 1 passes)
+```
+Task tool (@general):
+  description: "Review code quality for Task N"
+  prompt: |
+    Load skill: superpowers/requesting-code-review
+    Use code-reviewer.md template.
+    
+    WHAT_WAS_IMPLEMENTED: [description]
+    PLAN_REFERENCE: task_plan.md
+    BASE_SHA: [git merge-base HEAD main]
+    HEAD_SHA: [git rev-parse HEAD]
+    
+    Output: Strengths, Issues (Critical/Important/Minor), Assessment
+```
+
+### Review Loop
+
+```
+❌ Issues? → Fix → Re-dispatch same review (loop until ✅)
+✅ Pass → Continue to next stage/task
+```
+
+**Critical issues = BLOCKING** - cannot proceed until fixed.
+
+## VERIFICATION BEFORE COMPLETION
+
+**Skill:** Load `superpowers/verification-before-completion` for full guidance.
+
+### The Iron Law
+
+```
+NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+```
+
+**Before ANY claim of success:**
+1. IDENTIFY: What command proves this claim?
+2. RUN: Execute the command (fresh, complete)
+3. READ: Full output, check exit code
+4. VERIFY: Does output confirm claim?
+5. ONLY THEN: Make the claim
+
+**Red Flags:** "should work", "probably", "seems to", expressing satisfaction before verification.
+
+## SYSTEMATIC DEBUGGING
+
+**Skill:** Load `superpowers/systematic-debugging` for full guidance.
+
+### Enhanced Two-Strike Rule
+
+**After 2 failed fixes → STOP. Load `superpowers/systematic-debugging`.**
+
+The skill provides a four-phase process:
+1. **Phase 1: Root Cause Investigation** - Read errors, reproduce, trace data flow
+2. **Phase 2: Pattern Analysis** - Find working examples, compare
+3. **Phase 3: Hypothesis Testing** - Single hypothesis, minimal test
+4. **Phase 4: Implementation** - Create failing test, fix, verify
+
+**If 3+ fixes fail:** Question architecture, not just symptoms.
+
+## BRANCH COMPLETION PROTOCOL
+
+**Skills:**
+- `superpowers/finishing-a-development-branch` - Workflow
+- `push-all` - Quality gates and safety checks
+
+### Dispatch Pattern
+
+```
+Task tool (@general):
+  description: "Complete development branch"
+  prompt: |
+    Load skill: superpowers/finishing-a-development-branch
+    
+    After presenting options, for Option 1 (PR) or Option 2 (merge):
+    Load skill: push-all
+    Run quality gates and safety checks before proceeding.
+```
+
+### Options
+
+| Option | Skill/Action |
+|--------|--------------|
+| **1. Create PR** | `push-all` → `gh pr create` |
+| **2. Merge locally** | `push-all` → checkout main → merge |
+| **3. Keep as-is** | No action |
+| **4. Discard** | Require "discard" confirmation |
+
+**Note:** Skip worktree cleanup (not using git worktrees).
+
 ## MASTER CHECKLIST (All Tiers)
 
 **PRE-TASK:**
@@ -149,11 +308,30 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
        <agent>@general</agent>
        <note>external docs</note>
      </case>
-     <case pattern="Complex multi-step analysis">
-       <agent>@general</agent>
-     </case>
-     
-     <!-- Self-Reflection (CRITICAL - currently underutilized) -->
+      <case pattern="Complex multi-step analysis">
+        <agent>@general</agent>
+      </case>
+      
+      <!-- Spec Analysis (memory-informed) -->
+      <case pattern="Analyze Jira ticket or spec">
+        <prerequisite>uvx sia-code memory search "[topic]"</prerequisite>
+        <skill>spec-analyzer</skill>
+        <note>Memory search first for context, then spec-analyzer</note>
+      </case>
+      <case pattern="Vague or incomplete requirements">
+        <skill>spec-analyzer</skill>
+        <note>Socratic questioning to clarify</note>
+      </case>
+      <case pattern="JIRA-[A-Z0-9]+ ticket needs analysis">
+        <skill>spec-analyzer</skill>
+        <note>Pull via mcp-atlassian if available</note>
+      </case>
+      <case pattern="Feature request or user story refinement">
+        <skill>spec-analyzer</skill>
+        <note>Memory-informed before T3+ planning</note>
+      </case>
+      
+      <!-- Self-Reflection (CRITICAL - currently underutilized) -->
      <case pattern="Validate plan before implementation (T2+)">
        <agent>@self-reflect</agent>
        <tier>T2: recommended, T3+: MANDATORY</tier>
@@ -255,11 +433,54 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
      <case pattern="Extract reusable insights/patterns">
        <agent>@knowledge-analyzer</agent>
      </case>
+     
+     <!-- TDD -->
+     <case pattern="Implementing new feature or bugfix (T2+)">
+       <dispatch>@general with superpowers/test-driven-development</dispatch>
+       <enforcement>MANDATORY</enforcement>
+     </case>
+     
+     <!-- Spec Review -->
+     <case pattern="Task implementation complete, before code review">
+       <dispatch>@general with superpowers/subagent-driven-development spec-reviewer</dispatch>
+       <note>Verify spec compliance FIRST</note>
+     </case>
+     
+     <!-- Code Review -->
+     <case pattern="Spec review passed, ready for code quality review">
+       <dispatch>@general with superpowers/requesting-code-review</dispatch>
+       <note>Only after spec compliance ✅</note>
+     </case>
+     
+     <!-- Verification -->
+     <case pattern="About to claim work complete or fixed">
+       <skill>superpowers/verification-before-completion</skill>
+       <note>Evidence before claims, always</note>
+     </case>
+     
+     <!-- Debugging -->
+     <case pattern="2+ failed fixes, Two-Strike triggered">
+       <dispatch>@general with superpowers/systematic-debugging</dispatch>
+       <note>Four-phase debugging, question architecture after 3 failures</note>
+     </case>
+     
+     <!-- Branch Completion -->
+     <case pattern="All tasks complete, ready to finish branch">
+       <dispatch>@general with superpowers/finishing-a-development-branch + push-all</dispatch>
+       <note>Tests → Options → Execute with quality gates</note>
+     </case>
    </decision-tree>
 
 **DURING:**
 8. ☐ TodoWrite: Update as steps complete
 9. ☐ Sync task_plan.md Status after each TodoWrite change
+9a. ☐ TDD Cycle (T2+ MANDATORY) - Load `superpowers/test-driven-development`:
+    - [ ] RED: Write failing test first
+    - [ ] Verify RED: Watch it fail (correct reason)
+    - [ ] GREEN: Minimal code to pass
+    - [ ] Verify GREEN: All tests pass
+    - [ ] REFACTOR: Clean up (stay green)
+    - [ ] COMMIT: Atomic commit per behavior
 10. ☐ Re-read task_plan.md before major decisions; confirm trimmed context is irrelevant to next 2 steps
 11. ☐ Self-reflection (T1: mental check, T2: @self-reflect recommended, T3+: @self-reflect MANDATORY)
     
@@ -282,7 +503,16 @@ Follow **MASTER CHECKLIST** with these tier-specific requirements:
     - If new: Use appropriate category prefix (Procedure/Fact/Pattern/Fix)
     - Store as decision: `uvx sia-code memory add-decision "..."`
 17. ☐ @code-simplifier: Run on modified code (T2+: recommended, before final testing)
+17a. ☐ Two-Stage Review (T2+) - Dispatch @general with skills:
+     - [ ] Stage 1: `superpowers/subagent-driven-development` spec-reviewer (loop until ✅)
+     - [ ] Stage 2: `superpowers/requesting-code-review` code-reviewer (loop until ✅)
+     - [ ] Critical issues: Fix immediately (BLOCKING)
 18. ☐ Validation: run tests, verify changes
+18a. ☐ Branch Completion - Load `superpowers/finishing-a-development-branch`:
+     - [ ] Tests pass (verification gate)
+     - [ ] Choose option (PR/merge/keep/discard)
+     - [ ] For PR/merge: Load `push-all` skill for quality gates
+     - [ ] Execute choice
 
 **Mark each item ✓ as you complete it.**
 

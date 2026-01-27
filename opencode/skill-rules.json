@@ -2499,6 +2499,249 @@
           "memory.mv2"
         ]
       }
+    },
+    "superpowers-tdd": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Test-driven development with RED-GREEN-REFACTOR cycle - no production code without failing test first (T2+ MANDATORY)",
+      "promptTriggers": {
+        "keywords": [
+          "test-driven development",
+          "TDD",
+          "RED-GREEN-REFACTOR",
+          "write test first",
+          "failing test",
+          "test before code",
+          "implement feature",
+          "new feature",
+          "bugfix",
+          "fix bug"
+        ],
+        "intentPatterns": [
+          "(implement|build|create).*?(feature|bugfix)",
+          "(test.*?driven|TDD)",
+          "(write|create).*?test.*?first",
+          "failing.*?test",
+          "RED.*?GREEN.*?REFACTOR"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/test/**/*",
+          "**/tests/**/*",
+          "**/*.test.{ts,js,py}",
+          "**/*.spec.{ts,js,py}"
+        ],
+        "contentPatterns": [
+          "describe\\(",
+          "it\\(",
+          "test\\(",
+          "def test_"
+        ]
+      }
+    },
+    "superpowers-code-review": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Two-stage code review (spec compliance + code quality) after task completion (T2+)",
+      "promptTriggers": {
+        "keywords": [
+          "code review",
+          "review code",
+          "task complete",
+          "feature complete",
+          "ready for review",
+          "spec compliance",
+          "code quality",
+          "review changes"
+        ],
+        "intentPatterns": [
+          "(request|need).*?review",
+          "(task|feature).*?complete",
+          "ready.*?(review|merge)",
+          "(spec|code).*?(compliance|quality).*?review"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "superpowers-verification": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Evidence-based verification before completion claims - no 'should work' or 'probably', run the command first",
+      "promptTriggers": {
+        "keywords": [
+          "tests pass",
+          "build succeeds",
+          "complete",
+          "done",
+          "finished",
+          "fixed",
+          "works",
+          "verification"
+        ],
+        "intentPatterns": [
+          "(complete|done|finished|fixed)",
+          "(tests|build).*?(pass|succeed)",
+          "(should|probably|seems).*?work",
+          "verification.*?before.*?completion"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "superpowers-debugging": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Systematic debugging - 4-phase process, Two-Strike Rule, question architecture after 3 failures",
+      "promptTriggers": {
+        "keywords": [
+          "debug",
+          "debugging",
+          "bug",
+          "error",
+          "not working",
+          "failing",
+          "broken",
+          "Two-Strike",
+          "failed fix",
+          "systematic debugging"
+        ],
+        "intentPatterns": [
+          "(debug|fix).*?(bug|error|issue)",
+          "(not|doesn't).*?work",
+          "failing.*?(test|build)",
+          "Two.*?Strike",
+          "failed.*?fix",
+          "systematic.*?debug"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "superpowers-branch-completion": {
+      "type": "workflow",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Branch completion workflow - tests pass, 4 options (PR/merge/keep/discard), quality gates via push-all",
+      "promptTriggers": {
+        "keywords": [
+          "finish branch",
+          "complete branch",
+          "ready to merge",
+          "ready to push",
+          "create PR",
+          "pull request",
+          "branch complete",
+          "all done"
+        ],
+        "intentPatterns": [
+          "(finish|complete).*?branch",
+          "ready.*?(merge|push|PR)",
+          "create.*?(PR|pull.*?request)",
+          "all.*?(tasks|work).*?(complete|done)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "push-all": {
+      "type": "workflow",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "source": "local",
+      "description": "Quality gates (lint/typecheck) + safety checks (secrets/large files) before commit and push",
+      "promptTriggers": {
+        "keywords": [
+          "push all",
+          "push everything",
+          "commit and push",
+          "push changes",
+          "quality gates",
+          "lint and push",
+          "typecheck and push"
+        ],
+        "intentPatterns": [
+          "push.*(all|everything|changes)",
+          "commit.*?and.*?push",
+          "quality.*?gates",
+          "(lint|typecheck).*?push"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "spec-analyzer": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Analyze and enhance specs from Jira or manual input using memory-informed Socratic questioning before implementation planning",
+      "promptTriggers": {
+        "keywords": [
+          "analyze spec",
+          "review spec",
+          "spec analysis",
+          "JIRA-",
+          "requirements analysis",
+          "refine requirements",
+          "clarify spec",
+          "enhance spec",
+          "spec gaps",
+          "acceptance criteria",
+          "edge cases",
+          "brainstorm feature",
+          "decompose feature",
+          "vague requirements",
+          "unclear requirements",
+          "incomplete spec",
+          "feature request"
+        ],
+        "intentPatterns": [
+          "(analyze|review|refine|enhance).*?(spec|requirement|feature)",
+          "JIRA-[A-Z0-9]+",
+          "(find|identify).*?(gaps|ambiguity|edge.*?cases)",
+          "(clarify|decompose).*?(feature|requirement|spec)",
+          "brainstorm.*?(feature|design|implementation)",
+          "(vague|unclear|incomplete).*?(requirement|spec)",
+          "(user.*?story|acceptance.*?criteria)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/specs/**/*",
+          "**/requirements/**/*",
+          "**/*spec*.md",
+          "**/*prd*.md",
+          "**/*requirement*.md"
+        ],
+        "contentPatterns": [
+          "user story",
+          "acceptance criteria",
+          "as a user",
+          "requirement",
+          "JIRA-"
+        ]
+      }
     }
   },
   "notes": {
@@ -2519,7 +2762,7 @@
     },
     "source_types": {
       "marketplace": "Plugin installed from marketplace",
-      "local": "Skill defined in ~/.config/opencode/skill/",
+      "local": "Skill defined in ~/.config/opencode/skills/",
       "custom": "User-defined custom skill"
     },
     "usage": {
@@ -2599,7 +2842,14 @@
         "web-frameworks",
         "debugging",
         "problem-solving",
-        "pkm"
+        "pkm",
+        "spec-analyzer",
+        "superpowers-tdd",
+        "superpowers-code-review",
+        "superpowers-verification",
+        "superpowers-debugging",
+        "superpowers-branch-completion",
+        "push-all"
       ]
     }
   }
