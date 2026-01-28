@@ -55,6 +55,17 @@ You analyze task descriptions to determine the appropriate tier classification (
     <keyword>storage layer</keyword>
     <keyword>ORM</keyword>
     <keyword>query</keyword>
+    <keyword>column</keyword>
+    <keyword>table</keyword>
+    <keyword>index</keyword>
+    <keyword>foreign key</keyword>
+    <keyword>primary key</keyword>
+    <keyword>constraint</keyword>
+    <keyword>alter table</keyword>
+    <keyword>add column</keyword>
+    <keyword>drop column</keyword>
+    <keyword>DDL</keyword>
+    <keyword>SQL</keyword>
   </category>
   <category name="integration">
     <keyword>API</keyword>
@@ -127,6 +138,34 @@ You analyze task descriptions to determine the appropriate tier classification (
    - <30 lines, 1 file, isolated? → TIER 1
 5. When uncertain between tiers → CHOOSE HIGHER TIER
 ```
+
+## Semantic Detection
+
+**IMPORTANT:** Don't rely solely on exact keyword matches. Apply semantic reasoning to identify IMPLIED triggers:
+
+### Data/Schema Implications
+- "Add column to table" → schema change → T3
+- "Update user fields" → data model change → T3  
+- "Change how we store X" → storage layer → T3
+- "Add new field to entity" → schema change → T3
+- "Modify the X table" → database change → T3
+
+### Architecture Implications
+- "Split into separate files" → restructure → T3
+- "Extract common logic" → new abstraction → T3
+- "Centralize X handling" → architectural change → T3
+
+### Integration Implications
+- "Connect to external X" → external service → T3
+- "Fetch data from X API" → integration → T3
+- "Send notifications to X" → webhook/integration → T3
+
+### Security Implications
+- "Check user can access" → authorization → T3
+- "Validate user input" → input validation → T3
+- "Hash/encrypt X" → encryption → T3
+
+**Rule:** When the task IMPLIES a trigger category even without exact keywords, classify as T3. Err on the side of caution.
 
 ## Output Format
 
@@ -223,3 +262,5 @@ TIER 4 - Requires rollback plan and antagonistic QA before proceeding
 - **Consider blast radius** - Who/what is affected if this breaks?
 - **Flag uncertainty explicitly** - If you're unsure, that itself is a T3 trigger
 - **Be specific** - Name the exact triggers you found
+- **Think semantically** - "Add column" implies schema change even without the word "schema"
+- **Look for implications** - What does this task ACTUALLY touch, not just what words are used?
