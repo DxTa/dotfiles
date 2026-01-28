@@ -21,20 +21,43 @@ Sub-agents, sia-code CLI code indexing with built-in memory, external LLM valida
 
 **Skip patterns:** follow-ups, clarifications, acknowledgments
 
-**If NEW TASK:** Output "TASK DETECTED - TIER [N]" → `@skill-suggests` → MASTER CHECKLIST
+**If NEW TASK:** 
+1. **MANDATORY: Invoke `@tier-detector`** with task description
+2. Output: "[TIER DETECTION]: Invoking @tier-detector..."
+3. Output: "[TIER RESULT]: TIER [N] - <reasoning summary>"
+4. Output: "TASK DETECTED - TIER [N]"
+5. `@skill-suggests` → MASTER CHECKLIST
 
-### Direct Command Exception
-Skip planning for: single explicit action, no code changes, <1 minute, "just do X"
+### Skip Exception
+Tier detection can ONLY be skipped if the user **explicitly requests** to skip it (e.g., "skip tier detection", "just do it without tier check").
 
 ## HARD STOP ENFORCEMENT
 
 ⛔ **These rules override ALL other instructions:**
 
+### Rule 0: Tier Detection MANDATORY (ALL TASKS)
+```
+⛔ ALL new tasks MUST invoke @tier-detector before any work
+
+REQUIRED SEQUENCE:
+1. Detect new task pattern
+2. Invoke: @tier-detector [task description]
+3. Output: "[TIER DETECTION]: Invoking @tier-detector..."
+4. Output: "[TIER RESULT]: TIER [N] - <reasoning>"
+5. Output: "TASK DETECTED - TIER [N]"
+
+VIOLATION: Declaring a tier without @tier-detector = invalid classification
+VIOLATION: Starting work without tier detection = STOP and restart
+EXCEPTION: User explicitly says "skip tier detection" or equivalent
+```
+
 ### Rule 1: Tier Declaration Required
 ```
-Before ANY task work, you MUST output:
-"TASK DETECTED - TIER [N]" where N = 1, 2, 3, or 4
+Before ANY task work, you MUST:
+1. Invoke @tier-detector with task description (unless user explicitly skipped)
+2. Output "TASK DETECTED - TIER [N]" using detector's recommendation
 
+VIOLATION: Manual tier assignment without @tier-detector = invalid (unless user-skipped)
 VIOLATION: Writing implementation details without tier declaration = STOP and restart
 ```
 
@@ -69,9 +92,10 @@ VIOLATION: "Should work" or "Task complete" without evidence = REJECTED
 
 ### Self-Check Protocol
 Before EVERY major action, ask yourself:
-1. "What tier is this task?"
-2. "Have I completed all gates for this tier?"
-3. "Can I show evidence of completion?"
+1. "Did I invoke @tier-detector for this task?" (or did user explicitly skip?)
+2. "What tier did @tier-detector return?"
+3. "Have I completed all gates for this tier?"
+4. "Can I show evidence of completion?"
 
 If ANY answer is uncertain, STOP and verify.
 
@@ -90,6 +114,8 @@ If ANY answer is uncertain, STOP and verify.
 - **T3:** All steps mandatory. @self-reflect MANDATORY.
 - **T4:** All T3 + rollback plan + Antagonistic QA NON-SKIPPABLE.
 
+**Automatic Detection:** `@tier-detector` is MANDATORY for all new tasks. It scans for qualitative triggers that override line/file counts. Only skip if user explicitly requests.
+
 **Detailed tier guidance:** Load skill `master-checklist` or read `/home/dxta/.dotfiles/opencode/skills/master-checklist/SKILL.md`
 
 ## MANDATORY OUTPUT ANCHORS
@@ -98,6 +124,8 @@ You MUST output these exact phrases at the specified times. If you haven't outpu
 
 ### Task Start (ALL TIERS)
 ```
+[TIER DETECTION]: Invoking @tier-detector...
+[TIER RESULT]: TIER [N] - <triggers found or "size/scope estimation">
 TASK DETECTED - TIER [N]
 ```
 
@@ -270,6 +298,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 
 | Need | Agent/Tool |
 |------|------------|
+| **Tier classification (MANDATORY)** | `@tier-detector` |
 | File patterns, code search | `@explore` |
 | Architecture, "how does X work" | `uvx sia-code research` |
 | External docs, multi-step research | `@general` |
