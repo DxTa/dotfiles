@@ -4,7 +4,7 @@ description: Update skill-rules.json to keep skill activation triggers current w
 
 # Update Skill Rules Command
 
-You are tasked with updating the `~/.config/opencode/skill/skill-rules.json` file to keep skill activation triggers current with installed plugins AND local skills.
+You are tasked with updating the `~/.config/opencode/skills/skill-rules.json` file to keep skill activation triggers current with installed plugins AND local skills.
 
 ## How Skill Activation Works
 
@@ -19,20 +19,20 @@ Local Skills ─────────┘
 ## Your Task
 
 1. **Discover Current State**
-   - Read the existing `~/.config/opencode/skill/skill-rules.json` file
+   - Read the existing `~/.config/opencode/skills/skill-rules.json` file
    - **Marketplace Plugins:**
      - List all installed plugins based on ~/.config/opencode/plugins/installed_plugins.json
      - Cross check with ~/.config/opencode/plugins/marketplaces/*
      - Read `~/.config/opencode/settings.json` to see enabled plugins
    - **Local Skills:**
-     - List all directories in `~/.config/opencode/skill/`
+     - List all directories in `~/.config/opencode/skills/`
      - For each directory, check if `SKILL.md` exists
      - Parse YAML frontmatter for: name, description, version, license
      - Note skill capabilities from content
 
 2. **Identify Changes**
    - Compare existing skill rules with currently installed/enabled plugins
-   - Compare existing skill rules with local skills in `~/.config/opencode/skill/`
+   - Compare existing skill rules with local skills in `~/.config/opencode/skills/`
    - Identify NEW plugins/skills that need skill rules
    - Identify REMOVED plugins/skills that should be cleaned up
    - Check for plugins/skills with OUTDATED configurations
@@ -46,7 +46,7 @@ Local Skills ─────────┘
    - Extract relevant keywords and trigger patterns
 
    **For local skills:**
-   - Read `~/.config/opencode/skill/{skill-name}/SKILL.md`
+   - Read `~/.config/opencode/skills/{skill-name}/SKILL.md`
    - Parse YAML frontmatter for metadata
    - Scan skill content for: technologies, frameworks, tools mentioned
    - Check for `references/` subdirectory and extract topics
@@ -92,7 +92,7 @@ Local Skills ─────────┘
 ## Important Guidelines
 
 - **Preserve Customizations**: If user has custom skills or modified triggers, preserve them
-- **Dual Sources**: Handle both marketplace plugins AND local skills from `~/.config/opencode/skill/`
+- **Dual Sources**: Handle both marketplace plugins AND local skills from `~/.config/opencode/skills/`
 - **Non-Blocking**: Default to `enforcement: "suggest"` for most skills
 - **High Priority**: Use `priority: "high"` for important domain skills
 - **Comprehensive Triggers**: Include both broad and specific keywords/patterns
@@ -152,7 +152,7 @@ Check if user wants to:
 
 ## Local Skill Rule Generation
 
-When generating rules for local skills from `~/.config/opencode/skill/`:
+When generating rules for local skills from `~/.config/opencode/skills/`:
 
 1. **Parse SKILL.md Frontmatter**
    ```yaml

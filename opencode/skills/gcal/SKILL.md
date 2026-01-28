@@ -42,74 +42,74 @@ If not configured:
 
 ```bash
 # List meetings (default: past 30 days to next 30 days)
-~/.config/opencode/skill/gcal/scripts/gcal.py list [days_past] [days_future]
+~/.config/opencode/skills/gcal/scripts/gcal.py list [days_past] [days_future]
 
 # Search meetings by query
-~/.config/opencode/skill/gcal/scripts/gcal.py search '<query>' [max_results]
+~/.config/opencode/skills/gcal/scripts/gcal.py search '<query>' [max_results]
 
 # Get specific meeting details
-~/.config/opencode/skill/gcal/scripts/gcal.py get '<query>' [index]
+~/.config/opencode/skills/gcal/scripts/gcal.py get '<query>' [index]
 
 # List conference records (for transcripts)
-~/.config/opencode/skill/gcal/scripts/gcal.py records [max_results]
+~/.config/opencode/skills/gcal/scripts/gcal.py records [max_results]
 
 # Get meeting transcript
-~/.config/opencode/skill/gcal/scripts/gcal.py transcript [meeting_code] [index]
+~/.config/opencode/skills/gcal/scripts/gcal.py transcript [meeting_code] [index]
 
 # Check all meetings (Calendar + Gmail invites)
-~/.config/opencode/skill/gcal/scripts/gcal.py check [days_forward] [days_past]
+~/.config/opencode/skills/gcal/scripts/gcal.py check [days_forward] [days_past]
 ```
 
 ### Command Examples
 
 **List upcoming meetings for next 7 days:**
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py list 0 7
+~/.config/opencode/skills/gcal/scripts/gcal.py list 0 7
 ```
 
 **Search for standup meetings:**
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py search "standup"
+~/.config/opencode/skills/gcal/scripts/gcal.py search "standup"
 ```
 
 **Get details of first matching meeting:**
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py get "standup" 0
+~/.config/opencode/skills/gcal/scripts/gcal.py get "standup" 0
 ```
 
 **List available conference records:**
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py records 10
+~/.config/opencode/skills/gcal/scripts/gcal.py records 10
 ```
 
 **Get transcript by meeting code:**
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py transcript abc-mnop-xyz
+~/.config/opencode/skills/gcal/scripts/gcal.py transcript abc-mnop-xyz
 ```
 
 **Get transcript by index:**
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py transcript 0
+~/.config/opencode/skills/gcal/scripts/gcal.py transcript 0
 ```
 
 **Comprehensive meeting check (Calendar + Gmail invites):**
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py check 7 1
+~/.config/opencode/skills/gcal/scripts/gcal.py check 7 1
 ```
 
 ## Authentication
 
 On first run, the script will:
 1. Open a browser window for OAuth authorization
-2. Save token to `~/.config/opencode/skill/gcal/gcal_token.json` (Calendar API)
+2. Save token to `~/.config/opencode/skills/gcal/gcal_token.json` (Calendar API)
 3. For Meet transcripts, run Meet API commands to create separate token
 
 **To re-authenticate**:
 ```bash
 # Delete token files and run again
-rm ~/.config/opencode/skill/gcal/gcal_token.json
-rm ~/.config/opencode/skill/gcal/gcal_meet_token.json
-~/.config/opencode/skill/gcal/scripts/gcal.py list
+rm ~/.config/opencode/skills/gcal/gcal_token.json
+rm ~/.config/opencode/skills/gcal/gcal_meet_token.json
+~/.config/opencode/skills/gcal/scripts/gcal.py list
 ```
 
 ## Output Format
@@ -173,7 +173,7 @@ I'll start with the updates
 
 **Command**:
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py check 0 0
+~/.config/opencode/skills/gcal/scripts/gcal.py check 0 0
 ```
 
 **Output**:
@@ -199,9 +199,9 @@ I'll start with the updates
 
 **Command**:
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py records 10
+~/.config/opencode/skills/gcal/scripts/gcal.py records 10
 # Then use meeting code from output
-~/.config/opencode/skill/gcal/scripts/gcal.py transcript abc-mnop-xyz
+~/.config/opencode/skills/gcal/scripts/gcal.py transcript abc-mnop-xyz
 ```
 
 ### Example 3: Search Past Meetings
@@ -210,5 +210,5 @@ I'll start with the updates
 
 **Command**:
 ```bash
-~/.config/opencode/skill/gcal/scripts/gcal.py search "Q1 planning"
+~/.config/opencode/skills/gcal/scripts/gcal.py search "Q1 planning"
 ```

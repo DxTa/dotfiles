@@ -1,7 +1,7 @@
 ---
 description: Self-reflection and antagonistic QA agent using GPT-5.2 Codex. Use this agent to validate plans, review approaches, and identify issues before implementation. Adopts a senior technical lead perspective.
 mode: subagent
-model: github-copilot/gpt-5.2-codex
+model: openai/gpt-5.2-codex
 temperature: 0.3
 tools:
   read: true

@@ -18,3 +18,4 @@ venv
 antigravity-signature-cache.json
 antigravity-logs/
 retrospectives
+antigravity-accounts.json.*.tmp

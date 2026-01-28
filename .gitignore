@@ -86,3 +86,14 @@ opencode/.sia-code/
 # ===========================================
 .DS_Store
 Thumbs.db
+
+# ===========================================
+# PREVENT LEGACY CLAUDE DIRECTORY
+# ===========================================
+# Block any attempts to create Claude/ in .config
+# The correct path is opencode/ (symlinked from .dotfiles/opencode)
+Claude/
+claude/
+.Claude/
+.claude/
+

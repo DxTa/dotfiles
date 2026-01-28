@@ -31,14 +31,14 @@ Analyze the usage and activation patterns of a specific skill over the past {{da
 - `output-dir` = {{output-dir}} (default: ~/.config/opencode/retrospectives/skill-retro-{timestamp}/)
 
 **Validations:**
-1. Check that skill exists in `~/.dotfiles/opencode/skill/` or `~/.config/opencode/skill/`
+1. Check that skill exists in `~/.dotfiles/opencode/skills/` or `~/.config/opencode/skills/`
 2. Check that `~/.config/opencode/plans/` exists and contains .md files
 3. Validate `days` is one of: 7, 14, 30, 60
 4. Validate `scope` is one of: quick, full
 5. Create output directory if it doesn't exist
 
 **Error Handling:**
-- If skill not found: "❌ Skill '{{skill}}' not found in opencode/skill/. Available skills: [list]"
+- If skill not found: "❌ Skill '{{skill}}' not found in opencode/skills/. Available skills: [list]"
 - If plans not found: "⚠️ No plan files found in ~/.config/opencode/plans/. Cannot analyze skill usage."
 - If invalid days: "❌ Invalid days={{days}}. Valid options: 7, 14, 30, 60"
 - If invalid scope: "❌ Invalid scope={{scope}}. Valid options: quick, full"
@@ -62,9 +62,9 @@ TodoWrite: Track skill retrospective analysis
 
 ```bash
 # Load skill metadata
-skill_file="$HOME/.dotfiles/opencode/skill/{{skill}}/SKILL.md"
+skill_file="$HOME/.dotfiles/opencode/skills/{{skill}}/SKILL.md"
 if [ ! -f "$skill_file" ]; then
-  skill_file="$HOME/.config/opencode/skill/{{skill}}/SKILL.md"
+  skill_file="$HOME/.config/opencode/skills/{{skill}}/SKILL.md"
 fi
 
 # Extract description, triggers, and commands
@@ -377,7 +377,7 @@ If Compliance > 70%: HIGH
 ## Error Recovery
 
 **If skill file not found:**
-1. Check both `~/.dotfiles/opencode/skill/` and `~/.config/opencode/skill/`
+1. Check both `~/.dotfiles/opencode/skills/` and `~/.config/opencode/skills/`
 2. List available skills
 3. Suggest correct skill name or exit
 
@@ -396,8 +396,8 @@ If Compliance > 70%: HIGH
 ## Reference
 
 **Skill locations:**
-- `~/.dotfiles/opencode/skill/` - Version-controlled skills
-- `~/.config/opencode/skill/` - Local-only skills
+- `~/.dotfiles/opencode/skills/` - Version-controlled skills
+- `~/.config/opencode/skills/` - Local-only skills
 
 **Data sources:**
 - `~/.config/opencode/plans/` - Task plans and notes
