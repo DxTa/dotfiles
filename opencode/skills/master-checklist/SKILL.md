@@ -57,10 +57,9 @@ uvx sia-code memory search "[task topic]"
 - T3+: MANDATORY - execute BEFORE exploration
 
 **Recovery if it fails:**
-If memory search fails because `.sia-code/` is missing:
-```bash
-uvx sia-code init && uvx sia-code index .
-```
+If memory search fails because `.sia-code/` is missing or broken:
+⚠️ **ASK USER** to run `uvx sia-code init && uvx sia-code index .`
+Do NOT silently skip — Load skill `sia-code/health-check` for full troubleshooting.
 Then retry the memory search.
 
 **What to look for:**
@@ -431,11 +430,17 @@ If it fails, see Step 2 recovery.
 - `Fix:` Root cause → solution mapping
 - `Preference:` User or project-specific choice
 
-**Store as decision:**
+**Store as decision** (Load skill `sia-code/decision-trace` for structured format):
 ```bash
-uvx sia-code memory add-decision "Procedure: How to debug X"
-uvx sia-code memory add-decision "Fact: Module Y requires Z"
+uvx sia-code memory add-decision "[Category]: [Decision]. Context: [trigger]. Reasoning: [why]. Outcome: [result]."
 ```
+**Examples:**
+```bash
+uvx sia-code memory add-decision "Procedure: How to debug X. Context: recurring issue in module Y. Reasoning: stack trace pointed to Z. Outcome: documented for future sessions."
+uvx sia-code memory add-decision "Fact: Module Y requires Z. Context: discovered during feature implementation. Reasoning: missing config caused silent failure. Outcome: added to setup checklist."
+```
+- ❌ **NEVER** store bare outcomes: `"Fix: Added retry logic"`
+- ✅ **ALWAYS** include Context + Reasoning to preserve decision history
 
 ---
 

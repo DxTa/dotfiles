@@ -24,7 +24,8 @@ This skill helps identify gaps, ambiguities, and edge cases BEFORE you start pla
 
 ### Recommended: sia-code Memory Search
 
-**Before running spec-analyzer**, search memory for context:
+**Before running spec-analyzer**, search memory for context.
+**Full reference:** Load skill `sia-code` | **Health check:** Load skill `sia-code/health-check`
 
 ```bash
 uvx sia-code memory search "[feature keywords]"

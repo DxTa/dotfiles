@@ -212,6 +212,14 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 ## MASTER CHECKLIST
 
 **PRE-TASK:**
+0. ☐ **sia-code Health Check** (ALL tiers: RUN ONCE per session start) — Load skill `sia-code/health-check`
+   ```bash
+   uvx sia-code status 2>&1
+   ```
+   - **If healthy:** Continue to Step 1
+   - **If error/traceback/missing:** ⚠️ **ASK USER IMMEDIATELY** to run `uvx sia-code init && uvx sia-code index .`
+   - **Do NOT silently skip** — broken index masquerades as "no results found"
+   - **If user declines:** Document "sia-code unavailable — user declined init" in task_plan.md
 1. ☐ `@skill-suggests [task]` (T2+: execute, T1: optional for simple tasks)
 2. ☐ sia-code memory search past decisions (T2+: MANDATORY)
    ```bash
@@ -219,7 +227,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
    ```
    - **If no results:** Document "No prior context found" in task_plan.md
    - **If results found:** Copy relevant findings to notes.md under "## Prior Context"
-   - **If .sia-code/ missing:** Run `uvx sia-code init && uvx sia-code index .` first
+   - **If .sia-code/ missing OR `uvx sia-code status` errors:** ⚠️ **ASK USER** to run `uvx sia-code init && uvx sia-code index .` — do NOT silently skip (Load skill `sia-code/health-check`)
    - **NEVER SKIP** - even "no results" prevents duplicate work
    - **VERIFICATION:** Memory search output (or "no results") MUST appear in task_plan.md or notes.md
 3. ☐ `get-session-info` → sessionID, projectSlug (ALL tiers: MANDATORY)
@@ -272,6 +280,12 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 14. ☐ TodoWrite: Mark all completed
 15. ☐ task_plan.md: Mark all phases [x]
 16. ☐ sia-code memory: Store learnings (T2+: MANDATORY - search first, update if exists, use category prefix: Procedure/Fact/Pattern/Fix/Preference)
+    **Decision Trace Format** (Load skill `sia-code/decision-trace`):
+    ```bash
+    uvx sia-code memory add-decision "[Category]: [Decision]. Context: [trigger]. Reasoning: [why over alternatives]. Outcome: [result]."
+    ```
+    - ❌ **NEVER** store bare outcomes: `"Fix: Added retry logic"`
+    - ✅ **ALWAYS** include Context + Reasoning to preserve decision history
 17. ☐ @code-simplifier (T2+: recommended before final testing)
 17a. ☐ Two-Stage Review (T2+) - Load skills `superpowers/subagent-driven-development` (spec) then `superpowers/requesting-code-review` (code)
 18. ☐ Validation: run tests, verify changes (Load skill `verification-before-completion`)
@@ -328,7 +342,9 @@ uvx sia-code research "Q"         # Multi-hop research
 uvx sia-code memory search "X"    # Find past learnings
 uvx sia-code memory add-decision "..." # Store learning
 ```
-If `.sia-code/` missing: `uvx sia-code init && uvx sia-code index .`
+If `.sia-code/` missing OR `uvx sia-code status` fails: ⚠️ **ASK USER** to initialize.
+Do NOT silently skip — prompt immediately. Broken index mimics "no results found."
+Load skill `sia-code/health-check` for full troubleshooting.
 
 ### MCP Reasoning
 - **code-reasoning:** Debugging, algorithms, step-by-step
@@ -396,5 +412,6 @@ Monitor at phase boundaries: `opencode stats --project ""`
 - ❌ Same compression all tiers → T1: 5-10x, T2: 2-5x, T3+: minimal
 - ❌ Skip @self-reflect for T3+ → BLOCKING GATE violation
 - ❌ Skip memory search for T2+ → Context loss, duplicate decisions
+- ❌ Silently skip broken sia-code → Load skill `sia-code/health-check`, ASK USER to initialize
 
 **Full anti-patterns with rationale:** Load skill `anti-patterns`

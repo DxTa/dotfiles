@@ -63,6 +63,8 @@ This skill catalogs 12 critical anti-patterns that degrade agent performance, ca
 ✅ GOOD: Run `uvx sia-code status` → `uvx sia-code research "X architecture"` → document in task_plan.md → implement
 ```
 
+**See also:** Load skill `sia-code/health-check` — ensures index is functional before research
+
 ---
 
 ### 4. Visual-Only Debugging
@@ -133,15 +135,18 @@ This skill catalogs 12 critical anti-patterns that degrade agent performance, ca
 
 <anti-pattern name="knowledge-loss">
   <wrong>Lose learnings at task end</wrong>
-  <right>Transfer to sia-code memory</right>
-  <rationale>Store as decision: uvx sia-code memory add-decision "..."</rationale>
+  <right>Transfer to sia-code memory with reasoning context</right>
+  <rationale>Store as decision trace: include Context + Reasoning, not just outcomes</rationale>
 </anti-pattern>
 
 **Example Scenario:**
 ```
 ❌ BAD: Discover "Module X requires config Y" → mark task complete → forget
-✅ GOOD: Run `uvx sia-code memory add-decision "Fact: Module X requires config Y for feature Z"`
+❌ ALSO BAD: Store "Fact: Module X requires config Y" (outcome only, no reasoning)
+✅ GOOD: Run `uvx sia-code memory add-decision "Fact: Module X requires config Y for feature Z. Context: discovered during feature implementation. Reasoning: missing config caused silent failure in tests. Outcome: added to setup checklist."`
 ```
+
+**See also:** Load skill `sia-code/decision-trace` — structured format for capturing WHY, not just WHAT
 
 ---
 
@@ -188,8 +193,10 @@ This skill catalogs 12 critical anti-patterns that degrade agent performance, ca
 **Example Scenario:**
 ```
 ❌ BAD: Learn new auth pattern → Create new memory without searching
-✅ GOOD: Run `uvx sia-code memory search "auth"` → Update existing with "Updated [date]: [new insight]"
+✅ GOOD: Run `uvx sia-code memory search "auth"` → Update existing with "[Updated YYYY-MM-DD]: [new insight with reasoning context]"
 ```
+
+**See also:** Load skill `sia-code/decision-trace` — includes guidance on updating existing memories with temporal context
 
 ---
 

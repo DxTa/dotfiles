@@ -2889,6 +2889,90 @@
         "pathPatterns": [],
         "contentPatterns": []
       }
+    },
+    "sia-code/health-check": {
+      "type": "guardrail",
+      "enforcement": "suggest",
+      "priority": "critical",
+      "source": "local",
+      "description": "Pre-flight sia-code health check. Detects broken/missing index and ASKS USER to initialize. Run at session start before memory search or code research.",
+      "promptTriggers": {
+        "keywords": [
+          "sia-code broken",
+          "sia-code missing",
+          "index missing",
+          "status error",
+          "initialize sia-code",
+          "memory not working",
+          "sia-code init",
+          "sia-code status",
+          "health check",
+          "index health",
+          "vectors.usearch",
+          "sia-code traceback",
+          "no results found",
+          "memory search fails"
+        ],
+        "intentPatterns": [
+          "sia.*?code.*?(broken|missing|error|fail)",
+          "(initialize|init|setup).*?sia.*?code",
+          "sia.*?code.*?(status|health|check)",
+          "memory.*?(not|fail|error|broken).*?work",
+          "index.*?(missing|broken|corrupt)",
+          "no.*?results.*?found"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "**/.sia-code/**/*",
+          "**/.sia-code/config.json"
+        ],
+        "contentPatterns": [
+          "sia-code",
+          "uvx sia-code status",
+          "uvx sia-code init"
+        ]
+      }
+    },
+    "sia-code/decision-trace": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "source": "local",
+      "description": "Structured decision trace format for sia-code memory. Captures reasoning context (WHY), not just outcomes (WHAT). Use when storing learnings, adding decisions, or reviewing memory format.",
+      "promptTriggers": {
+        "keywords": [
+          "store learning",
+          "add decision",
+          "memory format",
+          "decision trace",
+          "capture reasoning",
+          "memory add-decision",
+          "context graph",
+          "reasoning memory",
+          "structured memory",
+          "decision context",
+          "store context",
+          "knowledge capture",
+          "preserve reasoning"
+        ],
+        "intentPatterns": [
+          "(store|save|capture).*?(learning|decision|reasoning)",
+          "(add|create).*?decision.*?(trace|memory)",
+          "memory.*?(format|structure|template)",
+          "(capture|preserve|record).*?(reasoning|context|why)",
+          "decision.*?(trace|context|graph)",
+          "sia.*?code.*?memory.*?(add|store|format)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": [
+          "memory add-decision",
+          "decision trace",
+          "Context:.*Reasoning:"
+        ]
+      }
     }
   },
   "notes": {
@@ -3001,7 +3085,9 @@
         "anti-patterns",
         "master-checklist",
         "token-management",
-        "reasoning-tools"
+        "reasoning-tools",
+        "sia-code/health-check",
+        "sia-code/decision-trace"
       ]
     }
   }

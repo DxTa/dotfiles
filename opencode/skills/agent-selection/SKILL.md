@@ -12,7 +12,7 @@ Complete decision tree for selecting the right agent or tool for any task. Use t
 
 This skill provides a comprehensive decision tree that maps task patterns to the most appropriate:
 - Built-in agents (@explore, @general)
-- CLI tools (uvx sia-code)
+- CLI tools (uvx sia-code) — **Prerequisite:** Load skill `sia-code/health-check` at session start
 - Specialist agents (@frontend-specialist, @backend-specialist, etc.)
 - Superpowers skills (TDD, code review, debugging)
 

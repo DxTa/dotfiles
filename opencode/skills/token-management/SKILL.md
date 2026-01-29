@@ -80,9 +80,9 @@ When context fills up (75%+ usage):
    - Update `task_plan.md` with phase summaries
    - Archive detailed exploration notes
 
-4. **Store key learnings:**
+4. **Store key learnings** (Load skill `sia-code/decision-trace` for structured format):
    ```bash
-   uvx sia-code memory add-decision "..."
+   uvx sia-code memory add-decision "[Category]: [Decision]. Context: [trigger]. Reasoning: [why]. Outcome: [result]."
    ```
 
 5. **If still overloaded:**
