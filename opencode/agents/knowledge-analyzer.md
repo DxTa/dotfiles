@@ -1,7 +1,9 @@
 ---
 description: Knowledge extraction and analysis agent for extracting reusable insights from conversations.
 mode: subagent
-model: anthropic/claude-sonnet-4-5-20250929
+model: openai/gpt-5.2-codex
+options:
+  reasoningEffort: none
 tools:
   write: true
   edit: true

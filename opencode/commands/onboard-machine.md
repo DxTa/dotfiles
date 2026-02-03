@@ -659,7 +659,7 @@ fi
 echo ""
 echo "Local skills in ~/.config/opencode/skills/:"
 LOCAL_SKILL_COUNT=0
-for dir in ~/.config/opencode/skills/*/; do
+for dir in $(find ~/.config/opencode/skills -mindepth 2 -maxdepth 4 -type d); do
     if [ -f "${dir}SKILL.md" ]; then
         SKILL_NAME=$(basename "$dir")
         echo "  ✓ $SKILL_NAME"

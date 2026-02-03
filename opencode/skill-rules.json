@@ -2,7 +2,7 @@
   "version": "2.0",
   "description": "Skill activation triggers for Claude Code plugins and local skills. Controls when plugins/skills automatically suggest or activate based on user prompts and file context.",
   "skills": {
-    "chaos-engineering-toolkit": {
+    "quality/chaos-engineering-toolkit": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -54,7 +54,7 @@
         ]
       }
     },
-    "performance-test-suite": {
+    "quality/performance-test-suite": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -108,7 +108,7 @@
         ]
       }
     },
-    "test-coverage-analyzer": {
+    "quality/test-coverage-analyzer": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -155,7 +155,7 @@
         ]
       }
     },
-    "security-test-scanner": {
+    "security/security-test-scanner": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -213,7 +213,7 @@
         ]
       }
     },
-    "security-pro-pack": {
+    "security/security-pro-pack": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -275,7 +275,7 @@
         ]
       }
     },
-    "fullstack-starter-pack": {
+    "packs/fullstack-starter-pack": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -344,7 +344,7 @@
         ]
       }
     },
-    "ci-cd-pipeline-builder": {
+    "devops/ci-cd-pipeline-builder": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -394,7 +394,7 @@
         ]
       }
     },
-    "infrastructure-as-code-generator": {
+    "devops/infrastructure-as-code-generator": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -446,7 +446,7 @@
         ]
       }
     },
-    "ansible-playbook-creator": {
+    "devops/ansible-playbook-creator": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -494,7 +494,7 @@
         ]
       }
     },
-    "algorithmic-art": {
+    "design/algorithmic-art": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "medium",
@@ -545,7 +545,7 @@
         ]
       }
     },
-    "artifacts-builder": {
+    "design/artifacts-builder": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -672,7 +672,7 @@
         "contentPatterns": []
       }
     },
-    "internal-comms": {
+    "comms/internal-comms": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "medium",
@@ -717,7 +717,7 @@
         ]
       }
     },
-    "mcp-builder": {
+    "integration/mcp-builder": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -803,7 +803,7 @@
         ]
       }
     },
-    "slack-gif-creator": {
+    "media/slack-gif-creator": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "medium",
@@ -839,7 +839,7 @@
         "contentPatterns": []
       }
     },
-    "theme-factory": {
+    "design/theme-factory": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "medium",
@@ -882,7 +882,7 @@
         ]
       }
     },
-    "webapp-testing": {
+    "quality/webapp-testing": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -982,7 +982,7 @@
         ]
       }
     },
-    "xlsx": {
+    "docs/xlsx": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -1037,7 +1037,7 @@
         ]
       }
     },
-    "docx": {
+    "docs/docx": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -1080,7 +1080,7 @@
           "**/*docx*.{py,js,ts}"
         ],
         "contentPatterns": [
-          "docx",
+          "docs/docx",
           "python-docx",
           "Document\\(",
           "add_paragraph",
@@ -1140,7 +1140,7 @@
         ]
       }
     },
-    "aws-cost-operations": {
+    "aws/aws-cost-operations": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -1266,7 +1266,7 @@
         ]
       }
     },
-    "aws-serverless-eda": {
+    "aws/aws-serverless-eda": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -1642,7 +1642,7 @@
         ]
       }
     },
-    "frontend-development": {
+    "frontend-dev-guidelines": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -1908,7 +1908,7 @@
         ]
       }
     },
-    "problem-solving": {
+    "When Stuck - Problem-Solving Dispatch": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "medium",
@@ -1946,7 +1946,7 @@
         "contentPatterns": []
       }
     },
-    "pr-review-toolkit": {
+    "quality/pr-review-toolkit": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -1987,7 +1987,7 @@
         "contentPatterns": []
       }
     },
-    "feature-dev": {
+    "packs/feature-dev": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -2024,7 +2024,7 @@
         "contentPatterns": []
       }
     },
-    "code-review-plugin": {
+    "quality/code-review-plugin": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -2060,7 +2060,7 @@
         "contentPatterns": []
       }
     },
-    "cloud-cost-optimizer": {
+    "devops/cloud-cost-optimizer": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -2110,7 +2110,7 @@
         ]
       }
     },
-    "api-documentation-generator": {
+    "docs/api-documentation-generator": {
       "type": "domain",
       "enforcement": "suggest",
       "priority": "high",
@@ -2973,6 +2973,156 @@
           "Context:.*Reasoning:"
         ]
       }
+    },
+    "Collision-Zone Thinking": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Collision-Zone Thinking for creative problem solving",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "Defense-in-Depth Validation": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Defense-in-Depth validation techniques",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "Inversion Exercise": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Inversion Exercise for assumption testing",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "Meta-Pattern Recognition": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Meta-pattern recognition across domains",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "Root Cause Tracing": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Root cause tracing techniques",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "Scale Game": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Scale Game for extreme-case testing",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "Simplification Cascades": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Simplification cascade techniques",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "planning-with-files": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Planning with files and TodoWrite integration",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "sia-code": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "sia-code indexing and research",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
+    },
+    "web-artifacts-builder": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "low",
+      "source": "local",
+      "description": "Web artifacts builder",
+      "promptTriggers": {
+        "keywords": [],
+        "intentPatterns": []
+      },
+      "fileTriggers": {
+        "pathPatterns": [],
+        "contentPatterns": []
+      }
     }
   },
   "notes": {
@@ -3003,58 +3153,58 @@
     },
     "installed_plugins": {
       "testing": [
-        "chaos-engineering-toolkit",
-        "performance-test-suite",
-        "test-coverage-analyzer",
-        "security-test-scanner"
+        "quality/chaos-engineering-toolkit",
+        "quality/performance-test-suite",
+        "quality/test-coverage-analyzer",
+        "security/security-test-scanner"
       ],
       "security": [
-        "security-pro-pack"
+        "security/security-pro-pack"
       ],
       "development": [
-        "fullstack-starter-pack",
-        "feature-dev",
-        "code-review-plugin",
-        "pr-review-toolkit"
+        "packs/fullstack-starter-pack",
+        "packs/feature-dev",
+        "quality/code-review-plugin",
+        "quality/pr-review-toolkit"
       ],
       "devops": [
-        "ci-cd-pipeline-builder",
-        "infrastructure-as-code-generator",
-        "ansible-playbook-creator",
-        "cloud-cost-optimizer"
+        "devops/ci-cd-pipeline-builder",
+        "devops/infrastructure-as-code-generator",
+        "devops/ansible-playbook-creator",
+        "devops/cloud-cost-optimizer"
       ],
       "creative": [
-        "algorithmic-art",
+        "design/algorithmic-art",
         "canvas-design",
-        "slack-gif-creator",
-        "theme-factory"
+        "media/slack-gif-creator",
+        "design/theme-factory"
       ],
       "artifacts": [
-        "artifacts-builder"
+        "design/artifacts-builder"
       ],
       "communication": [
-        "internal-comms"
+        "comms/internal-comms"
       ],
       "integration": [
-        "mcp-builder",
+        "integration/mcp-builder",
         "webapp-testing"
       ],
       "api": [
-        "api-documentation-generator"
+        "docs/api-documentation-generator"
       ],
       "documents": [
         "pdf",
-        "xlsx",
-        "docx",
+        "docs/xlsx",
+        "docs/docx",
         "pptx"
       ],
       "meta": [
         "skill-creator"
       ],
       "aws": [
-        "aws-cost-operations",
+        "aws/aws-cost-operations",
         "aws-cdk-development",
-        "aws-serverless-eda"
+        "aws/aws-serverless-eda"
       ],
       "local_skills": [
         "backend-development",
@@ -3090,5 +3240,6 @@
         "sia-code/decision-trace"
       ]
     }
-  }
+  },
+  "installed_plugins": {}
 }

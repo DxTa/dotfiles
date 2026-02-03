@@ -56,40 +56,40 @@ Should show:
 
 ```bash
 # Capture a learning to today's daily note
-~/.config/opencode/skills/pkm/scripts/pkm.py capture "content to capture" --tags tag1,tag2
+~/.config/opencode/skills/data/pkm/scripts/pkm.py capture "content to capture" --tags tag1,tag2
 
 # Search vault for notes
-~/.config/opencode/skills/pkm/scripts/pkm.py search "query" --max 10
+~/.config/opencode/skills/data/pkm/scripts/pkm.py search "query" --max 10
 
 # Show help
-~/.config/opencode/skills/pkm/scripts/pkm.py --help
+~/.config/opencode/skills/data/pkm/scripts/pkm.py --help
 ```
 
 ### Command Examples
 
 **Capture a learning:**
 ```bash
-~/.config/opencode/skills/pkm/scripts/pkm.py capture "Learned about React hooks optimization" --tags react,frontend
+~/.config/opencode/skills/data/pkm/scripts/pkm.py capture "Learned about React hooks optimization" --tags react,frontend
 ```
 
 **Search for notes:**
 ```bash
-~/.config/opencode/skills/pkm/scripts/pkm.py search "obsidian"
+~/.config/opencode/skills/data/pkm/scripts/pkm.py search "obsidian"
 ```
 
 **Search with max results:**
 ```bash
-~/.config/opencode/skills/pkm/scripts/pkm.py search "project management" --max 20
+~/.config/opencode/skills/data/pkm/scripts/pkm.py search "project management" --max 20
 ```
 
 **Capture without tags:**
 ```bash
-~/.config/opencode/skills/pkm/scripts/pkm.py capture "Important meeting notes"
+~/.config/opencode/skills/data/pkm/scripts/pkm.py capture "Important meeting notes"
 ```
 
 **Capture with multiple tags:**
 ```bash
-~/.config/opencode/skills/pkm/scripts/pkm.py capture "Key insight about database design" --tags database,backend,sql
+~/.config/opencode/skills/data/pkm/scripts/pkm.py capture "Key insight about database design" --tags database,backend,sql
 ```
 
 ## Daily Notes Structure
@@ -237,7 +237,7 @@ Use Claude Code with Obsidian MCP to create this note.
 
 **Command**:
 ```bash
-~/.config/opencode/skills/pkm/scripts/pkm.py capture "Database indexing improves read performance by 100x" --tags database,performance,optimization
+~/.config/opencode/skills/data/pkm/scripts/pkm.py capture "Database indexing improves read performance by 100x" --tags database,performance,optimization
 ```
 
 ## Notes

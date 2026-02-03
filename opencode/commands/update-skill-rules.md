@@ -25,9 +25,9 @@ Local Skills ─────────┘
      - Cross check with ~/.config/opencode/plugins/marketplaces/*
      - Read `~/.config/opencode/settings.json` to see enabled plugins
    - **Local Skills:**
-     - List all directories in `~/.config/opencode/skills/`
-     - For each directory, check if `SKILL.md` exists
-     - Parse YAML frontmatter for: name, description, version, license
+     - Recursively find all `SKILL.md` under `~/.config/opencode/skills/`
+     - Each `SKILL.md` defines a skill; compute its skill ID from frontmatter name or relative path
+     - Parse YAML frontmatter for: name, description, version, license (name can include slashes for grouped skills)
      - Note skill capabilities from content
 
 2. **Identify Changes**
@@ -46,7 +46,7 @@ Local Skills ─────────┘
    - Extract relevant keywords and trigger patterns
 
    **For local skills:**
-   - Read `~/.config/opencode/skills/{skill-name}/SKILL.md`
+   - Read `~/.config/opencode/skills/{skill-path}/SKILL.md`
    - Parse YAML frontmatter for metadata
    - Scan skill content for: technologies, frameworks, tools mentioned
    - Check for `references/` subdirectory and extract topics

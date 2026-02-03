@@ -42,42 +42,42 @@ If not configured:
 
 ```bash
 # Search Google Drive
-~/.config/opencode/skills/gdrive/scripts/gdrive.py search '<query>' [max_results]
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py search '<query>' [max_results]
 
 # Read specific file by search query
-~/.config/opencode/skills/gdrive/scripts/gdrive.py read '<query>' [index]
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py read '<query>' [index]
 
 # List recent files
-~/.config/opencode/skills/gdrive/scripts/gdrive.py list [count]
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py list [count]
 ```
 
 ### Command Examples
 
 **Search for project files:**
 ```bash
-~/.config/opencode/skills/gdrive/scripts/gdrive.py search "project plan"
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py search "project plan"
 ```
 
 **Read first matching file:**
 ```bash
-~/.config/opencode/skills/gdrive/scripts/gdrive.py read "quarterly report" 0
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py read "quarterly report" 0
 ```
 
 **List 20 most recent files:**
 ```bash
-~/.config/opencode/skills/gdrive/scripts/gdrive.py list 20
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py list 20
 ```
 
 ## Authentication
 
 On first run, script will:
 1. Open a browser window for OAuth authorization
-2. Save token to `~/.config/opencode/skills/gdrive/gdrive_token.json`
+2. Save token to `~/.config/opencode/skills/comms/gdrive/gdrive_token.json`
 
 **To re-authenticate**:
 ```bash
-rm ~/.config/opencode/skills/gdrive/gdrive_token.json
-~/.config/opencode/skills/gdrive/scripts/gdrive.py list
+rm ~/.config/opencode/skills/comms/gdrive/gdrive_token.json
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py list
 ```
 
 ## Supported File Types
@@ -177,7 +177,7 @@ Recent 10 files from Drive:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gdrive/scripts/gdrive.py search "project documentation"
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py search "project documentation"
 ```
 
 ### Example 2: Read a Specific Document
@@ -186,7 +186,7 @@ Recent 10 files from Drive:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gdrive/scripts/gdrive.py read "quarterly report" 0
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py read "quarterly report" 0
 ```
 
 ### Example 3: Check Recent Activity
@@ -195,7 +195,7 @@ Recent 10 files from Drive:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gdrive/scripts/gdrive.py list 10
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py list 10
 ```
 
 ### Example 4: Search Multiple Keywords
@@ -204,7 +204,7 @@ Recent 10 files from Drive:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gdrive/scripts/gdrive.py search "budget"
+~/.config/opencode/skills/comms/gdrive/scripts/gdrive.py search "budget"
 ```
 
 ## Notes

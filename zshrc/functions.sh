@@ -269,28 +269,38 @@ dev() {
             echo "Already mounted: ${mount_dir}"
         fi
 
-        tmux new-session -d -s "$session_name" -n vim -c "$mount_dir"
-        tmux send-keys -t "${session_name}:vim" 'vim' "Enter"
+        # Find a free port in 40000-50000 for opencode server
+        local opencode_port=$(python3 -c "
+import socket, random
+for _ in range(100):
+    p = random.randint(40000, 50000); s = socket.socket()
+    try: s.bind(('', p)); s.close(); print(p); break
+    except: s.close()
+")
 
-        tmux new-window -t "$session_name" -n opencode -c "$mount_dir"
-        tmux send-keys -t "${session_name}:opencode" 'opencode' "Enter"
+        # Window 1: side-by-side vim (60%) | opencode (40%)
+        tmux new-session -d -s "$session_name" -n editor -c "$mount_dir"
+        tmux set-environment -t "$session_name" OPENCODE_PORT "$opencode_port"
+        tmux send-keys -t "${session_name}:editor" 'vim' "Enter"
+        tmux split-window -h -p 40 -t "${session_name}:editor" -c "$mount_dir"
+        tmux send-keys -t "${session_name}:editor.2" "opencode --port $opencode_port" "Enter"
 
+        # Window 2: SSH to remote
         tmux new-window -t "$session_name" -n ssh -c "$HOME"
         tmux send-keys -t "${session_name}:ssh" "ssh ${remote_spec}" "Enter"
-
         sleep 1
         tmux send-keys -t "${session_name}:ssh" "cd ${remote_path}" "Enter"
-        
-        echo "DEBUG: session_name=[$session_name]"
-        echo "DEBUG: remote_spec=[$remote_spec]"
 
         echo ""
         echo "Remote session created: $session_name"
         echo "Mount point: $mount_dir"
+        echo "opencode port: $opencode_port"
         echo "Run 'dev-umount $session_name' when done to unmount"
 
         sleep 0.2
-        tmux select-window -t "${session_name}:0"
+        # Focus vim pane, attach
+        tmux select-window -t "${session_name}:editor"
+        tmux select-pane -t "${session_name}:editor.1"
         tmux attach -t "$session_name"
         return
     fi
@@ -308,15 +318,28 @@ dev() {
         return
     fi
 
-    tmux new-session -d -s "$session_name" -n vim -c "$dir"
-    tmux send-keys -t "${session_name}:vim" 'vim' "Enter"
+    # Find a free port in 40000-50000 for opencode server
+    local opencode_port=$(python3 -c "
+import socket, random
+for _ in range(100):
+    p = random.randint(40000, 50000); s = socket.socket()
+    try: s.bind(('', p)); s.close(); print(p); break
+    except: s.close()
+")
 
-    tmux new-window -t "$session_name" -n opencode -c "$dir"
-    tmux send-keys -t "${session_name}:opencode" 'opencode' "Enter"
+    # Window 1: side-by-side vim (60%) | opencode (40%)
+    tmux new-session -d -s "$session_name" -n editor -c "$dir"
+    tmux set-environment -t "$session_name" OPENCODE_PORT "$opencode_port"
+    tmux send-keys -t "${session_name}:editor" 'vim' "Enter"
+    tmux split-window -h -p 40 -t "${session_name}:editor" -c "$dir"
+    tmux send-keys -t "${session_name}:editor.2" "opencode --port $opencode_port" "Enter"
 
+    # Window 2: plain shell
     tmux new-window -t "$session_name" -n shell -c "$dir"
 
-    tmux select-window -t "${session_name}:vim"
+    # Focus vim pane, attach
+    tmux select-window -t "${session_name}:editor"
+    tmux select-pane -t "${session_name}:editor.1"
     tmux attach -t "$session_name"
 }
 

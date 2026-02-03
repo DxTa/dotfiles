@@ -1,6 +1,6 @@
 ---
 name: planning-with-files
-description: Manus-style persistent markdown planning integrated with TodoWrite. Creates task_plan.md for persistence and goal tracking while using TodoWrite for live TUI visibility. Use for Tier 2+ tasks, multi-step projects, or when tracking/recovery is needed.
+description: Use when Tier 2+ tasks, multi-step projects, or when tracking/recovery is needed and plan files must persist across sessions.
 ---
 
 # Planning with Files + TodoWrite Integration
@@ -19,29 +19,31 @@ Work like Manus: Use persistent markdown files as your "working memory on disk" 
 
 ```
 ~/.config/opencode/plans/
-├── {project}_{uuid}_task_plan.md    # Main plan
-├── {project}_{uuid}_notes.md        # Research (Tier 3+)
-└── archive/                          # Auto-archived after 30 days
+├── {project}_{id}_task_plan.md    # Main plan (id = sessionID if available, else uuid)
+├── {project}_{id}_notes.md        # Research (Tier 3+)
+└── archive/                        # Auto-archived after 30 days
 ```
 
-## UUID Generation
+## Identifier Selection (Preferred: sessionID)
 
-**Every new task MUST have a unique session ID (UUID).**
+**Every new task MUST have a unique identifier (`id`) used in filenames.**
 
-Generate a short UUID at task start:
+**Preferred:** use OpenCode session ID from `get-session-info`.
+- If `get-session-info` returns `taskPlanPath` / `notesPath`, use those exact paths.
+- Otherwise use:
+  - `~/.config/opencode/plans/{projectSlug}_{sessionID}_task_plan.md`
+  - `~/.config/opencode/plans/{projectSlug}_{sessionID}_notes.md`
+  - If `projectSlug` is unavailable, use a short project name (e.g., cwd basename)
+
+**Fallback only if sessionID is unavailable/empty:**
 ```bash
 uuidgen | cut -c1-8
 ```
-
-Example: `e7f3a281`
 
 **Never use:**
 - Descriptive names (e.g., `notifications_fix`)
 - Dates (e.g., `20260104`)
 - Mixed formats
-
-**Always use:**
-- 8-character UUID from `uuidgen`
 
 ## Tier Adaptation
 
@@ -70,6 +72,20 @@ Example: `e7f3a281`
 1. Read task_plan.md
 2. Identify current phase from Status
 3. TodoWrite: Recreate items for current phase
+
+## Tool Fallbacks (Write/Edit Unavailable)
+
+If `write`/`edit` tools are not available (common in Plan mode or restricted toolsets):
+1. **Preferred:** Ask the user for permission to create files via bash heredoc/redirect.
+2. **If `apply_patch` is available**, use it to add or update the file with full content.
+3. If approved, create the file with a single command:
+   ```bash
+   cat <<'EOF' > /absolute/path/to/task_plan.md
+   [template contents]
+   EOF
+   ```
+4. If not approved, ask the user to create the file manually and provide the template.
+5. Never use `echo` or partial writes for multi-line files.
 
 ## task_plan.md Template
 

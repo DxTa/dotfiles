@@ -9,27 +9,52 @@ Sub-agents, sia-code CLI code indexing with built-in memory, external LLM valida
 **Syntax:** `Load skill <skill-name>` (e.g., `Load skill master-checklist`)
 
 **How it works:**
-- Skills are defined in: `/home/dxta/.dotfiles/opencode/skills/<skill-name>/SKILL.md`
+- Skills are defined in: `/home/dxta/.dotfiles/opencode/skills/**/SKILL.md`
 - Triggers configured in: `/home/dxta/.dotfiles/opencode/skill-rules.json`
 - Use `@skill-suggests` tool to discover relevant skills for any task
 
-**Alternative:** Direct file access: `Read /home/dxta/.dotfiles/opencode/skills/<skill-name>/SKILL.md`
+**Alternative:** Direct file access: `Read /home/dxta/.dotfiles/opencode/skills/**/SKILL.md`
+
+## Command Mode Override
+
+When a prompt contains the marker `OPENCODE_COMMAND_MODE=1` (injected automatically by the command-mode plugin for all TUI slash commands):
+
+- **Skip** `@tier-detector` — do NOT invoke tier detection
+- **Skip** `@skill-suggests` — do NOT run skill suggestions
+- **Skip** all `uvx sia-code …` commands (health check, memory search, research) — do NOT run any sia-code operations
+- **Skip** mandatory output anchors (`[TIER DETECTION]`, `[MEMORY SEARCH]`, etc.)
+- **Skip** task_plan.md / notes.md / TodoWrite creation
+- **Do** execute the command's actual instructions directly and concisely
+
+**Re-enable exception:** If the command template itself explicitly requests any of the above (e.g., contains "invoke @tier-detector", "run @skill-suggests", "uvx sia-code"), then honor that specific request.
+
+**Do NOT print the marker** `OPENCODE_COMMAND_MODE=1` in your output.
 
 ## FIRST ACTION: Detect Task Type
 
-**New task patterns:** implement, build, create, fix, debug, refactor, design, migrate, setup, add, develop
+**Task continuity rules (default to continuation):**
+- Treat messages as continuation unless an explicit marker is present or this is the first user message of the session.
+- Valid markers (case-insensitive, line-start only): `NEW TASK:` or `SCOPE CHANGE:`
+- Ignore markers and keywords inside code fences or `<file>...</file>` blocks.
+- If a marker is present, reason whether it truly indicates a new task or scope change. Only then invoke `@tier-detector`.
 
-**Skip patterns:** follow-ups, clarifications, acknowledgments
-
-**If NEW TASK:** 
+**If NEW TASK confirmed (and `OPENCODE_COMMAND_MODE=1` is NOT present):**
 1. **MANDATORY: Invoke `@tier-detector`** with task description
+   - **Prompt payload (minimal):**
+     - `Context: cwd=<absolute path>`
+     - `Context: git_branch=<branch>`
+     - `Task: <exact user message>`
+   - Do NOT include full conversation history or extra context.
 2. Output: "[TIER DETECTION]: Invoking @tier-detector..."
 3. Output: "[TIER RESULT]: TIER [N] - <reasoning summary>"
 4. Output: "TASK DETECTED - TIER [N]"
 5. `@skill-suggests` → MASTER CHECKLIST
 
 ### Skip Exception
-Tier detection can ONLY be skipped if the user **explicitly requests** to skip it (e.g., "skip tier detection", "just do it without tier check").
+Tier detection can ONLY be skipped if the user **explicitly requests** to skip it (e.g., "skip tier detection", "just do it without tier check"), **OR** if `OPENCODE_COMMAND_MODE=1` is present in the prompt.
+
+### Subagent Exception
+Tier detection is handled by the primary agent. Subagents should **not** invoke @tier-detector. When dispatching a subagent, include an explicit instruction like "skip tier detection for this subagent" in the prompt.
 
 ## HARD STOP ENFORCEMENT
 
@@ -40,7 +65,7 @@ Tier detection can ONLY be skipped if the user **explicitly requests** to skip i
 ⛔ ALL new tasks MUST invoke @tier-detector before any work
 
 REQUIRED SEQUENCE:
-1. Detect new task pattern
+1. Detect explicit NEW TASK:/SCOPE CHANGE: marker or session start
 2. Invoke: @tier-detector [task description]
 3. Output: "[TIER DETECTION]: Invoking @tier-detector..."
 4. Output: "[TIER RESULT]: TIER [N] - <reasoning>"
@@ -49,6 +74,7 @@ REQUIRED SEQUENCE:
 VIOLATION: Declaring a tier without @tier-detector = invalid classification
 VIOLATION: Starting work without tier detection = STOP and restart
 EXCEPTION: User explicitly says "skip tier detection" or equivalent
+EXCEPTION: `OPENCODE_COMMAND_MODE=1` is present in the prompt
 ```
 
 ### Rule 1: Tier Declaration Required
@@ -58,6 +84,7 @@ Before ANY task work, you MUST:
 2. Output "TASK DETECTED - TIER [N]" using detector's recommendation
 
 VIOLATION: Manual tier assignment without @tier-detector = invalid (unless user-skipped)
+EXCEPTION: `OPENCODE_COMMAND_MODE=1` is present in the prompt
 VIOLATION: Writing implementation details without tier declaration = STOP and restart
 ```
 
@@ -187,7 +214,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ```
 "Should work" = RED FLAG. Run command first.
 
-**Skill:** Load skill `verification-before-completion`
+**Skill:** Load skill `superpowers/verification-before-completion`
 
 ### Two-Strike Rule (T2+ MANDATORY)
 2 failed fixes → STOP. No third fix without:
@@ -195,7 +222,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 2. sia-code research documented in task_plan.md
 3. Memory search for similar issues
 
-**Skill:** Load skill `systematic-debugging`
+**Skill:** Load skill `superpowers/systematic-debugging`
 
 ### Code Review (T2+)
 Two-stage: Spec compliance FIRST → Code quality SECOND
@@ -231,7 +258,9 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
    - **NEVER SKIP** - even "no results" prevents duplicate work
    - **VERIFICATION:** Memory search output (or "no results") MUST appear in task_plan.md or notes.md
 3. ☐ `get-session-info` → sessionID, projectSlug (ALL tiers: MANDATORY)
-4. ☐ Create task_plan.md: `{projectSlug}_{sessionID}_task_plan.md` (ALL tiers: MANDATORY for crash recovery)
+4. ☐ **REQUIRED:** Follow skill `planning-with-files` for plan/notes naming + location
+   - Use sessionID-based filenames when available
+   - Only fall back to uuid when sessionID is unavailable
 4a. ☐ **GATE: @self-reflect** (T3+ BLOCKING - do NOT proceed without this)
     ```
     @self-reflect Review this plan for edge cases, production risks, and missing considerations
@@ -247,7 +276,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
     - Verdict: APPROVED / CONCERNS / REJECTED
     
     **If REJECTED:** Revise plan and re-run @self-reflect before proceeding
-5. ☐ Create notes.md: `{projectSlug}_{sessionID}_notes.md` (T1: optional, T2: recommended, T3+: mandatory)
+5. ☐ Create notes.md per `planning-with-files` (T1: optional, T2: recommended, T3+: mandatory)
 6. ☐ TodoWrite: Initialize Phase 1 (ALL tiers: MANDATORY)
 7. ☐ Exploration (T2+: if triggers hit, T3+: MANDATORY before code changes)
    - **7a.** Research Tool Selection (use decision matrix):
@@ -288,7 +317,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
     - ✅ **ALWAYS** include Context + Reasoning to preserve decision history
 17. ☐ @code-simplifier (T2+: recommended before final testing)
 17a. ☐ Two-Stage Review (T2+) - Load skills `superpowers/subagent-driven-development` (spec) then `superpowers/requesting-code-review` (code)
-18. ☐ Validation: run tests, verify changes (Load skill `verification-before-completion`)
+18. ☐ Validation: run tests, verify changes (Load skill `superpowers/verification-before-completion`)
 18a. ☐ Branch Completion - Load skills `superpowers/finishing-a-development-branch` + `push-all`
     **Checklist:**
     - [ ] All tests pass (output captured)
@@ -326,7 +355,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 | README, API docs | `@technical-writer` |
 | TDD implementation (T2+) | `@general` + skill `superpowers/test-driven-development` |
 | Task complete, before review | `@general` + skill `superpowers/subagent-driven-development` |
-| 2+ failed fixes | `@general` + skill `systematic-debugging` |
+| 2+ failed fixes | `@general` + skill `superpowers/systematic-debugging` |
 | Branch complete | `@general` + skill `superpowers/finishing-a-development-branch` |
 
 **Full decision tree:** Load skill `agent-selection`
@@ -398,6 +427,8 @@ Monitor at phase boundaries: `opencode stats --project ""`
 **Screenshots:** `/home/dxta/Pictures/Screenshots`
 **Python:** venv if exists, else pkgx
 **Node/npm:** Always pkgx
+**Go:** Always pkgx go
+**Rust:** Always pkgx cargo
 **WSL2:** Use `127.0.0.1` not `localhost`
 **Container-first:** `docker exec -it` when docker-compose.yml exists
 **Token monitoring:** `opencode stats --project ""`
@@ -413,5 +444,6 @@ Monitor at phase boundaries: `opencode stats --project ""`
 - ❌ Skip @self-reflect for T3+ → BLOCKING GATE violation
 - ❌ Skip memory search for T2+ → Context loss, duplicate decisions
 - ❌ Silently skip broken sia-code → Load skill `sia-code/health-check`, ASK USER to initialize
+- ❌ Run no-op shell commands (`true`, `:`) → Always run meaningful commands only
 
 **Full anti-patterns with rationale:** Load skill `anti-patterns`

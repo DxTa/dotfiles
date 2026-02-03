@@ -1,6 +1,10 @@
 node_modules
 package.json
 bun.lock
+cache/
+benchmarks/
+backup/
+opencode.json.bak-*
 # Do NOT ignore .gitignore itself - it must be tracked for protection to work on clones
 .mcp-credentials.json
 .serena

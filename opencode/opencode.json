@@ -84,36 +84,267 @@
           "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
         }
       }
+    },
+    "openai": {
+      "options": {
+        "reasoningEffort": "medium",
+        "reasoningSummary": "auto",
+        "textVerbosity": "medium",
+        "include": [
+          "reasoning.encrypted_content"
+        ],
+        "store": false
+      },
+      "models": {
+        "gpt-5.2": {
+          "name": "GPT 5.2 (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "none": {
+              "reasoningEffort": "none",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.2-codex": {
+          "name": "GPT 5.2 Codex (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.1-codex-max": {
+          "name": "GPT 5.1 Codex Max (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.1-codex": {
+          "name": "GPT 5.1 Codex (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.1-codex-mini": {
+          "name": "GPT 5.1 Codex Mini (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.1": {
+          "name": "GPT 5.1 (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "none": {
+              "reasoningEffort": "none",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "low"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "high"
+            }
+          }
+        }
+      }
     }
   },
-  "mode": {
-  "build": {
-    "prompt": "You are Claude Code, Anthropic's official CLI for Claude."
-  },
-  "plan": {
-    "prompt": "You are Claude Code, Anthropic's official CLI for Claude."
-  }
-},
    "agent": {
     "build": {
       "mode": "primary",
-      "model": "anthropic/claude-sonnet-4-5-20250929",
-      "reasoningEffort": "low",
+      "model": "openai/gpt-5.2-codex",
+      "variant": "low",
       "description": "Primary development agent with full tools"
     },
     "plan": {
       "mode": "primary",
-      "model": "anthropic/claude-opus-4-5-20251101",
-      "reasoningEffort": "low",
+      "model": "openai/gpt-5.2",
+      "variant": "low",
       "description": "Analysis and planning agent with plan file management",
       "tools": {
         "todowrite": true,
-        "todoread": true
+        "todoread": true,
+        "read": true,
+        "write": true,
+        "edit": true
       },
       "permission": {
+        "read": {
+          "*": "allow"
+        },
+        "write": {
+          "/home/dxta/.config/opencode/plans/*": "allow"
+        },
         "edit": {
-          "~/.config/opencode/plans/*": "allow",
-          "*.md": "allow"
+          "/home/dxta/.config/opencode/plans/*": "allow"
         },
         "external_directory": "allow",
         "bash": {
@@ -133,21 +364,37 @@
           "memvid*": "allow",
           "source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh && memvid*": "allow",
           "echo*| memvid*": "allow",
-          "source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh && echo*| memvid*": "allow",
-          "*": "ask"
+          "source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh && echo*| memvid*": "allow"
         }
       }
     },
     "general": {
-      "reasoningEffort": "low"
+      "options": {
+        "reasoningEffort": "low"
+      }
+    },
+    "tier-detector": {
+      "model": "opencode/gpt-5-nano",
+      "options": {
+        "reasoningEffort": "minimal"
+      }
     },
     "self-reflect": {
       "model": "openai/gpt-5.2-codex",
-      "reasoningEffort": "low"
+      "variant": "low"
     },
     "explore": {
-      "model": "anthropic/claude-sonnet-4-5-20250929",
-      "reasoningEffort": "low"
+      "model": "openai/gpt-5.2-codex",
+      "options": {
+        "reasoningEffort": "low"
+      }
+    }
+  },
+  "command": {
+    "sia-code": {
+      "template": "Run sia-code (pinned):\nuvx sia-code@0.5.0 $ARGUMENTS",
+      "description": "Pinned sia-code 0.5.0 command",
+      "agent": "build"
     }
   },
   "mcp": {
@@ -327,10 +574,42 @@
   "permission": {
     "skill": {
       "*": "allow"
+    },
+    "read": {
+      "*": "allow"
+    },
+    "bash": {
+      "pkgx npm *": "allow",
+      "pkgx pnpm *": "allow",
+      "pkgx yarn *": "allow",
+      "pkgx bun *": "allow",
+      "pkgx python *": "allow",
+      "pkgx pytest *": "allow",
+      "pkgx cargo *": "allow",
+      "pkgx go *": "allow",
+      "pkgx make *": "allow",
+      "pkgx docker *": "allow",
+      "pkgx docker compose *": "allow",
+      "npm *": "allow",
+      "pnpm *": "allow",
+      "yarn *": "allow",
+      "bun *": "allow",
+      "python *": "allow",
+      "pytest *": "allow",
+      "cargo *": "allow",
+      "go *": "allow",
+      "make *": "allow",
+      "docker *": "allow",
+      "docker compose *": "allow",
+      "git status": "allow",
+      "git diff": "allow",
+      "git log": "allow"
     }
   },
   "plugin": [
-      "opencode-antigravity-auth@latest",
-      "opencode-anthropic-auth@latest"
+    "opencode-antigravity-auth@latest",
+    "opencode-anthropic-auth@latest",
+    "opencode-openai-codex-multi-auth@latest",
+    "opencode-pty"
   ]
 }

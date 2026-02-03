@@ -97,3 +97,13 @@ claude/
 .Claude/
 .claude/
 
+
+# ===========================================
+# LOCAL WORKING ARTIFACTS
+# ===========================================
+plans/
+cache/
+backup/
+benchmarks/
+*.bkp
+*.backup*

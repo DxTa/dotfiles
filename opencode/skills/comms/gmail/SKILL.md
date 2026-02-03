@@ -42,65 +42,65 @@ If not configured:
 
 ```bash
 # Search Gmail
-~/.config/opencode/skills/gmail/scripts/gmail.py search '<query>' [max_results]
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search '<query>' [max_results]
 
 # Read specific email by search query
-~/.config/opencode/skills/gmail/scripts/gmail.py get '<query>' [index]
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py get '<query>' [index]
 
 # List recent emails from inbox
-~/.config/opencode/skills/gmail/scripts/gmail.py list [count]
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py list [count]
 
 # Search for meeting invites
-~/.config/opencode/skills/gmail/scripts/gmail.py invites [days_forward] [max_results]
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py invites [days_forward] [max_results]
 ```
 
 ### Command Examples
 
 **Search for emails from a specific sender:**
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py search "from:john@example.com"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "from:john@example.com"
 ```
 
 **Search for emails with specific subject:**
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py search "subject:project update"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "subject:project update"
 ```
 
 **Search for emails with attachments:**
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py search "has:attachment"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "has:attachment"
 ```
 
 **Search with date range:**
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py search "after:2024/12/01 before:2024/12/31"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "after:2024/12/01 before:2024/12/31"
 ```
 
 **Read first matching email:**
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py get "important" 0
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py get "important" 0
 ```
 
 **List 10 most recent emails:**
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py list 10
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py list 10
 ```
 
 **Search for meeting invites in next 7 days:**
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py invites 7 20
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py invites 7 20
 ```
 
 ## Authentication
 
 On first run, script will:
 1. Open a browser window for OAuth authorization
-2. Save token to `~/.config/opencode/skills/gmail/gmail_token.json`
+2. Save token to `~/.config/opencode/skills/comms/gmail/gmail_token.json`
 
 **To re-authenticate**:
 ```bash
-rm ~/.config/opencode/skills/gmail/gmail_token.json
-~/.config/opencode/skills/gmail/scripts/gmail.py list
+rm ~/.config/opencode/skills/comms/gmail/gmail_token.json
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py list
 ```
 
 ## Gmail Search Syntax
@@ -124,13 +124,13 @@ The `search` command supports Gmail's full search syntax:
 
 ```bash
 # Unread emails from boss with attachments
-~/.config/opencode/skills/gmail/scripts/gmail.py search "is:unread from:boss@example.com has:attachment"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "is:unread from:boss@example.com has:attachment"
 
 # Emails sent this week
-~/.config/opencode/skills/gmail/scripts/gmail.py search "in:sent after:2025-01-01"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "in:sent after:2025-01-01"
 
 # Subject or body contains "urgent", not from newsletter
-~/.config/opencode/skills/gmail/scripts/gmail.py search "urgent -from:newsletter"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "urgent -from:newsletter"
 ```
 
 ## Output Format
@@ -224,7 +224,7 @@ Found 3 meeting invites in next 7 days:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py search "urgent is:unread"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "urgent is:unread"
 ```
 
 ### Example 2: Read Specific Email
@@ -233,7 +233,7 @@ Found 3 meeting invites in next 7 days:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py get "from:john@example.com" 0
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py get "from:john@example.com" 0
 ```
 
 ### Example 3: Check Recent Activity
@@ -242,7 +242,7 @@ Found 3 meeting invites in next 7 days:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py list 10
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py list 10
 ```
 
 ### Example 4: Find Meeting Invites
@@ -251,7 +251,7 @@ Found 3 meeting invites in next 7 days:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py invites 7 20
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py invites 7 20
 ```
 
 ### Example 5: Search with Date Range
@@ -260,7 +260,7 @@ Found 3 meeting invites in next 7 days:
 
 **Command**:
 ```bash
-~/.config/opencode/skills/gmail/scripts/gmail.py search "project after:2024/12/01 before:2025/01/01"
+~/.config/opencode/skills/comms/gmail/scripts/gmail.py search "project after:2024/12/01 before:2025/01/01"
 ```
 
 ## Notes

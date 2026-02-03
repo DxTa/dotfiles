@@ -48,9 +48,9 @@ This installs `@opencode-ai/plugin` dependency required for TypeScript plugins.
 ### 3. Verify Skills
 
 OpenCode auto-discovers skills from:
-- `~/.config/opencode/skills/*/SKILL.md` (global)
-- `.opencode/skills/*/SKILL.md` (project)
-- `~/.config/opencode/skills/*/SKILL.md` (Claude-compatible fallback)
+- `~/.config/opencode/skills/**/SKILL.md` (global)
+- `.opencode/skills/**/SKILL.md` (project)
+- `~/.config/opencode/skills/**/SKILL.md` (Claude-compatible fallback)
 
 ```bash
 # List discovered skills

@@ -1,7 +1,9 @@
 ---
 description: Analyze task and suggest relevant skills from skill-rules.json
 mode: subagent
-model: anthropic/claude-sonnet-4-5-20250929
+model: openai/gpt-5.1-codex-mini
+options:
+  reasoningEffort: none
 temperature: 0.3
 tools:
   suggest-skills: true
@@ -66,11 +68,11 @@ Recommend relevant skills for the user's task using skill-rules.json and LLM jud
 ### High Priority
 
 1. **backend-development** - Core skill for building REST APIs, authentication flows, database design, and API security patterns
-2. **systematic-debugging** - Essential for troubleshooting auth flows, token validation, and API error handling
+2. **superpowers/systematic-debugging** - Essential for troubleshooting auth flows, token validation, and API error handling
 
 ### Recommended Workflow
 
-Start with **backend-development** to establish API routes, authentication middleware, and database schema. Use **systematic-debugging** when testing auth flows to catch edge cases early.
+Start with **backend-development** to establish API routes, authentication middleware, and database schema. Use **superpowers/systematic-debugging** when testing auth flows to catch edge cases early.
 
 **Note:** These skill recommendations are now available in your session context.
 ```

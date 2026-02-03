@@ -56,8 +56,10 @@ TodoWrite:
 **Task:** "Implement OAuth2 authentication with Google"
 
 ### Files Created:
-1. `~/.config/opencode/plans/myapp_abc123_task_plan.md`
-2. `~/.config/opencode/plans/myapp_abc123_notes.md`
+1. `~/.config/opencode/plans/myapp_ses_XXXXXXXXXXXX_task_plan.md`
+2. `~/.config/opencode/plans/myapp_ses_XXXXXXXXXXXX_notes.md`
+
+(Fallback if sessionID unavailable: `myapp_e7f3a281_task_plan.md`, `myapp_e7f3a281_notes.md`)
 
 ### task_plan.md
 ```markdown

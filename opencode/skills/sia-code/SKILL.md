@@ -12,6 +12,8 @@ Local-first codebase intelligence with lexical-first search, multi-hop research,
 
 **Version:** 0.5.0
 
+**Pinned CLI:** Use `uvx sia-code@0.5.0` (see opencode.json command `/sia-code`).
+
 ## Core Concepts
 
 **What is Sia-Code?**
@@ -290,7 +292,7 @@ uvx sia-code research "what calls the indexer?" --graph
 ### Research Filtering
 
 ```bash
-# Exclude dependencies from research
+# Include stale chunks (code archaeology)
 uvx sia-code research "auth flow" --no-filter
 ```
 
@@ -304,7 +306,8 @@ Search through stored decisions and timeline events:
 
 ```bash
 uvx sia-code memory search "authentication"
-uvx sia-code memory search "database migration"
+uvx sia-code memory search "database migration" --type decision
+uvx sia-code memory search "timeline" --type timeline -k 20
 ```
 
 ### Store New Learning
@@ -313,13 +316,13 @@ Add decisions, procedures, or facts to project memory:
 
 ```bash
 # Store a procedure
-uvx sia-code memory add-decision "Procedure: Always run tests before deploying"
+uvx sia-code memory add-decision "Procedure: Always run tests before deploying" -d "Team workflow" -r "Reduce regressions"
 
 # Store a fact
-uvx sia-code memory add-decision "Fact: Module Y requires config Z to be set"
+uvx sia-code memory add-decision "Fact: Module Y requires config Z" -d "Required configuration" -r "Runtime errors otherwise"
 
 # Store a technical decision
-uvx sia-code memory add-decision "Migrate from REST to GraphQL API"
+uvx sia-code memory add-decision "Migrate from REST to GraphQL" -d "Need flexible queries" -r "Reduce overfetching" -a "REST, gRPC"
 ```
 
 ### View Timeline & Decisions
@@ -339,6 +342,9 @@ uvx sia-code memory list --type timeline --limit 20
 
 # Filter decisions by status
 uvx sia-code memory list --type decision --status pending
+
+# Output format
+uvx sia-code memory list --type decision --format table
 ```
 
 ### View Timeline (Dedicated Command)
@@ -376,8 +382,15 @@ uvx sia-code memory sync-git
 # Sync last 100 events
 uvx sia-code memory sync-git --limit 100
 
-# Sync events after specific date
-uvx sia-code memory sync-git --since "2024-01-01"
+# Sync events after git ref (e.g., last 50 commits)
+uvx sia-code memory sync-git --since "HEAD~50"
+
+# Preview without importing
+uvx sia-code memory sync-git --dry-run
+
+# Only tags or only merges
+uvx sia-code memory sync-git --tags-only
+uvx sia-code memory sync-git --merges-only
 ```
 
 ### Decision Workflow
@@ -386,10 +399,10 @@ Track and approve/reject technical decisions:
 
 ```bash
 # Add a pending decision
-uvx sia-code memory add-decision "Migrate to GraphQL"
+uvx sia-code memory add-decision "Migrate to GraphQL" -d "Need flexible queries" -r "Reduce overfetching" -a "REST, gRPC"
 
 # Approve decision (ID shown in list output)
-uvx sia-code memory approve 1
+uvx sia-code memory approve 1 -c architecture
 
 # Reject decision
 uvx sia-code memory reject 2
@@ -416,10 +429,10 @@ Backup or share project memory:
 
 ```bash
 # Export to JSON
-uvx sia-code memory export memory-backup.json
+uvx sia-code memory export -o memory-backup.json
 
 # Import from JSON
-uvx sia-code memory import memory-backup.json
+uvx sia-code memory import -i memory-backup.json
 ```
 
 ## Interactive Mode
@@ -490,6 +503,9 @@ uvx sia-code embed stop
 ```bash
 # Show current configuration
 uvx sia-code config show
+
+# Show config file path
+uvx sia-code config path
 
 # Get specific value
 uvx sia-code config get search.vector_weight
