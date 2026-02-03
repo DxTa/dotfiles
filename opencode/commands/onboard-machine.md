@@ -576,6 +576,52 @@ echo ""
 
 ## Phase 6: Plugin Installation
 
+### Phase 6.2: Superpowers (OpenCode) Setup
+
+```bash
+#!/bin/bash
+
+echo "========================================"
+echo "Phase 6.2: Superpowers (OpenCode) Setup"
+echo "========================================"
+
+# Install or update Superpowers
+if [ -d "$HOME/.config/opencode/superpowers" ]; then
+    echo "✓ Superpowers repo exists, updating"
+    (cd "$HOME/.config/opencode/superpowers" && git pull)
+else
+    echo "Installing Superpowers"
+    git clone https://github.com/obra/superpowers.git "$HOME/.config/opencode/superpowers"
+fi
+
+# Ensure directories exist
+mkdir -p "$HOME/.config/opencode/plugins" "$HOME/.config/opencode/skills"
+
+# Remove old links (safe for reinstalls)
+rm -f "$HOME/.config/opencode/plugins/superpowers.js"
+rm -rf "$HOME/.config/opencode/skills/superpowers"
+
+# Create symlinks
+ln -s "$HOME/.config/opencode/superpowers/.opencode/plugins/superpowers.js" "$HOME/.config/opencode/plugins/superpowers.js"
+ln -s "$HOME/.config/opencode/superpowers/skills" "$HOME/.config/opencode/skills/superpowers"
+
+# Verify installation
+ls -l "$HOME/.config/opencode/plugins/superpowers.js"
+ls -l "$HOME/.config/opencode/skills/superpowers"
+
+# Restart OpenCode service (if using systemd user service)
+if command -v systemctl &> /dev/null; then
+    systemctl --user restart opencode-serve || true
+fi
+
+echo ""
+echo "✓ Phase 6.2 Complete"
+echo ""
+```
+
+---
+
+
 ```bash
 #!/bin/bash
 

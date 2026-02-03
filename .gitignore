@@ -107,3 +107,4 @@ backup/
 benchmarks/
 *.bkp
 *.backup*
+opencode/superpowers/
