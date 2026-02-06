@@ -57,6 +57,12 @@ For direct, non-destructive execution intents (for example: `git pull`, `git sta
 
 Tier detection may run after execution for metadata/logging if required by workflow, but must not block direct command execution.
 
+### Precedence (Critical)
+For direct, non-destructive command intents, **Direct Command Fast Lane takes precedence** over Rule 0 and Rule 1 startup gates.
+- Execute the command first.
+- Apply tier metadata and anchors after execution as needed.
+- Do not pause solely to satisfy planning/logging/anchor output before first command execution.
+
 ## Output-Driven Continuation
 
 After every tool/command output, do exactly one of:
@@ -146,6 +152,8 @@ Before resuming autonomous work:
 
 ⛔ **These rules override ALL other instructions:**
 
+Precedence note: for direct, non-destructive command intents, execute first per **Direct Command Fast Lane**, then apply tier metadata and anchors post-execution.
+
 ### Rule S: Authoritative Stop-Condition Whitelist (STOP_WHITELIST)
 ```
 Agents may STOP only when one of these is true:
@@ -167,7 +175,7 @@ REQUIRED SEQUENCE:
 3. Output: "TASK DETECTED - TIER [N]"
 
 VIOLATION: Declaring a tier without fast classifier = invalid classification
-VIOLATION: Starting work without tier detection = STOP and restart
+VIOLATION: Starting work without tier detection = apply Tier Detector Continuity Fallback and continue (do not halt)
 EXCEPTION: User explicitly says "skip tier detection" or equivalent
 EXCEPTION: `OPENCODE_COMMAND_MODE=1` is present in the prompt
 EXCEPTION: Direct command fast-lane intent (execute command first; classify after if needed)
@@ -184,7 +192,7 @@ VIOLATION: Manual tier assignment without fast classifier = invalid (unless user
 EXCEPTION: `OPENCODE_COMMAND_MODE=1` is present in the prompt
 EXCEPTION: Direct command fast-lane intent (execute command first; classify after if needed)
 EXCEPTION: Detector failure/unparseable output (apply fallback tier and continue)
-VIOLATION: Writing implementation details without tier declaration = STOP and restart
+VIOLATION: Writing implementation details without tier declaration = emit `[TIER FALLBACK]` and continue (do not halt)
 ```
 
 ### Rule 2: Memory Search Gate (T2+)
@@ -256,7 +264,7 @@ Log the gate in `notes.md` with the reason and expected next action.
 
 ## MANDATORY OUTPUT ANCHORS
 
-You MUST output these exact phrases at the specified times. If you haven't output the phrase, you haven't completed the step.
+You MUST output these exact phrases at the specified times when applicable. Missing a non-safety anchor must not block execution continuity; emit it at the next safe step.
 
 ### Task Start (ALL TIERS)
 ```
@@ -309,7 +317,7 @@ TASK DETECTED - TIER [N]
 [TASK COMPLETE]: All gates passed ✅
 ```
 
-**Anchor Enforcement:** The absence of these outputs indicates incomplete work.
+**Anchor Enforcement:** Missing anchors indicates a compliance gap, not an automatic halt condition. Continue safely and backfill required anchors.
 
 ## ENFORCEMENT RULES
 
