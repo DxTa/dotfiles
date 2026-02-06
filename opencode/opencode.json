@@ -87,7 +87,7 @@
     },
     "openai": {
       "options": {
-        "reasoningEffort": "medium",
+        "reasoningEffort": "high",
         "reasoningSummary": "auto",
         "textVerbosity": "medium",
         "include": [
@@ -139,8 +139,132 @@
             }
           }
         },
+        "gpt-5-mini": {
+          "name": "GPT 5 Mini (OAuth)",
+          "limit": {
+            "context": 400000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "none": {
+              "reasoningEffort": "none",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5-nano": {
+          "name": "GPT 5 Nano (OAuth)",
+          "limit": {
+            "context": 400000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "none": {
+              "reasoningEffort": "none",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
         "gpt-5.2-codex": {
           "name": "GPT 5.2 Codex (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.3-codex": {
+          "name": "GPT 5.3 Codex (OAuth)",
           "limit": {
             "context": 272000,
             "output": 128000
@@ -264,6 +388,11 @@
             ]
           },
           "variants": {
+            "none": {
+              "reasoningEffort": "none",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
             "medium": {
               "reasoningEffort": "medium",
               "reasoningSummary": "auto",
@@ -317,83 +446,83 @@
       }
     }
   },
-   "agent": {
-    "build": {
-      "mode": "primary",
-      "model": "openai/gpt-5.2-codex",
-      "variant": "low",
-      "description": "Primary development agent with full tools"
-    },
-    "plan": {
-      "mode": "primary",
-      "model": "openai/gpt-5.2",
-      "variant": "low",
-      "description": "Analysis and planning agent with plan file management",
-      "tools": {
-        "todowrite": true,
-        "todoread": true,
-        "read": true,
-        "write": true,
-        "edit": true
+    "agent": {
+     "build": {
+       "mode": "primary",
+       "model": "openai/gpt-5.2-codex",
+       "variant": "low",
+       "description": "Primary development agent with full tools"
       },
-      "permission": {
-        "read": {
-          "*": "allow"
-        },
-        "write": {
-          "/home/dxta/.config/opencode/plans/*": "allow"
-        },
-        "edit": {
-          "/home/dxta/.config/opencode/plans/*": "allow"
-        },
-        "external_directory": "allow",
-        "bash": {
-          "codex*": "allow",
-          "ls*": "allow",
-          "ps*": "allow",
-          "wc*": "allow",
-          "lsof*": "allow",
-          "grep*": "allow",
-          "pgrep*": "allow",
-          "cat*": "allow",
-          "awk*": "allow",
-          "mkdir -p ~/.config/opencode/plans": "allow",
-          "mkdir -p ~/.config/opencode/plans/*": "allow",
-          "rm ~/.config/opencode/plans/*": "allow",
-          "rm -r ~/.config/opencode/plans/*": "allow",
-          "memvid*": "allow",
-          "source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh && memvid*": "allow",
-          "echo*| memvid*": "allow",
-          "source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh && echo*| memvid*": "allow"
-        }
+      "plan": {
+        "mode": "primary",
+       "model": "openai/gpt-5.3-codex",
+       "variant": "high",
+        "description": "Analysis and planning agent with plan file management",
+       "tools": {
+         "todowrite": true,
+         "todoread": true,
+         "read": true,
+         "write": true,
+         "edit": true
+       },
+       "permission": {
+         "read": {
+           "*": "allow"
+         },
+         "write": {
+           "/home/dxta/.config/opencode/plans/*": "allow"
+         },
+         "edit": {
+           "/home/dxta/.config/opencode/plans/*": "allow"
+         },
+         "external_directory": "allow",
+         "bash": {
+           "codex*": "allow",
+           "ls*": "allow",
+           "ps*": "allow",
+           "wc*": "allow",
+           "lsof*": "allow",
+           "grep*": "allow",
+           "pgrep*": "allow",
+           "cat*": "allow",
+           "awk*": "allow",
+           "mkdir -p ~/.config/opencode/plans": "allow",
+           "mkdir -p ~/.config/opencode/plans/*": "allow",
+           "rm ~/.config/opencode/plans/*": "allow",
+           "rm -r ~/.config/opencode/plans/*": "allow",
+           "memvid*": "allow",
+           "source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh && memvid*": "allow",
+           "echo*| memvid*": "allow",
+           "source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh && echo*| memvid*": "allow"
+         }
+       }
+     },
+     "general": {
+       "model": "openai/gpt-5.1-codex",
+       "variant": "low"
+     },
+       "tier-detector": {
+        "model": "openai/gpt-5.1-codex-mini",
+        "variant": "none"
+       },
+      "self-reflect": {
+       "model": "openai/gpt-5.3-codex",
+       "variant": "xhigh"
+      },
+      "explore": {
+       "model": "openai/gpt-5.1-codex",
+       "variant": "low"
       }
     },
-    "general": {
-      "options": {
-        "reasoningEffort": "low"
-      }
-    },
-    "tier-detector": {
-      "model": "opencode/gpt-5-nano",
-      "options": {
-        "reasoningEffort": "minimal"
-      }
-    },
-    "self-reflect": {
-      "model": "openai/gpt-5.2-codex",
-      "variant": "low"
-    },
-    "explore": {
-      "model": "openai/gpt-5.2-codex",
-      "options": {
-        "reasoningEffort": "low"
-      }
-    }
-  },
   "command": {
     "sia-code": {
       "template": "Run sia-code (pinned):\nuvx sia-code@0.5.0 $ARGUMENTS",
       "description": "Pinned sia-code 0.5.0 command",
+      "agent": "build"
+    },
+    "tier-detector-fast": {
+      "template": "Run tier-detector fast path:\npkgx python /home/dxta/.dotfiles/opencode/scripts/tier-detector-fast.py $ARGUMENTS",
+      "description": "Local fast-path tier classification",
       "agent": "build"
     }
   },
@@ -417,61 +546,6 @@
         "server-shannon-thinking@latest"
       ],
       "enabled": true
-    },
-    "graphiti-memory": {
-      "type": "local",
-      "command": [
-        "/home/dxta/.local/bin/uv",
-        "run",
-        "--isolated",
-        "--directory",
-        "/home/dxta/dev/mcp/graphiti/mcp_server",
-        "graphiti_mcp_server.py",
-        "--transport",
-        "stdio"
-      ],
-      "environment": {
-        "NEO4J_URI": "{env:NEO4J_URI}",
-        "NEO4J_USER": "{env:NEO4J_USER}",
-        "NEO4J_PASSWORD": "{env:NEO4J_PASSWORD}",
-        "OPENAI_API_KEY": "{env:OPENAI_API_KEY}",
-        "MODEL_NAME": "{env:MODEL_NAME}"
-      },
-      "enabled": false
-    },
-    "serena-mcp": {
-      "type": "local",
-      "command": [
-        "uvx",
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--context",
-        "agent",
-        "--project",
-        "/home/dxta/dev/tds/brose",
-        "--enable-web-dashboard",
-        "false",
-        "--enable-gui-log-window",
-        "false"
-      ],
-      "enabled": false
-    },
-    "chunkhound": {
-      "type": "local",
-      "command": [
-        "uvx",
-        "chunkhound",
-        "mcp"
-      ],
-      "environment": {
-        "CHUNKHOUND_EMBEDDING__PROVIDER": "openai",
-        "CHUNKHOUND_EMBEDDING__API_KEY": "{env:OPENAI_API_KEY}",
-        "CHUNKHOUND_EMBEDDING__MODEL": "text-embedding-3-large",
-        "CHUNKHOUND_LLM_PROVIDER": "claude-code-cli"
-      },
-      "enabled": false
     },
     "context7": {
       "type": "remote",
@@ -511,44 +585,6 @@
         "OBSIDIAN_API_PORT": "27123"
       },
       "enabled": true
-    },
-    "zai-mcp-server": {
-      "type": "local",
-      "command": [
-        "pkgx",
-        "npx",
-        "-y",
-        "@z_ai/mcp-server"
-      ],
-      "environment": {
-        "Z_AI_API_KEY": "{env:Z_AI_API_KEY}",
-        "Z_AI_MODE": "ZAI"
-      },
-      "enabled": false
-    },
-    "web-search-prime": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/web_search_prime/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:Z_AI_API_KEY}"
-      },
-      "enabled": false
-    },
-    "zread": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/zread/mcp",
-      "headers": {
-        "Authorization": "Bearer {env:Z_AI_API_KEY}"
-      },
-      "enabled": false
-    },
-    "web-reader": {
-      "type": "remote",
-      "url": "https://api.z.ai/api/mcp/web_reader/mcp",
-      "headers": {
-        "Authorization": "{env:Z_AI_API_KEY}"
-      },
-      "enabled": false
     },
     "arxiv": {
       "type": "local",
@@ -609,7 +645,6 @@
   "plugin": [
     "opencode-antigravity-auth@latest",
     "opencode-anthropic-auth@latest",
-    "opencode-openai-codex-multi-auth@latest",
-    "opencode-pty"
+    "opencode-openai-multi-auth@file:/home/dxta/dev/opencode-openai-multi-auth"
   ]
 }

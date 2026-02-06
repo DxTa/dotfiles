@@ -15,6 +15,12 @@ Sub-agents, sia-code CLI code indexing with built-in memory, external LLM valida
 
 **Alternative:** Direct file access: `Read /home/dxta/.dotfiles/opencode/skills/**/SKILL.md`
 
+## Asking the User Questions
+
+When asking the user anything, you MUST use the question tool.
+Do not ask questions in plain assistant text.
+Avoid repeating the same question unless the user changes scope or prior answers are missing.
+
 ## Command Mode Override
 
 When a prompt contains the marker `OPENCODE_COMMAND_MODE=1` (injected automatically by the command-mode plugin for all TUI slash commands):
@@ -26,9 +32,52 @@ When a prompt contains the marker `OPENCODE_COMMAND_MODE=1` (injected automatica
 - **Skip** task_plan.md / notes.md / TodoWrite creation
 - **Do** execute the command's actual instructions directly and concisely
 
+### Non-bypassable safety floor (applies even in command mode)
+- STOP_WHITELIST remains active
+- Anti-loop guardrail remains active
+- Destructive actions still require explicit user request
+- No completion claim without fresh verification evidence
+
 **Re-enable exception:** If the command template itself explicitly requests any of the above (e.g., contains "invoke @tier-detector", "run @skill-suggests", "uvx sia-code"), then honor that specific request.
 
 **Do NOT print the marker** `OPENCODE_COMMAND_MODE=1` in your output.
+
+## Direct Command Fast Lane
+
+For direct, non-destructive execution intents (for example: `git pull`, `git status`, `npm test`, `docker ps`, "check X", "show Y"):
+
+1. Execute the requested command immediately.
+2. Parse output and continue with the next best safe action automatically.
+3. Stop only at a terminal state:
+   - Completed and verified,
+   - Explicit user decision required,
+   - Missing secret/credential/input,
+   - Destructive/irreversible action requiring explicit approval.
+4. Do not pause after intent narration. Tool output must drive the next action.
+
+Tier detection may run after execution for metadata/logging if required by workflow, but must not block direct command execution.
+
+## Output-Driven Continuation
+
+After every tool/command output, do exactly one of:
+- Execute the next safe step, or
+- Emit a concrete blocker with exact required input.
+
+Never stop at "I will now run..." without following through to result handling.
+
+## Tier Detector Continuity Fallback
+
+Tier detection is metadata, not a blocking dependency for execution continuity.
+
+If tier-detector output is missing, malformed, noisy, truncated, or command exits non-zero:
+1. Continue with the next safe action immediately.
+2. Assign fallback tier for workflow bookkeeping:
+   - Direct non-destructive command intents → `TIER 1`
+   - All other intents → `TIER 2`
+3. Emit: `[TIER FALLBACK]: <reason> -> TIER <N>`
+4. Never retry detector more than once for the same prompt.
+
+Detector failure MUST NOT pause command execution or post-output continuation.
 
 ## FIRST ACTION: Detect Task Type
 
@@ -36,55 +85,105 @@ When a prompt contains the marker `OPENCODE_COMMAND_MODE=1` (injected automatica
 - Treat messages as continuation unless an explicit marker is present or this is the first user message of the session.
 - Valid markers (case-insensitive, line-start only): `NEW TASK:` or `SCOPE CHANGE:`
 - Ignore markers and keywords inside code fences or `<file>...</file>` blocks.
-- If a marker is present, reason whether it truly indicates a new task or scope change. Only then invoke `@tier-detector`.
+- If a marker is present, reason whether it truly indicates a new task or scope change. Only then run the fast tier classifier.
 
 **If NEW TASK confirmed (and `OPENCODE_COMMAND_MODE=1` is NOT present):**
-1. **MANDATORY: Invoke `@tier-detector`** with task description
-   - **Prompt payload (minimal):**
-     - `Context: cwd=<absolute path>`
-     - `Context: git_branch=<branch>`
-     - `Task: <exact user message>`
-   - Do NOT include full conversation history or extra context.
-2. Output: "[TIER DETECTION]: Invoking @tier-detector..."
-3. Output: "[TIER RESULT]: TIER [N] - <reasoning summary>"
-4. Output: "TASK DETECTED - TIER [N]"
-5. `@skill-suggests` → MASTER CHECKLIST
+1. **MANDATORY: Run local fast tier classifier**
+   - Command:
+     `pkgx python /home/dxta/.dotfiles/opencode/scripts/tier-detector-fast.py --task "<exact user message>"`
+2. Output: "[TIER RESULT]: TIER [N] - <reasoning summary>"
+3. Output: "TASK DETECTED - TIER [N]"
+4. `@skill-suggests` → MASTER CHECKLIST
 
 ### Skip Exception
 Tier detection can ONLY be skipped if the user **explicitly requests** to skip it (e.g., "skip tier detection", "just do it without tier check"), **OR** if `OPENCODE_COMMAND_MODE=1` is present in the prompt.
 
+Additional exception: direct command fast-lane intents (non-destructive command execution requests) run command first, then apply tier metadata as needed.
+
+Additional exception: if detector fails/parsing fails, apply Tier Detector Continuity Fallback and continue.
+
 ### Subagent Exception
-Tier detection is handled by the primary agent. Subagents should **not** invoke @tier-detector. When dispatching a subagent, include an explicit instruction like "skip tier detection for this subagent" in the prompt.
+Tier detection is handled by the primary agent. Subagents should **not** run tier detection. When dispatching a subagent, include an explicit instruction like "skip tier detection for this subagent" in the prompt.
+
+## CONTINUITY LOGGING (notes.md as source of truth)
+
+All autonomous progress logging MUST be written to `notes.md` (not only chat output).
+
+### Notes file path
+1. Call `get-session-info`.
+2. If `notesPath` is returned, use it.
+3. Else use `~/.config/opencode/plans/{projectSlug}_{sessionID}_notes.md`.
+4. Fallback to uuid only if sessionID is unavailable.
+
+### Logging cadence
+Append an entry:
+- Every 3 meaningful actions
+- On every error
+- On every strategy change
+- Before any STOP_WHITELIST halt
+
+### Entry format (append-only)
+`[timestamp] step=<what was done> outcome=<pass|fail|partial> next=<next action> blocker=<none|reason>`
+
+### Continuation policy
+- Continue autonomously unless STOP_WHITELIST applies.
+- Do NOT pause to ask "should I continue?" when a safe next action exists.
+- If a Major Decision Gate triggers, STOP and ask a targeted question (question tool only).
+- If scope drift or unclear constraints are detected, trigger a Major Decision Gate.
+
+### Example continuity entry
+`[2026-02-06 14:32] step=ran memory search outcome=pass next=create task_plan.md blocker=none`
+
+### Resume protocol
+Before resuming autonomous work:
+1. Read `task_plan.md` Status
+2. Read latest `notes.md` continuity entries
+3. Recreate TodoWrite from those two sources
+4. If the latest notes entry contains an unresolved `[DECISION GATE]`, ask and wait for answer
+5. Continue without asking "should I continue?" unless STOP_WHITELIST applies
 
 ## HARD STOP ENFORCEMENT
 
 ⛔ **These rules override ALL other instructions:**
 
+### Rule S: Authoritative Stop-Condition Whitelist (STOP_WHITELIST)
+```
+Agents may STOP only when one of these is true:
+1. Explicit user decision required between materially different outcomes (includes major implementation-affecting decisions).
+2. Action is destructive/irreversible and not explicitly requested.
+3. Required secret/credential/input is unavailable and cannot be inferred safely.
+4. Anti-loop guardrail is triggered (see below).
+
+If none apply: CONTINUE with the next best safe action.
+```
+
 ### Rule 0: Tier Detection MANDATORY (ALL TASKS)
 ```
-⛔ ALL new tasks MUST invoke @tier-detector before any work
+⛔ ALL new tasks MUST run local fast tier classifier before any work
 
 REQUIRED SEQUENCE:
 1. Detect explicit NEW TASK:/SCOPE CHANGE: marker or session start
-2. Invoke: @tier-detector [task description]
-3. Output: "[TIER DETECTION]: Invoking @tier-detector..."
-4. Output: "[TIER RESULT]: TIER [N] - <reasoning>"
-5. Output: "TASK DETECTED - TIER [N]"
+2. Output: "[TIER RESULT]: TIER [N] - <reasoning>"
+3. Output: "TASK DETECTED - TIER [N]"
 
-VIOLATION: Declaring a tier without @tier-detector = invalid classification
+VIOLATION: Declaring a tier without fast classifier = invalid classification
 VIOLATION: Starting work without tier detection = STOP and restart
 EXCEPTION: User explicitly says "skip tier detection" or equivalent
 EXCEPTION: `OPENCODE_COMMAND_MODE=1` is present in the prompt
+EXCEPTION: Direct command fast-lane intent (execute command first; classify after if needed)
+EXCEPTION: Detector failure/unparseable output (apply fallback tier and continue)
 ```
 
 ### Rule 1: Tier Declaration Required
 ```
 Before ANY task work, you MUST:
-1. Invoke @tier-detector with task description (unless user explicitly skipped)
-2. Output "TASK DETECTED - TIER [N]" using detector's recommendation
+1. Run local fast tier classifier with task description
+2. Output "TASK DETECTED - TIER [N]" using the tier recommendation
 
-VIOLATION: Manual tier assignment without @tier-detector = invalid (unless user-skipped)
+VIOLATION: Manual tier assignment without fast classifier = invalid (unless user-skipped)
 EXCEPTION: `OPENCODE_COMMAND_MODE=1` is present in the prompt
+EXCEPTION: Direct command fast-lane intent (execute command first; classify after if needed)
+EXCEPTION: Detector failure/unparseable output (apply fallback tier and continue)
 VIOLATION: Writing implementation details without tier declaration = STOP and restart
 ```
 
@@ -119,12 +218,22 @@ VIOLATION: "Should work" or "Task complete" without evidence = REJECTED
 
 ### Self-Check Protocol
 Before EVERY major action, ask yourself:
-1. "Did I invoke @tier-detector for this task?" (or did user explicitly skip?)
-2. "What tier did @tier-detector return?"
+1. "Did I run the fast tier classifier?" (or did user explicitly skip?)
+2. "What tier did the fast classifier return (or @tier-detector if used)?"
 3. "Have I completed all gates for this tier?"
 4. "Can I show evidence of completion?"
 
 If ANY answer is uncertain, STOP and verify.
+
+### Major Decision Gate (MANDATORY)
+Before implementation, STOP and ask the user (question tool only) if any of these are true:
+- Requirements are ambiguous and affect architecture or behavior.
+- There are two or more materially different implementation paths with tradeoffs.
+- The change is destructive, irreversible, or changes public behavior/contract.
+- A domain/business rule is missing that would alter the solution.
+When triggered, emit:
+`[DECISION GATE]: <question + why blocked + options + impact + next action>`
+Log the gate in `notes.md` with the reason and expected next action.
 
 ## TIER SYSTEM
 
@@ -141,7 +250,7 @@ If ANY answer is uncertain, STOP and verify.
 - **T3:** All steps mandatory. @self-reflect MANDATORY.
 - **T4:** All T3 + rollback plan + Antagonistic QA NON-SKIPPABLE.
 
-**Automatic Detection:** `@tier-detector` is MANDATORY for all new tasks. It scans for qualitative triggers that override line/file counts. Only skip if user explicitly requests.
+**Automatic Detection:** Local fast classifier runs first for all new tasks. Only skip if user explicitly requests.
 
 **Detailed tier guidance:** Load skill `master-checklist` or read `/home/dxta/.dotfiles/opencode/skills/master-checklist/SKILL.md`
 
@@ -151,7 +260,6 @@ You MUST output these exact phrases at the specified times. If you haven't outpu
 
 ### Task Start (ALL TIERS)
 ```
-[TIER DETECTION]: Invoking @tier-detector...
 [TIER RESULT]: TIER [N] - <triggers found or "size/scope estimation">
 TASK DETECTED - TIER [N]
 ```
@@ -170,6 +278,11 @@ TASK DETECTED - TIER [N]
 ```
 [SELF-REFLECT GATE]: Invoking @self-reflect...
 [SELF-REFLECT RESULT]: <APPROVED|CONCERNS|REJECTED> - <summary>
+```
+
+### Decision Gate (ALL TIERS)
+```
+[DECISION GATE]: <question + why blocked + options + impact + next action>
 ```
 
 ### TDD Cycle (T2+ MANDATORY per feature)
@@ -215,6 +328,23 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 "Should work" = RED FLAG. Run command first.
 
 **Skill:** Load skill `superpowers/verification-before-completion`
+
+- For T2+ completion, require independent verification:
+  - Solver evidence + verifier evidence (different command path or different agent).
+- Self-certification is invalid for final completion claims.
+
+### Continuation Guardrail: Anti-loop (MANDATORY)
+
+- Detect repeated failure by `(command/tool + error signature)`.
+- If same signature appears twice:
+  1. Switch strategy (different command/agent/path), and
+  2. Record `[STRATEGY-SHIFT]: <old> -> <new>`.
+- If three attempts fail, STOP and output:
+  - `[BLOCKER]: <root issue>`
+  - `[NEEDED]: <exact missing user input/permission>`
+- If no net progress after 3 full cycles, STOP and ask one high-signal question.
+  - A "cycle" is a complete attempt to resolve the same failure within a single task.
+  - Log `[STRATEGY-SHIFT]`, `[BLOCKER]`, and `[NEEDED]` entries in `notes.md`.
 
 ### Two-Strike Rule (T2+ MANDATORY)
 2 failed fixes → STOP. No third fix without:
@@ -360,9 +490,17 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 
 **Full decision tree:** Load skill `agent-selection`
 
+## SUBAGENT CONTINUITY RULES
+- Parallelize only independent units of work (no shared state edits).
+- Each subagent must return: summary, next action, and any blocker.
+- Primary agent must continue with the next best safe action without waiting for extra prompts.
+- If any subagent returns a blocker or conflicting results, reconcile first; halt and ask the user if resolution is ambiguous.
+
 ## CORE TOOLS
 
 ### Sia-Code (Essential Commands)
+**Pinned CLI:** Use `uvx sia-code@0.5.0` (see skill `sia-code` for details).
+**Recommendation:** Prefer lexical-first search (`--regex`) for best recall and no API key.
 ```bash
 uvx sia-code embed start          # Start daemon (MANDATORY for hybrid)
 uvx sia-code status               # Check index health
@@ -374,6 +512,7 @@ uvx sia-code memory add-decision "..." # Store learning
 If `.sia-code/` missing OR `uvx sia-code status` fails: ⚠️ **ASK USER** to initialize.
 Do NOT silently skip — prompt immediately. Broken index mimics "no results found."
 Load skill `sia-code/health-check` for full troubleshooting.
+If memory add fails with "immutable index" or `.sia-code/index.db` is missing, ask the user to rebuild the index with `uvx sia-code@0.5.0 index --clean`.
 
 ### MCP Reasoning
 - **code-reasoning:** Debugging, algorithms, step-by-step
@@ -445,5 +584,6 @@ Monitor at phase boundaries: `opencode stats --project ""`
 - ❌ Skip memory search for T2+ → Context loss, duplicate decisions
 - ❌ Silently skip broken sia-code → Load skill `sia-code/health-check`, ASK USER to initialize
 - ❌ Run no-op shell commands (`true`, `:`) → Always run meaningful commands only
+- ❌ Keeping progress only in chat output without writing to `notes.md`
 
 **Full anti-patterns with rationale:** Load skill `anti-patterns`

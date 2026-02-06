@@ -1,9 +1,8 @@
 ---
 description: Knowledge extraction and analysis agent for extracting reusable insights from conversations.
 mode: subagent
-model: openai/gpt-5.2-codex
-options:
-  reasoningEffort: none
+model: openai/gpt-5.3-codex
+variant: low
 tools:
   write: true
   edit: true

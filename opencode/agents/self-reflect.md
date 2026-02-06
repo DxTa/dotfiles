@@ -1,7 +1,8 @@
 ---
-description: Self-reflection and antagonistic QA agent using GPT-5.2 Codex. Use this agent to validate plans, review approaches, and identify issues before implementation. Adopts a senior technical lead perspective.
+description: Self-reflection and antagonistic QA agent using GPT-5.3 Codex. Use this agent to validate plans, review approaches, and identify issues before implementation. Adopts a senior technical lead perspective.
 mode: subagent
-model: openai/gpt-5.2-codex
+model: openai/gpt-5.3-codex
+variant: xhigh
 temperature: 0.3
 tools:
   read: true

@@ -7,6 +7,7 @@ tools:
   write: false
   edit: false
   bash: false
+  # No MCP tools allowed
 ---
 
 # Tier Detector Agent (Fast)

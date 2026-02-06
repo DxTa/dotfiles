@@ -3,6 +3,7 @@
 # Sourced by ~/.zshenv for non-interactive shell support
 
 DOTFILES_ZSHRC="$HOME/.dotfiles/zshrc"
+export OPENCODE_OPENAI_STRATEGY=hybrid
 
 # Source secrets (if exists)
 [[ -f "$DOTFILES_ZSHRC/secrets.sh" ]] && source "$DOTFILES_ZSHRC/secrets.sh"

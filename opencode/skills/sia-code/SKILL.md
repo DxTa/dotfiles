@@ -3,16 +3,18 @@ name: sia-code
 description: Local-first codebase search with lexical-first BM25 (89.9% Recall@5), multi-hop research, and built-in project memory. Use for architecture analysis, dependency mapping, code research, and finding patterns across unfamiliar codebases. Triggers include "how does X work", "find pattern", "trace dependencies", "code archaeology", "architecture analysis".
 license: MIT
 compatibility: opencode
-version: 0.5.0
+version: 0.6.0
 ---
 
 # Sia-Code Skill
 
 Local-first codebase intelligence with lexical-first search, multi-hop research, built-in project memory, and 12-language AST support.
 
-**Version:** 0.5.0
+**Version:** 0.6.0
 
-**Pinned CLI:** Use `uvx sia-code@0.5.0` (see opencode.json command `/sia-code`).
+**Pinned CLI:** Use `uvx sia-code@0.6.0` (see opencode.json command `/sia-code`).
+
+**Resolver lag note:** If `uvx sia-code@0.6.0` fails to resolve, temporarily install `sia-code==0.6.0` via `pip install` or `uv tool install`, then run `sia-code` directly. Remove this note once `uvx sia-code@0.6.0 --help` resolves in CI for 3 consecutive days.
 
 ## Core Concepts
 
@@ -147,7 +149,7 @@ uvx sia-code status
 |-----------|--------|
 | `Health Status: 🟢 Healthy` | No action needed |
 | `Health Status: 🟡 Degraded` (10-20% stale) | Run `uvx sia-code index --update` or `compact` |
-| `Health Status: 🔴 Critical` (>20% stale) | Run `uvx sia-code index --clean` |
+| `Health Status: 🔴 Poor` (>20% stale) | Run `uvx sia-code index --clean` |
 | After `git pull` with many changes | Run `uvx sia-code index --update` |
 | After major refactoring | Run `uvx sia-code index --clean` |
 
@@ -325,6 +327,16 @@ uvx sia-code memory add-decision "Fact: Module Y requires config Z" -d "Required
 uvx sia-code memory add-decision "Migrate from REST to GraphQL" -d "Need flexible queries" -r "Reduce overfetching" -a "REST, gRPC"
 ```
 
+**Important:** Memory add uses embeddings when enabled. If the embed daemon is not running, start it first:
+```bash
+uvx sia-code embed start
+```
+Alternatively, disable embeddings for a lexical-only workflow:
+```bash
+uvx sia-code config set embedding.enabled false
+uvx sia-code config set search.vector_weight 0.0
+```
+
 ### View Timeline & Decisions
 
 ```bash
@@ -376,7 +388,7 @@ uvx sia-code memory timeline --format json
 Import timeline events and changelogs from git history:
 
 ```bash
-# Sync all git history
+# Sync git history (default: since HEAD~100, limit 50)
 uvx sia-code memory sync-git
 
 # Sync last 100 events
@@ -391,18 +403,23 @@ uvx sia-code memory sync-git --dry-run
 # Only tags or only merges
 uvx sia-code memory sync-git --tags-only
 uvx sia-code memory sync-git --merges-only
+
+# Filter by minimum importance
+uvx sia-code memory sync-git --min-importance high
 ```
 
 ### Decision Workflow
 
 Track and approve/reject technical decisions:
 
+Note: `memory add-decision` requires `-d/--description`.
+
 ```bash
 # Add a pending decision
 uvx sia-code memory add-decision "Migrate to GraphQL" -d "Need flexible queries" -r "Reduce overfetching" -a "REST, gRPC"
 
 # Approve decision (ID shown in list output)
-uvx sia-code memory approve 1 -c architecture
+uvx sia-code memory approve 1 --category architecture
 
 # Reject decision
 uvx sia-code memory reject 2
@@ -458,6 +475,13 @@ uvx sia-code interactive -k 15
 - Press `Ctrl+C` or `Ctrl+D` to exit
 
 ## Embedding Server (New in 0.5.0)
+
+## Recent Release Deltas (0.5.1 → 0.6.0)
+
+- **0.5.1:** Batch chunk ingestion + batch embeddings for indexing/search.
+- **0.5.2:** Retry handling for embed daemon framing errors.
+- **0.6.0:** Hardened embed framing diagnostics and writable memory index access.
+
 
 Share embedding models across multiple repos to save memory and improve startup time.
 
@@ -534,7 +558,12 @@ Located at `.sia-code/config.json`:
   "search": {
     "vector_weight": 0.0,
     "default_limit": 10,
-    "include_dependencies": true
+    "include_dependencies": true,
+    "tier_boost": {
+      "project": 1.0,
+      "dependency": 0.7,
+      "stdlib": 0.5
+    }
   },
   "chunking": {
     "max_chunk_size": 1200,
@@ -548,11 +577,18 @@ Located at `.sia-code/config.json`:
       "node_modules/",
       "__pycache__/",
       ".git/",
-      "venv/"
+      "venv/",
+      ".venv/",
+      "*.pyc"
     ]
   },
+  "dependencies": {
+    "enabled": true,
+    "index_stubs": true,
+    "languages": ["python", "typescript", "javascript"]
+  },
   "summarization": {
-    "enabled": false,
+    "enabled": true,
     "model": "google/flan-t5-base",
     "max_commits": 20
   }
@@ -692,6 +728,10 @@ uvx sia-code memory add-decision "Root cause: [description] - Fix: [solution]"
 **No API key warning (during hybrid search)**
 - This is normal - lexical search still works without API key
 - Use `--regex` flag for pure lexical search (recommended)
+
+**Memory add fails with embed-related or writable index errors** (e.g., framing issues, message size, or writable index access)
+- Cause: Embed daemon not running/healthy, or index opened read-only
+- Solution: Start the daemon with `uvx sia-code embed start` and retry. If writable index errors persist, run `uvx sia-code index --clean` to rebuild the index, or disable embeddings (lexical-only) via config
 
 ### Performance Notes
 

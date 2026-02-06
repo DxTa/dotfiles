@@ -1,9 +1,8 @@
 ---
 description: Use this agent when you need technical documentation, API specifications, user guides, or knowledge management system creation.
 mode: subagent
-model: openai/gpt-5.2-codex
-options:
-  reasoningEffort: none
+model: openai/gpt-5.3-codex
+variant: low
 tools:
   write: true
   edit: true

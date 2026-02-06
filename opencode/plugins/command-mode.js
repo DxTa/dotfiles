@@ -30,13 +30,19 @@ export const CommandModePlugin = async ({ client }) => {
 
     event: async ({ event }) => {
       // Log command executions for debugging (visible with --print-logs)
-      if (event.type === 'command.executed') {
+      if (event.type === 'tui.command.execute' || event.type === 'command.executed') {
         pendingCommandAt = Date.now();
-        await client.app.log({
-          service: 'command-mode',
-          level: 'debug',
-          message: `Command executed: ${event.properties?.command || 'unknown'}`,
-        });
+        try {
+          await client.app.log({
+            body: {
+              service: 'command-mode',
+              level: 'debug',
+              message: `Command executed: ${event.properties?.command || 'unknown'}`,
+            },
+          });
+        } catch (_error) {
+          // Ignore logging failures; marker injection should still work.
+        }
       }
     },
   };

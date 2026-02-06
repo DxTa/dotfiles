@@ -2,8 +2,7 @@
 description: Analyze task and suggest relevant skills from skill-rules.json
 mode: subagent
 model: openai/gpt-5.1-codex-mini
-options:
-  reasoningEffort: none
+variant: none
 temperature: 0.3
 tools:
   suggest-skills: true
