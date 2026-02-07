@@ -3,18 +3,18 @@ name: sia-code
 description: Local-first codebase search with lexical-first BM25 (89.9% Recall@5), multi-hop research, and built-in project memory. Use for architecture analysis, dependency mapping, code research, and finding patterns across unfamiliar codebases. Triggers include "how does X work", "find pattern", "trace dependencies", "code archaeology", "architecture analysis".
 license: MIT
 compatibility: opencode
-version: 0.6.0
+version: 0.7.0
 ---
 
 # Sia-Code Skill
 
 Local-first codebase intelligence with lexical-first search, multi-hop research, built-in project memory, and 12-language AST support.
 
-**Version:** 0.6.0
+**Version:** 0.7.0
 
-**Pinned CLI:** Use `uvx sia-code@0.6.0` (see opencode.json command `/sia-code`).
+**Pinned CLI:** Use `uvx sia-code@0.7.0`.
 
-**Resolver lag note:** If `uvx sia-code@0.6.0` fails to resolve, temporarily install `sia-code==0.6.0` via `pip install` or `uv tool install`, then run `sia-code` directly. Remove this note once `uvx sia-code@0.6.0 --help` resolves in CI for 3 consecutive days.
+**Resolver lag note:** If `uvx sia-code@0.7.0` fails to resolve, temporarily install `sia-code==0.7.0` via `pip install` or `uv tool install`, then run `sia-code` directly. Remove this note once `uvx sia-code@0.7.0 --help` resolves in CI for 3 consecutive days.
 
 ## Core Concepts
 
@@ -22,11 +22,13 @@ Local-first codebase intelligence with lexical-first search, multi-hop research,
 - `.sia-code/` directory containing index, config, and cache
 - **Lexical-first search:** BM25 + FTS5 achieves 89.9% Recall@5 (outperforms hybrid!)
 - AST-aware chunking for 12 languages (Python, JS/TS, Go, Rust, Java, C/C++, C#, Ruby, PHP)
-- **Built-in project memory:** Timeline events, changelogs, technical decisions
+- **Built-in project memory:** Timeline events, changelogs, technical decisions, and git commit context
 - Optional semantic search via embeddings (requires API key)
 - Multi-hop research for discovering code relationships
 - Dependency-aware filtering (exclude or focus on vendored code)
 - Portable index (17-25 MB per repo, 2x smaller than v0.3)
+- **Default backend:** sqlite-vec by default, with legacy usearch compatibility/migration
+- **Worktree-aware storage:** linked git worktrees can share one index via git common dir by default
 
 **Index Structure:**
 ```
@@ -476,11 +478,12 @@ uvx sia-code interactive -k 15
 
 ## Embedding Server (New in 0.5.0)
 
-## Recent Release Deltas (0.5.1 → 0.6.0)
+## Recent Release Deltas (0.5.1 → 0.7.0)
 
 - **0.5.1:** Batch chunk ingestion + batch embeddings for indexing/search.
 - **0.5.2:** Retry handling for embed daemon framing errors.
 - **0.6.0:** Hardened embed framing diagnostics and writable memory index access.
+- **0.7.0:** Fixed sqlite-vec backend integration, stabilized chunk upserts/usearch backend tests, and attached git commit context to memory entries.
 
 
 Share embedding models across multiple repos to save memory and improve startup time.
@@ -733,6 +736,10 @@ uvx sia-code memory add-decision "Root cause: [description] - Fix: [solution]"
 - Cause: Embed daemon not running/healthy, or index opened read-only
 - Solution: Start the daemon with `uvx sia-code embed start` and retry. If writable index errors persist, run `uvx sia-code index --clean` to rebuild the index, or disable embeddings (lexical-only) via config
 
+**Status warns about legacy usearch index** (`Detected legacy usearch index...`)
+- Cause: Existing pre-0.7 index still on usearch backend
+- Solution: Keep legacy mode temporarily, or migrate to sqlite-vec with `uvx sia-code index --clean .` (recommended for new default behavior)
+
 ### Performance Notes
 
 **Index Size:** 17-25 MB per repo (2x smaller than v0.3)
@@ -743,6 +750,6 @@ uvx sia-code memory add-decision "Root cause: [description] - Fix: [solution]"
 
 - **Portable:** `.sia-code/` directory can be committed or shared
 - **API costs:** Lexical search is FREE (no API calls); hybrid/semantic requires OpenAI API key
-- **Index location:** Always project-local (not global)
+- **Index location:** Project-local by default; linked git worktrees may use a shared index in the git common dir (check with `uvx sia-code status`)
 - **Lexical-first philosophy:** BM25 outperforms hybrid for code search (+0.8 percentage points)
 - **Memory is git-centric:** Timeline events come from commits, changelogs from tags

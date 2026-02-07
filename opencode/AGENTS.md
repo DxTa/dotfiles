@@ -507,7 +507,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 ## CORE TOOLS
 
 ### Sia-Code (Essential Commands)
-**Pinned CLI:** Use `uvx sia-code@0.5.0` (see skill `sia-code` for details).
+**CLI:** Use `uvx sia-code` (pinning is managed only in the `sia-code` skill).
 **Recommendation:** Prefer lexical-first search (`--regex`) for best recall and no API key.
 ```bash
 uvx sia-code embed start          # Start daemon (MANDATORY for hybrid)
@@ -520,7 +520,7 @@ uvx sia-code memory add-decision "..." # Store learning
 If `.sia-code/` missing OR `uvx sia-code status` fails: ⚠️ **ASK USER** to initialize.
 Do NOT silently skip — prompt immediately. Broken index mimics "no results found."
 Load skill `sia-code/health-check` for full troubleshooting.
-If memory add fails with "immutable index" or `.sia-code/index.db` is missing, ask the user to rebuild the index with `uvx sia-code@0.5.0 index --clean`.
+If memory add fails with "immutable index" or `.sia-code/index.db` is missing, ask the user to rebuild the index with `uvx sia-code index --clean`.
 
 ### MCP Reasoning
 - **code-reasoning:** Debugging, algorithms, step-by-step
