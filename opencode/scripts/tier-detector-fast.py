@@ -18,7 +18,7 @@ import re
 import sys
 import time
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 
@@ -28,6 +28,10 @@ T4_KEYWORDS = {
     "rollback",
     "destroy",
     "drop table",
+    "delete data",
+    "drop database",
+    "truncate table",
+    "force push",
     "irreversible",
     "customer data",
     "pii",
@@ -35,22 +39,22 @@ T4_KEYWORDS = {
     "rotate production secrets",
 }
 
-T3_KEYWORDS = {
+T4_FALSE_POSITIVES = {
+    "drop shadow",
+    "drop-down",
+    "dropdown",
+}
+
+T3_CRITICAL_KEYWORDS = {
     "architecture",
     "refactor",
     "new module",
     "new service",
-    "auth",
-    "logging",
-    "caching",
-    "shared utility",
     "schema",
     "migration",
     "database",
     "orm",
-    "api",
     "webhook",
-    "sdk",
     "external service",
     "security",
     "encryption",
@@ -59,10 +63,21 @@ T3_KEYWORDS = {
     "breaking change",
     "public interface",
     "backward compatibility",
+}
+
+T3_WEAK_KEYWORDS = {
+    "api",
+    "auth",
+    "logging",
+    "caching",
+    "shared utility",
+    "sdk",
     "unclear scope",
     "unfamiliar",
     "might affect",
 }
+
+WEAK_T3_COMBO_THRESHOLD = 3
 
 
 LABEL_PROMPTS: Dict[int, str] = {
@@ -79,6 +94,9 @@ class Result:
     confidence: float
     source: str
     use_llm: bool
+    triggers: List[str] = field(default_factory=list)
+    mandatory_controls: List[str] = field(default_factory=list)
+    depth: str = "standard"
 
 
 _MODEL_SINGLETON = {}
@@ -113,6 +131,12 @@ DIRECT_COMMAND_PATTERNS = (
     r"^(check|show|list)\b",
 )
 
+READ_ONLY_PATTERNS = (
+    r"^(review|summari[sz]e|explain|compare|analy[sz]e|inspect|check)\b",
+    r"\b(review|summari[sz]e|explain|compare|analy[sz]e|inspect)\b",
+    r"\b(read-only|read only)\b",
+)
+
 
 def normalize(text: str) -> str:
     text = text.lower().strip()
@@ -120,11 +144,45 @@ def normalize(text: str) -> str:
     return text
 
 
-def keyword_match(text: str, keywords: set) -> bool:
-    for kw in keywords:
-        if kw in text:
+def strip_quoted_segments(text: str) -> str:
+    # Ignore examples/snippets in quotes when matching risk triggers.
+    text = re.sub(r'"[^"\\]*(?:\\.[^"\\]*)*"', " ", text)
+    text = re.sub(r"'[^'\\]*(?:\\.[^'\\]*)*'", " ", text)
+    text = re.sub(r"`[^`\\]*(?:\\.[^`\\]*)*`", " ", text)
+    return normalize(text)
+
+
+def is_negated_occurrence(text: str, keyword: str, start: int) -> bool:
+    prefix = text[max(0, start - 48) : start]
+    # Match near-field negation such as "do not deploy" or "avoid drop table".
+    return bool(
+        re.search(
+            rf"\b(do\s+not|don't|dont|not|avoid|without|never)(?:\W+\w+){{0,3}}\W+$",
+            prefix,
+        )
+    )
+
+
+def has_non_negated_keyword(text: str, keyword: str) -> bool:
+    for match in re.finditer(re.escape(keyword), text):
+        if not is_negated_occurrence(text, keyword, match.start()):
             return True
     return False
+
+
+def keyword_match(text: str, keywords: set) -> bool:
+    for kw in keywords:
+        if has_non_negated_keyword(text, kw):
+            return True
+    return False
+
+
+def keyword_matches(text: str, keywords: set) -> List[str]:
+    matches = []
+    for kw in keywords:
+        if has_non_negated_keyword(text, kw):
+            matches.append(kw)
+    return sorted(matches)
 
 
 def direct_command_intent(text: str) -> bool:
@@ -138,13 +196,122 @@ def direct_command_intent(text: str) -> bool:
     return any(re.match(pattern, text) for pattern in DIRECT_COMMAND_PATTERNS)
 
 
+def read_only_intent(text: str) -> bool:
+    return any(re.search(pattern, text) for pattern in READ_ONLY_PATTERNS)
+
+
+def _controls_for_tier(tier: int) -> List[str]:
+    controls = ["verification_evidence", "anti_loop"]
+    if tier >= 3:
+        controls.append("decision_gate_if_ambiguous")
+    if tier == 4:
+        controls.append("destructive_confirmation")
+    return controls
+
+
+def _depth_for_result(result: Result, text: str) -> str:
+    if result.tier == 4:
+        return "deep"
+    if result.tier == 3:
+        deep_cues = {
+            "architecture",
+            "refactor",
+            "migration",
+            "security",
+            "external service",
+        }
+        if result.confidence < 0.7 or any(cue in text for cue in deep_cues):
+            return "deep"
+        return "standard"
+    if result.tier == 2:
+        if direct_command_intent(text) or read_only_intent(text):
+            return "light"
+        return "standard"
+    return "light"
+
+
+def _t4_matches(text: str) -> List[str]:
+    matches = keyword_matches(text, T4_KEYWORDS)
+    false_positives = keyword_matches(text, T4_FALSE_POSITIVES)
+    if not false_positives:
+        return matches
+
+    filtered = []
+    for match in matches:
+        if match == "drop table" and (
+            "drop shadow" in false_positives
+            or "drop-down" in false_positives
+            or "dropdown" in false_positives
+        ):
+            continue
+        filtered.append(match)
+    return filtered
+
+
 def rules_only(text: str) -> Optional[Result]:
-    if keyword_match(text, T4_KEYWORDS):
-        return Result(tier=4, confidence=0.95, source="rules:t4", use_llm=False)
-    if keyword_match(text, T3_KEYWORDS):
-        return Result(tier=3, confidence=0.8, source="rules:t3", use_llm=False)
+    scan_text = strip_quoted_segments(text)
+
+    t4_matches = _t4_matches(scan_text)
+    if t4_matches:
+        return Result(
+            tier=4,
+            confidence=0.95,
+            source="rules:t4",
+            use_llm=False,
+            triggers=t4_matches,
+            mandatory_controls=_controls_for_tier(4),
+        )
+
+    t3_critical = keyword_matches(scan_text, T3_CRITICAL_KEYWORDS)
+    if t3_critical:
+        return Result(
+            tier=3,
+            confidence=0.85,
+            source="rules:t3-critical",
+            use_llm=False,
+            triggers=t3_critical,
+            mandatory_controls=_controls_for_tier(3),
+        )
+
+    t3_weak = keyword_matches(scan_text, T3_WEAK_KEYWORDS)
+    if len(t3_weak) >= WEAK_T3_COMBO_THRESHOLD:
+        return Result(
+            tier=3,
+            confidence=0.78,
+            source="rules:t3-weak-combo",
+            use_llm=False,
+            triggers=t3_weak,
+            mandatory_controls=_controls_for_tier(3),
+        )
+
     if direct_command_intent(text):
-        return Result(tier=1, confidence=0.99, source="rules:direct-command", use_llm=False)
+        return Result(
+            tier=1,
+            confidence=0.99,
+            source="rules:direct-command",
+            use_llm=False,
+            mandatory_controls=_controls_for_tier(1),
+        )
+
+    if read_only_intent(text) and not t3_weak:
+        return Result(
+            tier=1,
+            confidence=0.92,
+            source="rules:read-only",
+            use_llm=False,
+            mandatory_controls=_controls_for_tier(1),
+        )
+
+    if t3_weak:
+        return Result(
+            tier=2,
+            confidence=0.66,
+            source="rules:t2-weak-signal",
+            use_llm=False,
+            triggers=t3_weak,
+            mandatory_controls=_controls_for_tier(2),
+        )
+
     return None
 
 
@@ -299,6 +466,7 @@ def main() -> int:
         help="Fallback to rules if embedding pass exceeds this limit",
     )
     parser.add_argument("--format", default="json", choices=["json", "text"])
+    parser.add_argument("--schema-version", type=int, default=1, choices=[1, 2])
     args = parser.parse_args()
 
     if args.stdin:
@@ -316,7 +484,9 @@ def main() -> int:
                 result = common_heuristics(task)
             if result is None:
                 if args.rules_only:
-                    result = Result(tier=3, confidence=0.1, source="rules-only", use_llm=False)
+                    result = Result(
+                        tier=3, confidence=0.1, source="rules-only", use_llm=False
+                    )
                 else:
                     started = time.monotonic()
                     with (
@@ -345,12 +515,24 @@ def main() -> int:
         # Never block command execution on detector failure.
         result = Result(tier=2, confidence=0.05, source="error-fallback", use_llm=False)
 
+    if not result.mandatory_controls:
+        result.mandatory_controls = _controls_for_tier(result.tier)
+    result.depth = _depth_for_result(result, task)
+
     payload = {
         "tier": result.tier,
         "confidence": round(result.confidence, 3),
         "source": result.source,
         "use_llm": result.use_llm,
     }
+    if args.schema_version == 2:
+        payload.update(
+            {
+                "depth": result.depth,
+                "triggers": result.triggers,
+                "mandatory_controls": result.mandatory_controls,
+            }
+        )
 
     if args.format == "json":
         print(json.dumps(payload))
