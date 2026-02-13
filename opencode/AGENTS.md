@@ -28,7 +28,7 @@ When a prompt contains the marker `OPENCODE_COMMAND_MODE=1` (injected automatica
 - **Skip** `@tier-detector` — do NOT invoke tier detection
 - **Skip** `@skill-suggests` — do NOT run skill suggestions
 - **Skip** all `uvx sia-code …` commands (health check, memory search, research) — do NOT run any sia-code operations
-- **Skip** mandatory output anchors (`[TIER DETECTION]`, `[MEMORY SEARCH]`, etc.)
+- **Skip** mandatory output anchors (`[TIER RESULT]`, `[MEMORY SEARCH]`, etc.)
 - **Skip** task_plan.md / notes.md / TodoWrite creation
 - **Do** execute the command's actual instructions directly and concisely
 
@@ -91,15 +91,16 @@ Detector failure MUST NOT pause command execution or post-output continuation.
 - Treat messages as continuation unless an explicit marker is present or this is the first user message of the session.
 - Valid markers (case-insensitive, line-start only): `NEW TASK:` or `SCOPE CHANGE:`
 - Ignore markers and keywords inside code fences or `<file>...</file>` blocks.
-- If a marker is present, reason whether it truly indicates a new task or scope change. Only then run the fast tier classifier.
+- If a marker is present, reason whether it truly indicates a new task or scope change. Only then invoke `@tier-detector`.
 
 **If NEW TASK confirmed (and `OPENCODE_COMMAND_MODE=1` is NOT present):**
-1. **MANDATORY: Run local fast tier classifier**
-   - Command:
-     `pkgx python /home/dxta/.dotfiles/opencode/scripts/tier-detector-fast.py --task "<exact user message>"`
+1. **MANDATORY: Invoke `@tier-detector` with the exact user message**
+   - The subagent executes the local fast classifier script internally and returns tier metadata.
 2. Output: "[TIER RESULT]: TIER [N] - <reasoning summary>"
 3. Output: "TASK DETECTED - TIER [N]"
-4. `@skill-suggests` → MASTER CHECKLIST
+4. Apply skill-suggestion policy:
+   - T2+: run `@skill-suggests` → MASTER CHECKLIST
+   - T1: `@skill-suggests` optional for simple tasks
 
 ### Skip Exception
 Tier detection can ONLY be skipped if the user **explicitly requests** to skip it (e.g., "skip tier detection", "just do it without tier check"), **OR** if `OPENCODE_COMMAND_MODE=1` is present in the prompt.
@@ -152,7 +153,7 @@ Before resuming autonomous work:
 
 ⛔ **These rules override ALL other instructions:**
 
-Precedence note: for direct, non-destructive command intents, execute first per **Direct Command Fast Lane**, then apply tier metadata and anchors post-execution.
+Precedence note: same as **Direct Command Fast Lane → Precedence (Critical)** above (do not restate).
 
 ### Rule S: Authoritative Stop-Condition Whitelist (STOP_WHITELIST)
 ```
@@ -167,12 +168,13 @@ If none apply: CONTINUE with the next best safe action.
 
 ### Rule 0: Tier Detection MANDATORY (ALL TASKS)
 ```
-⛔ ALL new tasks MUST run local fast tier classifier before any work
+⛔ ALL new tasks MUST invoke `@tier-detector` before any work
 
 REQUIRED SEQUENCE:
 1. Detect explicit NEW TASK:/SCOPE CHANGE: marker or session start
-2. Output: "[TIER RESULT]: TIER [N] - <reasoning>"
-3. Output: "TASK DETECTED - TIER [N]"
+2. Invoke `@tier-detector` with task description (subagent runs local fast classifier script internally)
+3. Output: "[TIER RESULT]: TIER [N] - <reasoning>"
+4. Output: "TASK DETECTED - TIER [N]"
 
 VIOLATION: Declaring a tier without fast classifier = invalid classification
 VIOLATION: Starting work without tier detection = apply Tier Detector Continuity Fallback and continue (do not halt)
@@ -185,7 +187,7 @@ EXCEPTION: Detector failure/unparseable output (apply fallback tier and continue
 ### Rule 1: Tier Declaration Required
 ```
 Before ANY task work, you MUST:
-1. Run local fast tier classifier with task description
+1. Invoke `@tier-detector` with task description
 2. Output "TASK DETECTED - TIER [N]" using the tier recommendation
 
 VIOLATION: Manual tier assignment without fast classifier = invalid (unless user-skipped)
@@ -226,8 +228,8 @@ VIOLATION: "Should work" or "Task complete" without evidence = REJECTED
 
 ### Self-Check Protocol
 Before EVERY major action, ask yourself:
-1. "Did I run the fast tier classifier?" (or did user explicitly skip?)
-2. "What tier did the fast classifier return (or @tier-detector if used)?"
+1. "Did I invoke @tier-detector?" (or did user explicitly skip?)
+2. "What tier did @tier-detector return?"
 3. "Have I completed all gates for this tier?"
 4. "Can I show evidence of completion?"
 
@@ -265,6 +267,8 @@ Log the gate in `notes.md` with the reason and expected next action.
 ## MANDATORY OUTPUT ANCHORS
 
 You MUST output these exact phrases at the specified times when applicable. Missing a non-safety anchor must not block execution continuity; emit it at the next safe step.
+
+**Anchor emission policy (light complexity):** emit each required anchor once per phase/state transition; avoid repeating unchanged anchors in later turns.
 
 ### Task Start (ALL TIERS)
 ```
@@ -327,7 +331,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 Code before test? DELETE IT. Start over.
 
-**Skill:** Load skill `superpowers/test-driven-development`
+**Skill:** Load skill `test-driven-development`
 
 ### Verification
 ```
@@ -335,7 +339,7 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ```
 "Should work" = RED FLAG. Run command first.
 
-**Skill:** Load skill `superpowers/verification-before-completion`
+**Skill:** Load skill `verification-before-completion`
 
 - For T2+ completion, require independent verification:
   - Solver evidence + verifier evidence (different command path or different agent).
@@ -360,19 +364,22 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 2. sia-code research documented in task_plan.md
 3. Memory search for similar issues
 
-**Skill:** Load skill `superpowers/systematic-debugging`
+**Skill:** Load skill `systematic-debugging`
 
 ### Code Review (T2+)
 Two-stage: Spec compliance FIRST → Code quality SECOND
 
 Critical issues = BLOCKING
 
-**Skills:** Load skills `superpowers/subagent-driven-development`, `superpowers/requesting-code-review`
+**Skills:** Load skills `subagent-driven-development`, `requesting-code-review`, `code-review`, `receiving-code-review`
+
+- When feedback arrives, use `receiving-code-review` for technical triage before implementing.
+- Do not treat review feedback as auto-accepted; verify and respond with evidence.
 
 ### Branch Completion
 Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 
-**Skills:** Load skills `superpowers/finishing-a-development-branch`, `push-all`
+**Skills:** Load skills `finishing-a-development-branch`, `push-all`
 
 ## MASTER CHECKLIST
 
@@ -396,7 +403,9 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
    - **NEVER SKIP** - even "no results" prevents duplicate work
    - **VERIFICATION:** Memory search output (or "no results") MUST appear in task_plan.md or notes.md
 3. ☐ `get-session-info` → sessionID, projectSlug (ALL tiers: MANDATORY)
-4. ☐ **REQUIRED:** Follow skill `planning-with-files` for plan/notes naming + location
+3a. ☐ For ambiguous/new behavior work, load skill `brainstorming` before finalizing implementation approach
+3b. ☐ For isolation-sensitive or risky changes, load skill `using-git-worktrees` before code changes
+4. ☐ **REQUIRED:** Follow skills `planning-with-files` (plan/notes naming + location) and `writing-plans` (plan quality for multi-step tasks)
    - Use sessionID-based filenames when available
    - Only fall back to uuid when sessionID is unavailable
 4a. ☐ **GATE: @self-reflect** (T3+ BLOCKING - do NOT proceed without this)
@@ -416,6 +425,16 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
     **If REJECTED:** Revise plan and re-run @self-reflect before proceeding
 5. ☐ Create notes.md per `planning-with-files` (T1: optional, T2: recommended, T3+: mandatory)
 6. ☐ TodoWrite: Initialize Phase 1 (ALL tiers: MANDATORY)
+6a. ☐ **Big-Task Operating Mode (triggered)**
+   - Trigger when ANY apply:
+     - Tier is T3+
+     - Cross-module work spans multiple subsystems
+     - Expected effort >1 day or multiple implementation streams
+     - >5 files with independent work packets
+   - When triggered:
+     - Use `using-git-worktrees` before implementation for isolation
+     - Decompose independent packets and use `dispatching-parallel-agents`
+     - Keep shared-state edits sequential (no parallel shared file edits)
 7. ☐ Exploration (T2+: if triggers hit, T3+: MANDATORY before code changes)
    - **7a.** Research Tool Selection (use decision matrix):
      | Question Type | Tool | Example |
@@ -431,7 +450,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 **DURING:**
 8. ☐ TodoWrite: Update as steps complete (mark complete IMMEDIATELY, don't batch)
 9. ☐ Sync task_plan.md Status after each TodoWrite change
-9a. ☐ TDD Cycle (T2+ MANDATORY) - Load skill `superpowers/test-driven-development`
+9a. ☐ TDD Cycle (T2+ MANDATORY) - Load skill `test-driven-development`
     - RED: Write failing test first → **Run test, capture FAIL output**
     - GREEN: Minimal code to pass → **Run test, capture PASS output**
     - REFACTOR → COMMIT
@@ -454,9 +473,9 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
     - ❌ **NEVER** store bare outcomes: `"Fix: Added retry logic"`
     - ✅ **ALWAYS** include Context + Reasoning to preserve decision history
 17. ☐ @code-simplifier (T2+: recommended before final testing)
-17a. ☐ Two-Stage Review (T2+) - Load skills `superpowers/subagent-driven-development` (spec) then `superpowers/requesting-code-review` (code)
-18. ☐ Validation: run tests, verify changes (Load skill `superpowers/verification-before-completion`)
-18a. ☐ Branch Completion - Load skills `superpowers/finishing-a-development-branch` + `push-all`
+17a. ☐ Two-Stage Review (T2+) - Load skills `subagent-driven-development` (spec) then `requesting-code-review` (code)
+18. ☐ Validation: run tests, verify changes (Load skill `verification-before-completion`)
+18a. ☐ Branch Completion - Load skills `finishing-a-development-branch` + `push-all`
     **Checklist:**
     - [ ] All tests pass (output captured)
     - [ ] `git status` clean
@@ -486,15 +505,19 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 | Spec analysis, vague requirements | `spec-analyzer` skill |
 | Plan validation (T2+: rec, T3+: MANDATORY) | `@self-reflect` |
 | React/Vue/CSS/UI | `@frontend-specialist` |
+| Frontend implementation quality | Skills: `frontend-design`, `frontend-dev-guidelines`, `ui-styling`, `web-frameworks` |
 | API/DB/Auth backend | `@backend-specialist` |
+| Backend/API architecture quality | Skills: `backend-development`, `databases` |
 | CI/CD, Docker, K8s | `@devops-engineer` |
+| AWS CDK infrastructure | `@devops-engineer` + skill `aws-cdk-development` |
 | Test strategy, coverage | `@qa-engineer` |
 | Security, OWASP, crypto | `@security-engineer` |
 | README, API docs | `@technical-writer` |
-| TDD implementation (T2+) | `@general` + skill `superpowers/test-driven-development` |
-| Task complete, before review | `@general` + skill `superpowers/subagent-driven-development` |
-| 2+ failed fixes | `@general` + skill `superpowers/systematic-debugging` |
-| Branch complete | `@general` + skill `superpowers/finishing-a-development-branch` |
+| TDD implementation (T2+) | `@general` + skill `test-driven-development` |
+| Task complete, before review | `@general` + skill `subagent-driven-development` |
+| Review feedback triage | Skill `receiving-code-review` |
+| 2+ failed fixes | `@general` + skill `systematic-debugging` |
+| Branch complete | `@general` + skill `finishing-a-development-branch` |
 
 **Full decision tree:** Load skill `agent-selection`
 
@@ -503,6 +526,7 @@ Tests pass → 4 options (PR/merge/keep/discard) → Quality gates
 - Each subagent must return: summary, next action, and any blocker.
 - Primary agent must continue with the next best safe action without waiting for extra prompts.
 - If any subagent returns a blocker or conflicting results, reconcile first; halt and ask the user if resolution is ambiguous.
+- For big-task mode, load skill `dispatching-parallel-agents` to decompose independent packets safely.
 
 ## CORE TOOLS
 

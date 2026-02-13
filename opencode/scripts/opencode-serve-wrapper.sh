@@ -4,6 +4,7 @@
 
 # Load MCP credentials into environment
 source ~/.config/opencode/scripts/load-mcp-credentials-safe.sh
+export OPENCODE_OPENAI_STRATEGY=hybrid
 
 # Start opencode serve with all arguments passed through
 exec /home/dxta/.opencode/bin/opencode "$@"

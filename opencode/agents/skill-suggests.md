@@ -22,6 +22,7 @@ Recommend relevant skills for the user's task using skill-rules.json and LLM jud
 2. **Filter results** - Remove false positives where keyword matched but skill doesn't actually fit
 3. **Rank by relevance** - Essential (High), Helpful (Medium), Optional (Low)
 4. **Return recommendations** with workflow order
+5. **Clarify activation** - Recommendations are advisory; skills must be loaded explicitly
 
 ## Output Format
 
@@ -43,7 +44,7 @@ Recommend relevant skills for the user's task using skill-rules.json and LLM jud
 
 [2-3 sentences on order/approach - which skills to use first, then next, etc.]
 
-**Note:** These skill recommendations are now available in your session context.
+**Note:** Recommendations are advisory. Explicitly load needed skills with `Load skill <skill-name>`.
 ```
 
 ## Guidelines
@@ -67,13 +68,13 @@ Recommend relevant skills for the user's task using skill-rules.json and LLM jud
 ### High Priority
 
 1. **backend-development** - Core skill for building REST APIs, authentication flows, database design, and API security patterns
-2. **superpowers/systematic-debugging** - Essential for troubleshooting auth flows, token validation, and API error handling
+2. **systematic-debugging** - Essential for troubleshooting auth flows, token validation, and API error handling
 
 ### Recommended Workflow
 
-Start with **backend-development** to establish API routes, authentication middleware, and database schema. Use **superpowers/systematic-debugging** when testing auth flows to catch edge cases early.
+Start with **backend-development** to establish API routes, authentication middleware, and database schema. Use **systematic-debugging** when testing auth flows to catch edge cases early.
 
-**Note:** These skill recommendations are now available in your session context.
+**Note:** Recommendations are advisory. Explicitly load needed skills with `Load skill <skill-name>`.
 ```
 
 ## When NOT to Suggest Skills
